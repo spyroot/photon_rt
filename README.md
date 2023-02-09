@@ -1,15 +1,15 @@
 # This is VMware VM and Bare-metal, Real time Photon build system.
 
 The automated system is designed to work with a bare-metal host. (Dell) or with 
-VMware VC environment.
+VMware VC environment. Note to have a consistent build. A builder build system 
+generates ISO is used in both VM and Bare metal.    
 
-Note to have a consistent build. A builder build system generates ISO 
-is used in both VM and Bare metal.    
+In the case of a VM, the ISO is used to boot the VM and install OS from kick-start. 
+i.e., it is an unattended installation.  Thus, In both cases, the automated build system, f
+irst build a reference iso file.  
 
-In the case of a VM, the ISO is used to boot the VM and install OS from kick-start. i.e., it 
-is an unattended installation.  Thus, In both cases, the automated build system, first build a reference iso file.  
-
-For example local directory contains ph4-rt-refresh.iso or system fetch the reference ISO from the web. 
+For example local directory contains ph4-rt-refresh.iso or system 
+fetch the reference ISO from the web. 
 
 ## What it builds  ?
 
@@ -43,14 +43,16 @@ In offline directory.
 
 All specs JSON files. For example for DPDK we need meson, nasm and ninja build system
 
-'''additional_direct_rpms.json
+additional_direct_rpms.json
+
+'''json
 [
   "ninja-build-1.10.2-2.ph4.x86_64",
   "meson-0.64.1-1.ph4.noarch",
   "nasm-2.15.05-1.ph4.x86_64"
 ]
 '''
-
+additional_git_clone.json
 '''additional_git_clone.json
 [
   "https://github.com/intel/isa-l",
