@@ -389,12 +389,13 @@ function download_direct() {
 
 function print_and_validate_specs() {
   print_value_green "Build type" "$BUILD_TYPE"
-  print_value_green "Using" "$ADDITIONAL_FILES"
-  print_value_green "Using" "$ADDITIONAL_PACKAGES"
-  print_value_green "Using" "$ADDITIONAL_DIRECT_RPMS"
-  print_value_green "Using" "$ADDITIONAL_RPMS"
-  print_value_green "Using" "$ADDITIONAL_REMOTE_RPMS"
-  print_value_green "Using" "$DOCKER_LOAD_POST_INSTALL"
+  print_value_green "Builder will use:" "$ADDITIONAL_FILES"
+
+  print_value_green "Builder will use:" "$ADDITIONAL_PACKAGES"
+  print_value_green "Builder will use:" "$ADDITIONAL_DIRECT_RPMS"
+  print_value_green "Builder will use:" "$ADDITIONAL_RPMS"
+  print_value_green "Builder will use:" "$ADDITIONAL_REMOTE_RPMS"
+  print_value_green "Builder will use:" "$DOCKER_LOAD_POST_INSTALL"
 
   print_value_green "Builder will download" "$DEFAULT_IMAGE_LOCATION"
   print_value_green "Builder will download" "$MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
@@ -402,7 +403,11 @@ function print_and_validate_specs() {
   print_value_green "Builder will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
   print_value_green "Will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
 
-  print_value_green "WIll download RPMS read spec from" "$DEFAULT_RPM_DIR"
+  print_value_green "WIll download RPMS, read spec from" "$DEFAULT_RPM_DIR"
+  total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
+  print_value_green "Number of rpms in rpms spec" "$total_rpms"
+
+
   print_value_green "All archive read from spec " "$ADDITIONAL_GIT_REPOS"
   print_value_green "All archive downloaded spec read from" "$DEFAULT_ARC_DIR"
 
@@ -411,8 +416,8 @@ function print_and_validate_specs() {
     print_value_green "Will git clone" "$repo"
   done
 
-  print_value_green "ISO builder will use" $DEFAULT_SRC_IMAGE_NAME
-  print_value_green "ISO builder will generate" "$DEFAULT_DST_IMAGE_NAME"
+  print_value_green "ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
+  print_value_green "ISO builder will generate:" "$DEFAULT_DST_IMAGE_NAME"
 
   echo "Verifying JSON files"
   jsonlint ks.ref.cfg
