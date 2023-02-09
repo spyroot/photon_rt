@@ -266,77 +266,7 @@ Max brk space used 58000
 Notice script used ks.ref.cfg to generate new ks.cfg, and it pushed to ISO.cfg The script, by default, uses **$HOME/.ssh/ssh-rsa** and injects it to the target iso.
 
 ```json
-{
-  "hostname": "photon-machine",
-  "password": {
-    "crypted": false,
-    "text": "VMware1!"
-  },
-  "disk": "/dev/sda",
-  "partitions": [
-    {
-      "mountpoint": "/",
-      "size": 0,
-      "filesystem": "ext4",
-      "lvm": {
-        "vg_name": "vg1",
-        "lv_name": "rootfs"
-      }
-    },
-    {
-      "mountpoint": "/root",
-      "size": 8192,
-      "filesystem": "ext4",
-      "lvm": {
-        "vg_name": "vg1",
-        "lv_name": "root"
-      }
-    },
-    {
-      "mountpoint": "/boot",
-      "size": 8192,
-      "filesystem": "ext4"
-    }
-  ],
-  "packagelist_file": "packages_rt.json",
-  "additional_packages": [
-    "vim",
-    "gcc",
-    "git",
-    "wget",
-    "numactl",
-    "make",
-    "curl"
-  ],
-  "postinstall": [
-    "#!/bin/sh",
-    "sed -i 's/PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config",
-    "systemctl disable --now systemd-timesyncd",
-    "sed -i 's/tx_timestamp_timeout.*/tx_timestamp_timeout    100/g' /etc/ptp4l.conf",
-    "sed -i 's/eth0/eth4/g' /etc/sysconfig/ptp4l",
-    "systemctl enable ptp4l.service phc2sys.service",
-    "tdnf install dmidecode lshw -y",
-    "tdnf update -y",
-    "tdnf upgrade -y",
-    "yum -y update >> /etc/postinstall",
-    "yum -y install gcc meson git wget numactl make curl nasm >> /etc/postinstall",
-    "yum -y install python3-pip unzip zip gzip build-essential zlib-devel >> /etc/postinstall",
-    "yum -y install lshw findutils vim-extra elfutils-devel cmake cython3 python3-docutils >> /etc/postinstall",
-    "yum -y install libbpf-devel libbpf libpcap-devel libpcap libmlx5 libhugetlbfs  >> /etc/postinstall",
-    "wget -nc http://10.241.11.28/iso/photon/ztp/tinykube-0.0.1-1.x86_64.rpm -P /tmp/  >> /etc/postinstall",
-    "tdnf install -y /tmp/tinykube-0.0.1-1.x86_64.rpm  >> /etc/postinstall"
-  ],
-  "linux_flavor": "linux-rt",
-  "photon_docker_image": "photon:3.0",
-  "photon_release_version": "4.0",
-  "network": {
-    "type": "dhcp"
-  },
-  "public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDKmJwH9DabcPvir/W3kE9VneKNH197fKFa01otfkioMh6+GFRRQm09py8NzPwdRz2a/Sp03JjJhrQ4SuPub5Dr2WJStQhEIYxF8b908+Groi6dVbaxqpFf5rWC3
-pF3mT6v9eRjVHRboYb+o76bXkNo5iokvxfrpD1HL8I6AeZoxZke8oWV94IsHjsHLM78j5UHUm4ffmbNPG8joGpCEhNeT9+MSjqA+8kJz5v/ULUbuSS3f5ITYtf1fmimiFa1MCKoQ43/LuZE/VDuO1drLfov2e3YLwzNAWzLfm8CftSPG8m
-z0OCFEVHs5jjdBNwpCXH8qEMAQ2yXgB3fXp6THo6slSGqQNMSqOBBwx8syTvnF7tUDXHQr9bDBvkFp8LXB+9dg+kuYuFcKaY8AhfrCvNsDHCa3fz8nQK7ovFYOHEWhH7cof1q4Uccrv/jB3uUR8ycoYUjbTfR+T63AWxM0WJa74WNHD4e8
-lJyILrE59NRTWJARmDuqu3NPxfGSKYpRPU= root@epsilon01.cnfdemo.io"
-}
+
 ```
 
 A container creates volume that map to a workspace.  i.e., the same execution where Dockerfile is.  Exit from the container bash session back.  Notice build_iso.sh generated a new iso file.  Note don't run build_iso.sh directly.
