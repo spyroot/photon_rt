@@ -142,7 +142,8 @@ function main() {
       log "Copy $img to $dst_iso_dir"
       cp "$img" "$dst_iso_dir"
       cp post.sh "$dst_iso_dir"/ > /dev/null
-      echo "DOCKER_IMAGE=$img" >> "$dst_iso_dir"/overwrite.env
+      base_name=$(basename $img)
+      echo "DOCKER_IMAGE=$base_name" >> "$dst_iso_dir"/overwrite.env
   done
 
   mkdir -p "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
