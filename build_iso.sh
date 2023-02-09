@@ -57,9 +57,10 @@ log "Copy git tar.gz from $DEFAULT_GIT_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_GI
 cp $DEFAULT_GIT_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
 log "Copy arcs from $DEFAULT_ARC_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_ARC_DST_DIR"
 cp $DEFAULT_ARC_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
+KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
 
 pushd "$DEFAULT_DST_ISO_DIR"/ || exit
-cp "$workspace_dir"/ks.cfg isolinux/ks.cfg
+cp "$workspace_dir"/"$KICK_START_FILE" isolinux/ks.cfg
 
 # generate isolinux
 cat > isolinux/isolinux.cfg << EOF

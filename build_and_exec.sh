@@ -64,7 +64,7 @@ INTEL_DOWNLOAD_URL="https://downloadmirror.intel.com/738727/iavf-$AVX_VERSION.ta
 LIB_NL_DOWNLOAD="https://www.infradead.org/~tgr/libnl/files/libnl-$NL_VER.tar.gz"
 DPDK_DOWNLOAD="http://fast.dpdk.org/rel/dpdk-$DPDK_VER.tar.xz"
 
-SKIP_GIT="yes"
+SKIP_GIT="no"
 SKIP_RPMS_DOWNLOAD="no"
 SKIP_BUILD_CONTAINER="no"
 
@@ -331,7 +331,7 @@ function git_clone() {
 
   suffix=".git"
   git_repos_dir="git_repos"
-  if [ -z "$SKIP_GIT" ] || [ $SKIP_GIT == "yes" ]; then
+  if [ -z "$SKIP_GIT" ]; then
     log "Skipping git cloning."
   else
     # do a cleanup first.
