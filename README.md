@@ -41,43 +41,49 @@ In offline directory.
 
 [Specs]](https://github.com/spyroot/photon_rt/tree/main/offline)
 
-All specs JSON files. For example for DPDK we need meson, nasm and ninja build system.
+All specs JSON files. For example for DPDK we need meson, nasm and ninja build system
 
-* additional_direct_rpms.json
-
+'''additional_direct_rpms.json
 [
-   "ninja-build-1.10.2-2.ph4.x86_64",
-   "meson-0.64.1-1.ph4.noarch",
-   "nasm-2.15.05-1.ph4.x86_64"
+  "ninja-build-1.10.2-2.ph4.x86_64",
+  "meson-0.64.1-1.ph4.noarch",
+  "nasm-2.15.05-1.ph4.x86_64"
 ]
+'''
 
-* additional_git_clone.json
-
+'''additional_git_clone.json
 [
-   "https://github.com/intel/isa-l",
-   "https://github.com/spyroot/tuned.git",
-   "https://github.com/intel/intel-ipsec-mb.git"
+  "https://github.com/intel/isa-l",
+  "https://github.com/spyroot/tuned.git",
+  "https://github.com/intel/intel-ipsec-mb.git"
 ]
+'''
 
-* additional_packages.json
-
+'''additional_packages.json
 [
-   "docker"
+  "docker"
 ]
+'''
 
+'''additional_rpms.json
+[
+  "docker"
+]
+'''
 
 Additional files pushed during install
-
+'''additional_files.json
 {
-   "additional_files": [
-      {
-         "/mnt/media/vcu1.tar.gz": "/vcu1.tar.gz"
-      },
-      {
-         "/mnt/media/post.sh": "/post.sh"
-      }
-   ]
+  "additional_files": [
+    {
+      "/mnt/media/vcu1.tar.gz": "/vcu1.tar.gz"
+    },
+    {
+      "/mnt/media/post.sh": "/post.sh"
+    }
+  ]
 }
+'''
 
 '''additional_load_docker.json
 
