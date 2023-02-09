@@ -428,7 +428,7 @@ function print_and_validate_specs() {
   echo "$additional_files"
 
   local docker_files
-  docker_files=$(cat $ADDITIONAL_FILES | jq '.additional_files[][]'|xargs -I {} echo "docker_images{}")
+  docker_files=$(cat $ADDITIONAL_FILES | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
   log "$docker_files"
 
   print_value_green "Builder will generate:" "$KICK_START_FILE"

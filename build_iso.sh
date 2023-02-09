@@ -46,8 +46,7 @@ mount "$DEFAULT_SRC_IMAGE_NAME" "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
 mkdir -p /tmp/photon-ks-iso
 log "Copy data from $DEFAULT_SRC_ISO_DIR/* to $DEFAULT_DST_ISO_DIR/"
 
-docker_files=$(cat "$ADDITIONAL_FILES" | jq '.additional_files[][]'|xargs -I {} echo "docker_images{}")
-cp "$docker_files" "$DEFAULT_DST_ISO_DIR"/
+cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo cp "docker_images{} "$DEFAULT_DST_ISO_DIR"
 
 #cp -r "$DEFAULT_SRC_ISO_DIR"/* "$DEFAULT_DST_ISO_DIR"/
 #if [[ -z "$DEFAULT_DOCKER_IMAGES" ]]; then
