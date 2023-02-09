@@ -29,8 +29,14 @@ AVX_VERSION=4.5.3
 MLNX_VER=5.4-1.0.3.0
 
 # default image loaded.
-DOCKER_IMAGE_PATH="/vcu1.tar.gz"
+DEFAULT_DOKCER_IMAGE_DIR=""
+DOCKER_IMAGE_PATH="$DEFAULT_DOKCER_IMAGE_DIR/vcu1.tar.gz"
 DOCKER_IMAGE_NAME="vcu1"
+
+# by default all build in /root/build.
+ROOT_BUILD="/root/build"
+# logs are in /build
+BUILD_LOG_LOG="/build"
 
 # all require tools
 REQUIRED_TOOLS=("wget" "tar" "lshw" "awk")
@@ -61,6 +67,7 @@ LOAD_VFIO="yes"
 SKIP_CLEANUP="yes"
 BUILD_LOAD_DOCKER_IMAGE="yes"
 
+# location where we get all tar.gz from cloned repos.
 DEFAULT_GIT_IMAGE_DIR="/git_images"
 
 # SRIOV NIC make sure it up.
@@ -103,7 +110,6 @@ PAGES_1GB="8"
 PTP_ADAPTER="pci@0000:8a:00.1"
 
 # All links and directories
-ROOT_BUILD="/root/build"
 IPSEC_LIB_LOCATION="https://github.com/intel/intel-ipsec-mb.git"
 ISA_L_LOCATION"https://github.com/intel/isa-l"
 
@@ -136,7 +142,6 @@ MLX_DIR=/tmp/mlnx_ofed_src
 INTEL_DIR=/tmp/iavf
 
 # all logs
-BUILD_LOG_LOG="/build"
 BUILD_MELLANOX_LOG="$BUILD_LOG_LOG/build_mellanox_driver.log"
 BUILD_INTEL_LOG="$BUILD_LOG_LOG/build_intel_driver.log"
 BUILD_DOCKER_LOG="$BUILD_LOG_LOG/build_docker_images.log"
@@ -162,7 +167,6 @@ STATIC_ETHn_STATIC_DNS="8.8.8.8"
 #
 #
 #
-
 
 # Function checks if string contains yes or not
 function is_yes() {
@@ -323,7 +327,8 @@ function extrac_dir() {
   echo "$dir_name"
 }
 
-# extrac filename
+# Function extracts filename
+# arg full path to a file
 function extrac_filename() {
   local file_path=$1
   local file_name
@@ -339,7 +344,6 @@ function extrac_filename() {
 
   echo "$file_name"
 }
-
 
 # append to array
 function array_append {
