@@ -4,4 +4,4 @@
 #
 # spyroot@gmail.com
 # Author Mustafa Bayramov
-export ./build_and_exec.sh
+export BUILD_TYPE="offline_testnf_os4_flex22"; ./build_and_exec.sh
