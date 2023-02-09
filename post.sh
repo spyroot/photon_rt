@@ -182,6 +182,37 @@ STATIC_ETHn_NAME="eth0"
 STATIC_ETHn_ADDRESS="192.168.254.1/24"
 STATIC_ETHn_GATEWAY="192.168.254.254"
 STATIC_ETHn_STATIC_DNS="8.8.8.8"
+
+# overwrite for eth name
+if [ -z "$OVERWRITE_STATIC_ETHn_NAME" ]; then
+  echo "Using default STATIC_ETHn_NAME."
+else
+  STATIC_ETHn_NAME=$OVERWRITE_STATIC_ETHn_NAME
+  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_NAME"
+fi
+# overwrite for IP address
+if [ -z "$OVERWRITE_STATIC_ETHn_ADDRESS" ]; then
+  echo "Using default STATIC_ETHn_NAME."
+else
+  STATIC_ETHn_NAME=$OVERWRITE_STATIC_ETHn_ADDRESS
+  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_ADDRESS"
+fi
+
+# overwrite for gateway
+if [ -z "$OVERWRITE_STATIC_ETHn_GATEWAY" ]; then
+  echo "Using default STATIC_ETHn_NAME."
+else
+  STATIC_ETHn_GATEWAY=$OVERWRITE_STATIC_ETHn_GATEWAY
+  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_GATEWAY"
+fi
+
+# overwrite for dns
+if [ -z "$OVERWRITE_STATIC_ETHn_STATIC_DNS" ]; then
+  echo "Using default STATIC_ETHn_NAME."
+else
+  STATIC_ETHn_STATIC_DNS=$OVERWRITE_STATIC_ETHn_STATIC_DNS
+  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_STATIC_DNS"
+fi
 # by default can generate DHCP and static.
 # DHCP enabled masked e* while static for particular adapter.
 DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX="99-static"
