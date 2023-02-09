@@ -77,6 +77,12 @@ log() {
   printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
 }
 
+print_value_green() {
+  local prefix_text=$1
+  shit 1
+  printf "%s %b %s. %b\n" "$prefix_text ${GREEN}" "$@" "${NC}"
+}
+
 function is_not_empty() {
   local var=$1
   if [[ -z "$var" ]]; then
@@ -181,7 +187,7 @@ function generate_kick_start() {
   }
 
   local packages
-  packages=$(cat $ADDITIONAL_PACKAGES)
+  packages=$(cat "$ADDITIONAL_PACKAGES")
   jq --argjson p "$packages" '.additional_packages += $p' $current_ks_phase >ks.phase2.cfg
   current_ks_phase="ks.phase2.cfg"
   jsonlint $current_ks_phase
@@ -217,7 +223,7 @@ function generate_kick_start() {
     exit 99
   }
   local rpms
-  rpms=$(cat $ADDITIONAL_REMOTE_RPMS)
+  rpms=$(cat "$ADDITIONAL_REMOTE_RPMS")
   jq --argjson p "$rpms" '.postinstall += $p' $current_ks_phase >ks.phase7.cfg
   current_ks_phase="ks.phase7.cfg"
   jsonlint $current_ks_phase
@@ -237,12 +243,12 @@ function generate_kick_start() {
 #  done
 
   # additional docker load.
-  [ ! -f $DOCKER_LOAD_POST_INSTALL ] && {
+  [ ! -f "$DOCKER_LOAD_POST_INSTALL" ] && {
     echo "$DOCKER_LOAD_POST_INSTALL file not found"
     exit 99
   }
   local docker_imgs
-  docker_imgs=$(cat $DOCKER_LOAD_POST_INSTALL)
+  docker_imgs=$(cat "$DOCKER_LOAD_POST_INSTALL")
   jq --argjson i "$docker_imgs" '.postinstall += $i' $current_ks_phase >ks.phase8.cfg
   current_ks_phase="ks.phase8.cfg"
   jsonlint $current_ks_phase
@@ -329,7 +335,7 @@ function git_clone() {
   else
     # do a cleanup first.
     rm -rf $git_repos_dir
-    jq --raw-output -c '.[]' $ADDITIONAL_GIT_REPOS | while read -r git_repo; do
+    jq --raw-output -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r git_repo; do
       local repo_name
       repo_name=${git_repo/%$suffix/}
       repo_name=${repo_name##*/}
@@ -359,7 +365,7 @@ function download_rpms() {
   else
     mkdir -p $DEFAULT_RPM_DIR
     log "Downloading rpms."
-    jq --raw-output -c '.[]' $ADDITIONAL_DIRECT_RPMS | while read -r rpm_pkg; do
+    jq --raw-output -c '.[]' "$ADDITIONAL_DIRECT_RPMS" | while read -r rpm_pkg; do
       mkdir -p direct_rpms
       local url_target
       url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
@@ -382,38 +388,38 @@ function download_direct() {
 }
 
 function print_and_validate_specs() {
-  echo "Build type $BUILD_TYPE"
-  echo "Using $ADDITIONAL_FILES"
-  echo "Using $ADDITIONAL_PACKAGES"
-  echo "Using $ADDITIONAL_DIRECT_RPMS"
-  echo "Using $ADDITIONAL_RPMS"
-  echo "Using $ADDITIONAL_REMOTE_RPMS"
-  echo "Using $DOCKER_LOAD_POST_INSTALL"
+  echo "Build type ${GREEN} $BUILD_TYPE ${NC}"
+  print_value_green "Using $ADDITIONAL_FILES"
+  print_value_green "Using $ADDITIONAL_PACKAGES"
+  print_value_green "Using $ADDITIONAL_DIRECT_RPMS"
+  print_value_green "Using $ADDITIONAL_RPMS"
+  print_value_green "Using $ADDITIONAL_REMOTE_RPMS"
+  print_value_green "Using $DOCKER_LOAD_POST_INSTALL"
 
-  echo "Will download $DEFAULT_IMAGE_LOCATION"
-  echo "Will download $MELLANOX_DOWNLOAD_URL --directory-prefix=$DEFAULT_ARC_DIR"
-  echo "Will download $INTEL_DOWNLOAD_URL --directory-prefix=$DEFAULT_ARC_DIR"
-  echo "Will download $LIB_NL_DOWNLOAD --directory-prefix=$DEFAULT_ARC_DIR"
-  echo "Will download $DPDK_DOWNLOAD --directory-prefix=$DEFAULT_ARC_DIR"
-  echo "All RPMS wil downloaded to $DEFAULT_RPM_DIR"
-  echo "All GIT tars will be wil downloaded to $ADDITIONAL_GIT_REPOS"
-  echo "All archive  will be wil downloaded to $ADDITIONAL_GIT_REPOS"
-  echo "All archive  will be wil downloaded to $DEFAULT_ARC_DIR"
+  print_value_green "Will download $DEFAULT_IMAGE_LOCATION"
+  print_value_green "Will download $MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "Will download $INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "Will download $LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
+  print_value_green "Will download $DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
+  print_value_green "All RPMS wil downloaded to $DEFAULT_RPM_DIR"
+  print_value_green "All GIT tars will be wil downloaded to $ADDITIONAL_GIT_REPOS"
+  print_value_green "All archive  will be wil downloaded to $ADDITIONAL_GIT_REPOS"
+  print_value_green "All archive  will be wil downloaded to $DEFAULT_ARC_DIR"
 
-  jq -c '.[]' $ADDITIONAL_GIT_REPOS | while read -r repo; do
+  jq -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r repo; do
     mkdir -p direct
     echo "Will git clone $repo"
   done
 
   echo "Verifying JSON files"
   jsonlint ks.ref.cfg
-  jsonlint $ADDITIONAL_FILES
-  jsonlint $ADDITIONAL_PACKAGES
-  jsonlint $ADDITIONAL_DIRECT_RPMS
-  jsonlint $ADDITIONAL_RPMS
-  jsonlint $DOCKER_LOAD_POST_INSTALL
-  jsonlint $ADDITIONAL_GIT_REPOS
-  jsonlint $ADDITIONAL_REMOTE_RPMS
+  jsonlint "$ADDITIONAL_FILES"
+  jsonlint "$ADDITIONAL_PACKAGES"
+  jsonlint "$ADDITIONAL_DIRECT_RPMS"
+  jsonlint "$ADDITIONAL_RPMS"
+  jsonlint "$DOCKER_LOAD_POST_INSTALL"
+  jsonlint "$ADDITIONAL_GIT_REPOS"
+  jsonlint "$ADDITIONAL_REMOTE_RPMS"
 }
 
 function main() {
