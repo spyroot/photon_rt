@@ -112,7 +112,7 @@ PTP_ADAPTER="pci@0000:8a:00.1"
 
 # All links and directories
 IPSEC_LIB_LOCATION="https://github.com/intel/intel-ipsec-mb.git"
-ISA_L_LOCATION"https://github.com/intel/isa-l"
+ISA_L_LOCATION="https://github.com/intel/isa-l"
 
 # mirror for all online files.
 # drivers etc.
