@@ -27,6 +27,7 @@ rm -rf rm /root/build/dpdk-21.11/build
 # version we are using for IAVF and Mellanox
 AVX_VERSION=4.5.3
 MLNX_VER=5.4-1.0.3.0
+GREEN_CUSTOM='\033[0;32m'
 
 # default image loaded.
 DEFAULT_DOKCER_IMAGE_DIR=""
@@ -193,6 +194,10 @@ function is_not_empty() {
   else
     return 0
   fi
+}
+
+log_green() {
+  printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
 }
 
 # Function removes blacks
@@ -429,11 +434,12 @@ function enable_sriov() {
   local list_of_pci_devices=$1
   declare -i target_num_vfs=$2
   adapters_from_pci_list eth_array "$list_of_pci_devices"
+#  "${GREEN}" "$@" "${NC}"
   log_console_and_file "Enabling SRIOV ${eth_array[*]} target num vfs $target_num_vfs"
 
   if is_yes "$IS_INTERACTIVE"; then
         local choice
-        read -r -p "Building SRIOV resolved adapter $eth_array (y/n)?" choice
+        read -r -p "Building SRIOV resolved adapter ${eth_array[*]} (y/n)?" choice
         case "$choice" in
         y | Y) echo "yes" ;;
         n | N) return 1 ;;
@@ -899,9 +905,29 @@ function build_dpdk() {
       ldconfig; ldconfig /usr/local/lib
       log_console_and_file "DPDK meson dir $meson_build_dir as build staging. target /lib/modules/$target_system"
       cd "$build_dir" || exit
-      meson setup "$build_flags" build > "$log_file.meson.log" 2>&1
+      if is_yes "$IS_INTERACTIVE"; then
+        meson setup "$build_flags" build
+        echo "Using kernel $kernel_src_path"
+        echo "meson build location $meson_build_dir"
+        echo "Using $build_flags"
+
+        local choice
+        read -r -p "Building DPDK build location $meson_build_dir number of concurrent make: 8 (y/n)?" choice
+        case "$choice" in
+        y | Y) echo "yes" ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+      else
+        meson setup "$build_flags" build > "$log_file.meson.log" 2>&1
+      fi
+
       # meson -Dplatform=native -Dexamples=all -Denable_kmods=true -Dkernel_dir=/lib/modules/"$target_system" -Dibverbs_link=shared -Dwerror=true build > "$log_file.meson.log" 2>&1
-      cd "$meson_build_dir" || exit; ninja -j 8 > "$log_file.build.log" 2>&1
+      if is_yes "$IS_INTERACTIVE"; then
+          cd "$meson_build_dir" || exit; ninja -j 8 > "$log_file.build.log" 2>&1
+      else
+          cd "$meson_build_dir" || exit; ninja -j 8 > "$log_file.build.log" 2>&1
+      fi
       log_console_and_file "Finished building DPDK."
       ninja install > "$log_file.install.log" 2>&1
       log_console_and_file "Installing DPDK."
@@ -1828,7 +1854,7 @@ function main() {
     build_tuned "$BUILD_TUNED_LOG"
   fi
 
-  build_vlans_ifs $DOT1Q_ETH_NAME $DOT1Q_ETH_NAME
+  build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" $DOT1Q_ETH_NAME
 
   # optional steps
   build_qat
