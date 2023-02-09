@@ -48,6 +48,7 @@ PIP_PKG_REQUIRED=("pyelftools" "sphinx")
 # What we are building, all flags on by default.
 # i.e. by default we build all.
 DO_REBOOT="no"
+IS_INTERACTIVE="yes"
 MLX_BUILD="yes"
 INTEL_BUILD="yes"
 DPDK_BUILD="yes"
@@ -1480,9 +1481,13 @@ function clean_up() {
   fi
 }
 
+function print_all_varibles()
+
 # main entry for a script
 #
 function main() {
+
+
   local log_main_dir
   log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
   rm -rf "$log_main_dir"
@@ -1534,6 +1539,19 @@ function main() {
   echo "LIBNL Build location $libnl_build_location"
   echo "Mellanox Build location $mellanox_build_location"
 
+
+  # if we do interactive.
+  # we want run script by hand post install.
+  if is_yes "$IS_INTERACTIVE"; then
+    local choice
+    read -r -p "Please check and confirm (y/n)?" choice
+    case "$choice" in
+    y | Y) echo "yes" ;;
+    n | N) return 1 ;;
+    *) echo "invalid" ;;
+    esac
+  fi
+
   build_mellanox_driver "$BUILD_MELLANOX_LOG" "$mellanox_build_location"
   build_intel_iavf "$BUILD_INTEL_LOG" "$iavf_build_location"
   build_docker_images $BUILD_DOCKER_LOG "$DOCKER_IMAGE_PATH" "$DOCKER_IMAGE_NAME"
@@ -1574,6 +1592,7 @@ function main() {
   # generate adapter
   build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" $DOT1Q_VLAN_TRUNK_PCI
 }
+
 
 main
 
