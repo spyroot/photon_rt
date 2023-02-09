@@ -200,7 +200,6 @@ function generate_kick_start() {
 
   # adjust release
   if [[ "$DEFAULT_RELEASE" == "4.0" ]]; then
-    echo "Strings are equal."
     jq --arg r "$DEFAULT_RELEASE" '.photon_release_version=$r' $current_ks_phase >ks.phase4.cfg
     current_ks_phase="ks.phase4.cfg"
     jsonlint $current_ks_phase
@@ -267,8 +266,9 @@ function generate_kick_start() {
 
   rm ks.phase[0-9].cfg
 
+  mkdir -p logs
   # extra check if ISO os not bootable
-  wget -nc -O $DEFAULT_SRC_IMAGE_NAME "$DEFAULT_IMAGE_LOCATION"
+  wget -q -nc -O $DEFAULT_SRC_IMAGE_NAME "$DEFAULT_IMAGE_LOCATION" -o "download.iso.log"
   local ISO_IS_BOOTABLE
   ISO_IS_BOOTABLE=$(file $DEFAULT_SRC_IMAGE_NAME | grep bootable)
   if [ -z "$ISO_IS_BOOTABLE" ]; then
@@ -367,10 +367,10 @@ function download_rpms() {
     mkdir -p $DEFAULT_RPM_DIR
     log "Downloading rpms."
     jq --raw-output -c '.[]' "$ADDITIONAL_DIRECT_RPMS" | while read -r rpm_pkg; do
-      mkdir -p direct_rpms
+      mkdir -p $DEFAULT_RPM_DIR
       local url_target
       url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
-      log "Downloading $url_target to $DEFAULT_RPM_DIR$"
+      log "Downloading $url_target to $DEFAULT_RPM_DIR"
       wget -q -nc "$url_target" -O $DEFAULT_RPM_DIR/"${rpm_pkg}".rpm
     done
   fi
@@ -378,14 +378,15 @@ function download_rpms() {
 
 # Download all tar gz that wil lgo to final ISO.
 function download_direct() {
+  mkdir -p logs
   echo "Downloading $MELLANOX_DOWNLOAD_URL"
-  wget -q -nc $MELLANOX_DOWNLOAD_URL --directory-prefix=direct
+  wget -q -nc $MELLANOX_DOWNLOAD_URL --directory-prefix=direct -o "logs/melanox.donwload.log"
   echo "Downloading $INTEL_DOWNLOAD_URL"
-  wget -q -nc $INTEL_DOWNLOAD_URL --directory-prefix=direct
+  wget -q -nc $INTEL_DOWNLOAD_URL --directory-prefix=direct -o "logs/intel.donwload.log"
   echo "Downloading $LIB_NL_DOWNLOAD"
-  wget -q -nc $LIB_NL_DOWNLOAD --directory-prefix=direct
+  wget -q -nc $LIB_NL_DOWNLOAD --directory-prefix=direct -o "logs/intel.donwload.log"
   echo "Downloading $DPDK_DOWNLOAD"
-  wget -q -nc $DPDK_DOWNLOAD --directory-prefix=direct
+  wget -q -nc $DPDK_DOWNLOAD --directory-prefix=direct -o "logs/intel.donwload.log"
 }
 
 function print_and_validate_specs() {
