@@ -1,4 +1,4 @@
-# This is VMware BMI, TinyTkg Photon OS DPDK build system for realtime kernel.
+# This is VMware VM and Bare-metal, Real time Photon build system.
 
 The automated system is designed to work with a bare-metal host. (Dell) or with 
 VMware VC environment.
