@@ -60,6 +60,8 @@ LOAD_VFIO="yes"
 SKIP_CLEANUP="yes"
 BUILD_LOAD_DOCKER_IMAGE="yes"
 
+DEFAULT_GIT_IMAGE_DIR="/git_images"
+
 # SRIOV NIC make sure it up.
 # each PCI resolved to respected ethX adapter
 SRIOV_PCI_LIST="pci@0000:51:00.0,pci@0000:51:00.1"
@@ -304,6 +306,41 @@ function pci_domain_and_bus() {
     fi
 }
 
+# Extract directory
+function extrac_dir() {
+  local dir_path=$1
+  local dir_name
+  dir_name=""
+
+  if [ -z "$dir_path" ]; then
+    dir_name=""
+  else
+    local dir_name
+    dir_path=$(trim "$dir_path")
+    dir_name=$(dirname "$dir_path")
+  fi
+
+  echo "$dir_name"
+}
+
+# extrac filename
+function extrac_filename() {
+  local file_path=$1
+  local file_name
+  file_name=""
+
+  if [ -z "$file_path" ]; then
+    file_name=""
+  else
+    local file_name
+    file_path=$(trim "$file_path")
+    file_name=$(basename "$file_path")
+  fi
+
+  echo "$file_name"
+}
+
+
 # append to array
 function array_append {
   local -r _content="$1"
@@ -438,6 +475,10 @@ function enable_sriov() {
 }
 
 # Function check if image already loaded
+# Usage:
+# if is_tar "file.tar"; then
+#     echo "Image loaded"
+# fi
 function is_tar() {
   local file_name=$1
   local is_tar
@@ -450,6 +491,10 @@ function is_tar() {
 }
 
 # Function check if image already loaded
+# Usage:
+# if is_docker_image_present "spyroot/photon_iso_builder"; then
+#     echo "Image loaded"
+# fi
 function is_docker_image_present() {
   local image_name=$1
   local docker_image
@@ -461,9 +506,28 @@ function is_docker_image_present() {
   fi
 }
 
+# Function check if docker is up
+# Usage:
+# if is_docker_up; then
+#   echo "do"
+# fi
+function is_docker_up() {
+  local is_docker_running
+  is_docker_running=$(systemctl status docker | grep running)
+  if [[ -z "$is_docker_running" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
 # Function load docker image
-# First argument is log file, docker image name, image path.
-# load_docker_image /builder/build_docker.log image_name, image_path
+# First argument is log file.
+# second argument path to a file
+# third name of image
+#
+# Usage:
+#   load_docker_image /builder/build_docker.log image_path image_name,
 function build_docker_images() {
   local log_file=$1
   local docker_image_path=$2
@@ -482,20 +546,20 @@ function build_docker_images() {
       log_console_and_file "Enabling docker services."
       systemctl enable docker
       systemctl start docker
-      local is_docker_running
-      is_docker_running=$(systemctl status docker | grep running)
-      if [ -z "$is_docker_running" ]; then
-        log_console_and_file "Skipping docker load, failed to start docker."
-      else
+      if is_docker_up; then
         log_console_and_file "Loading docker image from $docker_image_path"
-        docker load <"$docker_image_path"
-        docker image ls > "$log_file" 2>&1
+        if is_docker_image_present "$docker_image_name"; then
+          docker load <"$docker_image_path"
+          docker image ls > "$log_file" 2>&1
+        fi
       fi
     fi
   fi
 }
 
-# function builds an ipsec lib, required for DPDK.
+# Function builds an ipsec lib.
+# It required lib for DPDK and enabled crypto
+#
 function build_ipsec_lib() {
   local log_file=$1
   local suffix
@@ -507,13 +571,15 @@ function build_ipsec_lib() {
       log_console_and_file "Skipping ipsec lib build."
   else
     log_console_and_file "Building ipsec lib."
-    if [ -d "/git_images" ]; then
+    # we load image from DEFAULT_GIT_IMAGE_DIR
+    if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building ipsec lib from a local copy."
-        tar xfz /git_images/intel-ipsec-mb.tar.gz -C $ROOT_BUILD --strip-components=1
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/intel-ipsec-mb.tar.gz -C $ROOT_BUILD --strip-components=1
     else
       log_console_and_file "Building ipsec lib from a git copy."
       cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
     fi
+
     repo_name=${IPSEC_LIB_LOCATION/%$suffix/}
     repo_name=${repo_name##*/}
     cd $ROOT_BUILD/"$repo_name" || exit; make -j 8 > "$log_file" 2>&1
@@ -542,10 +608,12 @@ function build_intel_iavf() {
   local log_file=$1
   local build_dir=$2
   echo "" >"$log_file"
+
   if [ -z "$INTEL_BUILD" ]
   then
-      log_console_and_file "Skipping intel driver build"
+      log_console_and_file "Skipping intel driver build."
   else
+    mkdir -p "$build_dir"
     cd "$build_dir" || exit; tar -zxvf iavf-* -C iavf --strip-components=1 > "$log_file" 2>&1
     cd "$build_dir"/src || exit; make > "$log_file" 2>&1; make install > "$log_file.iavf.install.log" 2>&1
   fi
@@ -562,7 +630,8 @@ function adjust_shared_libs() {
 }
 
 # Function install requires pips
-# first args a log file , second array of package names
+# first args a log file , second bash array
+# or all required package names
 function build_install_pips_deb() {
   local log_file=$1
   shift
@@ -605,7 +674,7 @@ function build_lib_isa() {
   if [ -z "$LIBNL_ISA" ]; then
     log_console_and_file "Skipping isa-l driver build"
   else
-     if [ -d "/git_images" ]; then
+     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building isa-l from local copy."
         tar xfz tar xfz /git_images/isa-l.tar.gz -C /root/build --strip-components=1
     else
@@ -622,7 +691,8 @@ function build_lib_isa() {
 
 # Function builds DPDK
 #  First arg a path to log file.
-#  Second optional arg path to a kernel headers.
+#  Second optional arg path to a kernel headers
+#  path is optional in case we use none default location
 function build_dpdk() {
     local log_file=$1
     local build_dir=$2
@@ -640,6 +710,7 @@ function build_dpdk() {
     # kernel source and DPDK, we're building with Intel and Mellanox driver.
     yum --quiet -y install stalld dkms linux-devel linux-rt-devel \
     openssl-devel libmlx5 > "$log_file" 2>&1
+    # first we check all tools in place.
     local dpdk_tools=("meson" "python3" "ninja")
     for tool in "${dpdk_tools[@]}"
     do
@@ -716,6 +787,26 @@ function load_vfio_pci() {
     grep -qF -- "$MODULES_VFIO_LINE" "$MODULES_VFIO_FILE" || echo "$MODULES_VFIO_LINE" >>"$MODULES_VFIO_FILE"
   fi
 }
+
+# Generate tuned bash script
+function generate_tuned_script() {
+  cat >/usr/lib/tuned/mus_rt/script.sh <<'EOF'
+#!/usr/bin/sh
+. /usr/lib/tuned/functions
+start() { return 0 }
+stop() { return 0 }
+verify() {
+    retval=0
+    if [ "$TUNED_isolated_cores" ]; then
+        tuna -c "$TUNED_isolated_cores" -P > /dev/null 2>&1
+        retval=$?
+    fi
+    return $retval
+}
+process $@
+EOF
+}
+
 
 # Function fix tuned and some build in, generate a new tuned profile
 # updates tuned python and make it active.
@@ -794,21 +885,7 @@ EOF
     rm /usr/lib/tuned/mus_rt/script.sh 2>/dev/null
     touch /usr/lib/tuned/mus_rt/script.sh 2>/dev/null
     log_console_and_file "Generating tuned script.sh."
-    cat >/usr/lib/tuned/mus_rt/script.sh <<'EOF'
-#!/usr/bin/sh
-. /usr/lib/tuned/functions
-start() { return 0 }
-stop() { return 0 }
-verify() {
-    retval=0
-    if [ "$TUNED_isolated_cores" ]; then
-        tuna -c "$TUNED_isolated_cores" -P > /dev/null 2>&1
-        retval=$?
-    fi
-    return $retval
-}
-process $@
-EOF
+    generate_tuned_script
 
     log_console_and_file "Enabling and restarting tuned."
     # enabled tuned and load profile we created.
@@ -839,7 +916,9 @@ function build_qat() {
 }
 
 # Function builds huge pages
-#
+# First path to a log
+# second num 2k pages
+# third 1GB pages
 function build_hugepages() {
   local log_file=$1
   local pages=$2
@@ -882,7 +961,6 @@ function cleanup() {
     rm /build/*
     rm -rf $DPDK_TARGET_DIR_BUILD/build
     docker volume prune -f
-
 }
 
 ## build configs for ptp
@@ -1028,69 +1106,8 @@ function build_dirs() {
   mkdir -p /build/ > /dev/null 2>&1
 }
 
-# Function create vlan interface
-function build_vlans_ifs() {
-  local vlan_id_list=$1
-  local if_name=$2
-
-  if [ -z "$BUILD_TRUNK" ] && [ "$BUILD_TRUNK" == "yes" ]; then
-    log_console_and_file "Skipping vlan configuration."
-  else
-      local trunk_eth_name
-      trunk_eth_name=$(pci_to_adapter "$DOT1Q_VLAN_TRUNK_PCI")
-      if [ -z "$trunk_eth_name" ]; then
-          log_console_and_file "Failed resolve PCI $DOT1Q_VLAN_TRUNK_PCI address for vlan trunk."
-      fi
-      log_console_and_file "Skipping ptp configuration."
-      local vlan_ids=""
-      local separator=','
-      IFS=$separator read -ra vlan_ids <<<"$DOT1Q_VLAN_ID_LIST"
-      for vlan_id in "${vlan_ids[@]}"; do
-#        local name="vlan_id_$vlan_id"
-        cat > /etc/systemd/network/10-vlan"$vlan_id".netdev << EOF
-[NetDev]
-Name=vlan$vlan_id
-Kind=vlan
-[VLAN]
-Id=$vlan_id
-EOF
-      done
-
-      # netdev
-      IFS=$separator read -ra vlan_ids <<<"$DOT1Q_VLAN_ID_LIST"
-      for vlan_id in "${vlan_ids[@]}"; do
-        echo "Id=$vlan_id" >> /etc/systemd/network/10-vlanid_"$if_name".network
-      done
-      echo "LLDP=$LLDP" >> /etc/systemd/network/10-vlanid_"$if_name".network
-
-      # interface
-      cat > /etc/systemd/network/10-vlanid_"$if_name".network << EOF
-[Match]
-Name=$trunk_eth_name
-Type=ether
-[Network]
-Description=physical ethernet device
-EOF
-      IFS=$separator read -ra vlan_ids <<<"$DOT1Q_VLAN_ID_LIST"
-      for vlan_id in "${vlan_ids[@]}"; do
-        echo "VLAN=vlan$vlan_id" >> /etc/systemd/network/10-vlanid_"$if_name".network
-      done
-
-      # vlan itself.
-      IFS=$separator read -ra vlan_ids <<<"$DOT1Q_VLAN_ID_LIST"
-      for vlan_id in "${vlan_ids[@]}"; do
-        echo "[Match]"
-             "Name=vlanid$vlan_id"
-             "Type=vlan"
-            "[Network]"
-           "DHCP=yes" >> /etc/systemd/network/10-vlan"$vlan_id".network
-      done
-
-  fi
-  systemctl restart systemd-networkd
-}
-
-# Function checks if required mandatory tools installed.
+# Function checks if required mandatory
+# tools installed on local system
 function check_installed() {
   local  result_var_name=$1
   declare -i errors=0
@@ -1108,7 +1125,6 @@ function check_installed() {
   done
   eval "$result_var_name"="'$errors'"
 }
-
 
 # /mnt/cdrom/direct/dpdk-21.11.3.tar.xz
 # Function extract version from
@@ -1134,40 +1150,6 @@ function extrac_version() {
   fi
 
   echo "$version"
-}
-
-# Extract directory
-function extrac_dir() {
-  local dir_path=$1
-  local dir_name
-  dir_name=""
-
-  if [ -z "$dir_path" ]; then
-    dir_name=""
-  else
-    local dir_name
-    dir_path=$(trim "$dir_path")
-    dir_name=$(dirname "$dir_path")
-  fi
-
-  echo "$dir_name"
-}
-
-# extrac filename
-function extrac_filename() {
-  local file_path=$1
-  local file_name
-  file_name=""
-
-  if [ -z "$file_path" ]; then
-    file_name=""
-  else
-    local file_name
-    file_path=$(trim "$file_path")
-    file_name=$(basename "$file_path")
-  fi
-
-  echo "$file_name"
 }
 
 # Function search a file in array of dirs
@@ -1236,7 +1218,6 @@ function search_file() {
   fi
 }
 
-
 # Function takes target dir where to store a file
 # and list of location mirror for a given file.
 function fetch_file() {
@@ -1278,8 +1259,6 @@ function fetch_file() {
   fi
 }
 
-
-
 # Function generate dhcp, by default generate masked for e*
 # if arg: provided will use that arg as Match
 function generate_dhcp_network() {
@@ -1315,11 +1294,13 @@ DNS=$dns
 EOF
 }
 
-# Function, this a backup if Photon OS
-# never adjusted network
+# Function generate default networks.
+# generate_dhcp_network generate default DHCP network.
+# if static required it will also generate static.
 function generate_default_network() {
   # generate default dhcp network
   if is_yes $BUILD_DEFAULT_NETWORK; then
+    log_console_and_file "Generating default dhcp network"
     generate_dhcp_network "e*"
   fi
   # generate all static networks
@@ -1328,7 +1309,7 @@ function generate_default_network() {
       is_not_empty $STATIC_ETHn_ADDRESS &&
       is_not_empty $STATIC_ETHn_GATEWAY &&
       is_not_empty $STATIC_ETHn_STATIC_DNS; then
-      log_console_and_file "generating static network for $STATIC_ETHn_NAME"
+      log_console_and_file "Generating static network for $STATIC_ETHn_NAME"
       generate_static_network "$STATIC_ETHn_NAME" \
         "$STATIC_ETHn_ADDRESS" \
         "$STATIC_ETHn_GATEWAY" \
@@ -1337,6 +1318,8 @@ function generate_default_network() {
   fi
 }
 
+# Function generate netdev for vlan
+# arg vlan ID ( integer )
 function generate_vlan_netdev() {
   local vlan_id=$1
   if is_not_empty vlan_id; then
@@ -1385,10 +1368,9 @@ EOF
   fi
 }
 
-
-
 #
-# Function create vlan interface
+# Function create all vlan interface
+#
 function build_vlans_ifs() {
   local vlan_id_list=$1
   local if_name=$2
@@ -1551,20 +1533,26 @@ function main() {
 
   # optional steps
   build_qat
-  if [ -z "$BUILD_SRIOV" ] && [ "$BUILD_SRIOV" == "yes" ]; then
-    log_console_and_file "Skipping SRIOV phase."
+
+  if is_yes $BUILD_SRIOV; then
+    log_console_and_file "Building SRIOV."
     enable_sriov "$SRIOV_PCI_LIST" "$MAX_VFS_PER_PCI"
   fi
-  if [ -z "$BUILD_HUGEPAGES" ] && [ "$BUILD_HUGEPAGES" == "yes" ]; then
+  if is_yes $BUILD_HUGEPAGES; then
+    log_console_and_file "Building hugepages."
     build_hugepages "$BUILD_HUGEPAGES_LOG" "$PAGES" "$PAGES_1GB"
   fi
-  if [ -z "$BUILD_PTP" ] && [ "$BUILD_PTP" == "yes" ]; then
+  if is_yes "$BUILD_PTP"; then
+      log_console_and_file "Building ptp configuration."
       build_ptp "$BUILD_PTP_IPSEC_BUILD_LOG"
   fi
-  # will generate default network dhcp and static networks.
-  if [ -z "$BUILD_DEFAULT_NETWORK" ] && [ "$BUILD_DEFAULT_NETWORK" == "yes" ]; then
-      generate_default_network
-  fi
+
+  # generate default dhcp and if needed adapter with static
+  # ip address
+  generate_default_network
+
+  # generate adapter
+  build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" $DOT1Q_VLAN_TRUNK_PCI
 }
 
 main
