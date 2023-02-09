@@ -130,6 +130,8 @@ function main() {
   log "Copy data from $src_iso_dir/* to $dst_iso_dir/"
   cp -r "$src_iso_dir"/* "$dst_iso_dir"/
 
+  cp post.sh "$dst_iso_dir"/ > /dev/null
+
   local docker_files
   docker_files=$(cat "$additional_files" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
   local separator=' '
@@ -138,9 +140,10 @@ function main() {
   for img in "${docker_images[@]}"; do
       log "Copy $img to $dst_iso_dir"
       cp "$img" "$dst_iso_dir"
+      cat "$dst_iso_dir"/post.sh | sed "s/DOCKER_IMAGE=/DOCKER_IMAGE=\"$img/g" > post.sh
+      cp post.sh "$dst_iso_dir"/ > /dev/null
   done
 
-  cp post.sh "$dst_iso_dir"/ > /dev/null
   mkdir -p "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
   mkdir -p "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
   mkdir -p "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
