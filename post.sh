@@ -998,7 +998,7 @@ function build_dpdk() {
 
     log_console_and_file "linux-rt-devel $"
     # kernel source and DPDK, we're building with Intel and Mellanox driver.
-    local yum_tools=("linux-rt-devel" "linux-devel" "dkms" "stalld" "openssl-devel" "libmlx5" "dtc" "dtc-devel")
+    local yum_tools=("linux-rt-devel" "linux-devel" "dkms" "stalld" "openssl-devel" "libmlx5" "dtc" "dtc-devel" "meson")
     for yum_tool in "${yum_tools[@]}"
     do
       local is_installed
@@ -1011,7 +1011,7 @@ function build_dpdk() {
       fi
     done
 
-    yum --quiet -y install stalld dkms linux-devel linux-rt-devel dtc dtc-devel\
+    yum --quiet -y install stalld dkms linux-devel linux-rt-devel dtc dtc-devel meson \
     openssl-devel libmlx5 > "$log_file" 2>&1
     # first we check all tools in place.
     local dpdk_tools=("meson" "python3" "ninja")
