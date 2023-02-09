@@ -18,6 +18,9 @@
 # - automatically generate tuned profile , load.
 # spyroot@gmail.com
 # Author Mustafa Bayramov
+
+source shared.bash
+
 export LANG=en_US.UTF-8
 export LC_ALL=$LANG
 export PATH="$PATH":/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
@@ -30,9 +33,14 @@ MLNX_VER=5.4-1.0.3.0
 GREEN_CUSTOM='\033[0;32m'
 NC_CUSTOM='\033[0m'
 
-DOCKER_IMAGE=""
+DEFAULT_DOCKER_IMAGE=""
+if [ -z "$DOCKER_IMAGE" ]; then
+  log "DOCKER_IMAGE empty using default."
+  DOCKER_IMAGE=$DEFAULT_DOCKER_IMAGE
+fi
+
 # default image loaded.
-DEFAULT_DOKCER_IMAGE_DIR=""
+DEFAULT_DOKCER_IMAGE_DIR="/"
 DOCKER_IMAGE_PATH=$DEFAULT_DOKCER_IMAGE_DIR/$DOCKER_IMAGE
 DOCKER_IMAGE_NAME="vcu1"
 
@@ -70,6 +78,24 @@ WITH_QAT="yes"
 LOAD_VFIO="yes"
 SKIP_CLEANUP="yes"
 BUILD_LOAD_DOCKER_IMAGE="yes"
+
+if [ -z "$OVERWRITE_DPDK_BUILD" ]; then
+  log "Using default DPDK_BUILD."
+else
+  DPDK_BUILD=$OVERWRITE_DPDK_BUILD
+fi
+
+if [ -z "$OVERWRITE_DPDK_BUILD" ]; then
+  log "Using default DPDK_BUILD."
+else
+  DPDK_BUILD=$OVERWRITE_DPDK_BUILD
+fi
+
+if [ -z "$OVERWRITE_BUILD_SRIOV" ]; then
+  log "Using default BUILD_TUNED."
+else
+  BUILD_SRIOV=$OVERWRITE_BUILD_SRIOV
+fi
 
 # location where we get all tar.gz from cloned repos.
 DEFAULT_GIT_IMAGE_DIR="/git_images"
