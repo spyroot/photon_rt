@@ -3,7 +3,10 @@
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 
-export BUILD_TYPE="offline"
+if [ -z "$BUILD_TYPE" ]; then
+  export BUILD_TYPE="offline"
+fi
+
 # all direct rpms will download and stored in direct_rpms
 DEFAULT_RPM_DIR="direct_rpms"
 # all cloned and tar.gzed repos in git_repos
