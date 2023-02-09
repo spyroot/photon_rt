@@ -89,63 +89,71 @@ function clean_up() {
 }
 
 function main() {
+  local src_iso_dir=""
+  local dst_iso_dir=""
+  local additional_files=""
+  local kick_start_file=""
+  local full_path_kick_start=""
+  if [[ -z "$BUILD_TYPE" ]]; then
+    echo "Please make sure you have in shared\.bash BUILD_TYPE var"
+    exit 99
+  fi
+
   local DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
   if [[ -n "$BUILD_TYPE" ]]; then
     DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
   fi
 
-  DEFAULT_SRC_ISO_DIR=/tmp/$BUILD_TYPE_photon-iso
-  DEFAULT_DST_ISO_DIR=/tmp/$BUILD_TYPE_photon-ks-iso
-  ADDITIONAL_FILES=$DEFAULT_JSON_SPEC_DIR/additional_files.json
+  src_iso_dir=/tmp/"$BUILD_TYPE"_photon-iso
+  dst_iso_dir=/tmp/"$BUILD_TYPE"_photon-ks-iso
+  kick_start_file=$BUILD_TYPE"_ks.cfg"
+  additional_files=$DEFAULT_JSON_SPEC_DIR/additional_files.json
 
-  clean_up "$DEFAULT_DST_ISO_DIR" "$DEFAULT_SRC_ISO_DIR"
+  clean_up "$dst_iso_dir" "$src_iso_dir"
 
-  log "Source image tmp $DEFAULT_SRC_ISO_DIR"
-  log "Source image tmp $DEFAULT_DST_ISO_DIR"
+  log "Source image tmp $src_iso_dir"
+  log "Source image tmp $dst_iso_dir"
 
-  local KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
-  local CURRENT_KICKSTART=$workspace_dir/$KICK_START_FILE
+  kick_start_file=$BUILD_TYPE"_ks.cfg"
+  full_path_kick_start=$workspace_dir/$kick_start_file
 
-  mkdir -p "$DEFAULT_SRC_ISO_DIR"
-  mkdir -p /tmp/photon-ks-iso
+  mkdir -p "$src_iso_dir"
+  mkdir -p "$dst_iso_dir"
+  log "Mount $DEFAULT_SRC_IMAGE_NAME to $src_iso_dir"
+  mount "$DEFAULT_SRC_IMAGE_NAME" "$src_iso_dir" 2>/dev/null
 
-  log "Mount $DEFAULT_SRC_IMAGE_NAME to $DEFAULT_SRC_ISO_DIR"
-  mount "$DEFAULT_SRC_IMAGE_NAME" "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
-  mkdir -p /tmp/photon-ks-iso
-  log "Copy data from $DEFAULT_SRC_ISO_DIR/* to $DEFAULT_DST_ISO_DIR/"
-
+  log "Copy data from $src_iso_dir/* to $dst_iso_dir/"
   local docker_files
-  docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
-
+  docker_files=$(cat "$additional_files" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
   local separator=' '
   local docker_images=""
   IFS=$separator read -ra docker_images <<<"$docker_files"
   for img in "${docker_images[@]}"; do
-      log "Copy $img to $DEFAULT_DST_ISO_DIR"
-      cp "$img" $DEFAULT_DST_ISO_DIR
+      log "Copy $img to $dst_iso_dir"
+      cp "$img" "$dst_iso_dir"
   done
 
-  cp post.sh "$DEFAULT_DST_ISO_DIR"/
-  mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
-  mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
-  mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
+  cp post.sh "$dst_iso_dir"/
+  mkdir -p "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
+  mkdir -p "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
+  mkdir -p "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
-  log "Copy rpms from $DEFAULT_RPM_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_RPM_DST_DIR"
-  cp $DEFAULT_RPM_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
-  log "Copy git tar.gz from $DEFAULT_GIT_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_GIT_DST_DIR"
-  cp $DEFAULT_GIT_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
-  log "Copy arcs from $DEFAULT_ARC_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_ARC_DST_DIR"
-  cp $DEFAULT_ARC_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
+  log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
+  cp $DEFAULT_RPM_DIR/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
+  log "Copy git tar.gz from $DEFAULT_GIT_DIR to $dst_iso_dir / $DEFAULT_GIT_DST_DIR"
+  cp $DEFAULT_GIT_DIR/* "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
+  log "Copy arcs from $DEFAULT_ARC_DIR to $dst_iso_dir / $DEFAULT_ARC_DST_DIR"
+  cp $DEFAULT_ARC_DIR/* "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
-  log "Changing director to $DEFAULT_DST_ISO_DIR"
-  pushd "$DEFAULT_DST_ISO_DIR"/ || exit
-  log "Copy $CURRENT_KICKSTART to isolinux/ks.cfg"
-  if file_exists "$CURRENT_KICKSTART"; then
+  log "Changing director to $dst_iso_dir"
+  pushd "$dst_iso_dir"/ || exit
+  log "Copy $full_path_kick_start to isolinux/ks.cfg"
+  if file_exists "$full_path_kick_start"; then
     if file_exists "isolinux/ks.cfg"; then
       echo "Failed locate source ks"
       exit 99;
     fi
-    cp "$CURRENT_KICKSTART" isolinux/ks.cfg
+    cp "$full_path_kick_start" isolinux/ks.cfg
   fi
 
   generate_isolinux
