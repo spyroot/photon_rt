@@ -111,8 +111,8 @@ function main() {
 
   clean_up "$dst_iso_dir" "$src_iso_dir"
 
-  log "Source image tmp $src_iso_dir"
-  log "Source image tmp $dst_iso_dir"
+  log "Source image temp location $src_iso_dir"
+  log "Source image temp location $dst_iso_dir"
 
   kick_start_file=$BUILD_TYPE"_ks.cfg"
   full_path_kick_start=$workspace_dir/$kick_start_file
@@ -123,6 +123,8 @@ function main() {
   mount "$DEFAULT_SRC_IMAGE_NAME" "$src_iso_dir" 2>/dev/null
 
   log "Copy data from $src_iso_dir/* to $dst_iso_dir/"
+  cp -r "$DEFAULT_SRC_ISO_DIR"/* "$DEFAULT_DST_ISO_DIR"/
+
   local docker_files
   docker_files=$(cat "$additional_files" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
   local separator=' '
@@ -140,8 +142,10 @@ function main() {
 
   log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
   cp $DEFAULT_RPM_DIR/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
+
   log "Copy git tar.gz from $DEFAULT_GIT_DIR to $dst_iso_dir / $DEFAULT_GIT_DST_DIR"
   cp $DEFAULT_GIT_DIR/* "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
+
   log "Copy arcs from $DEFAULT_ARC_DIR to $dst_iso_dir / $DEFAULT_ARC_DST_DIR"
   cp $DEFAULT_ARC_DIR/* "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
