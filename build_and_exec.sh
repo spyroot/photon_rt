@@ -408,8 +408,11 @@ function print_and_validate_specs() {
 
   jq -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r repo; do
     mkdir -p direct
-    echo "Will git clone $repo"
+    print_value_green "Will git clone" "$repo"
   done
+
+  print_value_green "ISO builder will use" $DEFAULT_SRC_IMAGE_NAME
+  print_value_green "ISO builder will generate" "$DEFAULT_DST_IMAGE_NAME"
 
   echo "Verifying JSON files"
   jsonlint ks.ref.cfg

@@ -101,7 +101,7 @@ sed -i 's/default install/default my_unattended/g' /tmp/photon-ks-iso/isolinux/m
 mkisofs -quiet -R -l -L -D -b isolinux/isolinux.bin -c isolinux/boot.cat -log-file /tmp/mkisofs.log \
                 -no-emul-boot -boot-load-size 4 -boot-info-table \
                 -eltorito-alt-boot --eltorito-boot boot/grub2/efiboot.img -no-emul-boot \
-                -V "PHOTON_$(date +%Y%m%d)" . > "$workspace_dir"/$DEFAULT_DST_IMAGE_NAME
+                -V "PHOTON_$(date +%Y%m%d)" . > "$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
 popd || exit
 umount "$DEFAULT_SRC_ISO_DIR"
 log "Generated ISO in $workspace_dir/$DEFAULT_DST_IMAGE_NAME"
