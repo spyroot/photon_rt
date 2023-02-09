@@ -420,6 +420,9 @@ function print_and_validate_specs() {
     print_value_green "Will git clone" "$repo"
   done
 
+  log "Builder will copy to IOS files:"
+  cat $$ADDITIONAL_FILES | jq -c '.additional_files'
+
   print_value_green "Builder will generate:" "$KICK_START_FILE"
   print_value_green "ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
   print_value_green "ISO builder will generate:" "$DEFAULT_DST_IMAGE_NAME"
