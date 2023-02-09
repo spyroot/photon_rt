@@ -51,7 +51,8 @@ separator=' '
 docker_images=""
 IFS=$separator read -ra docker_images <<<"$docker_files"
 for img in "${docker_images[@]}"; do
-    echo "Image $img"
+    log "copy $img to $DEFAULT_DST_ISO_DIR"
+    cp "$img" $DEFAULT_DST_ISO_DIR
 done
 
 #cp -r "$DEFAULT_SRC_ISO_DIR"/* "$DEFAULT_DST_ISO_DIR"/
