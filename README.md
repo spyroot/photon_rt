@@ -41,7 +41,7 @@ In offline directory.
 
 [Specs]](https://github.com/spyroot/photon_rt/tree/main/offline)
 
-All specs JSON files. For example for DPKD we need meson, nasm and ninja build system
+All specs JSON files. For example for DPDK we need meson, nasm and ninja build system
 
 '''additional_direct_rpms.json
 [
