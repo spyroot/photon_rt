@@ -79,6 +79,7 @@ function generate_iso() {
 function clean_up() {
   local old_dst_image=$1
   local old_src_image_dir=$2
+  local generated_img_location=""
 
   log "Removing old build from $old_dst_image"
   rm -rf "$old_dst_image"
@@ -86,6 +87,9 @@ function clean_up() {
   umount -q "$old_src_image_dir" 2>/dev/null
   log "Removing old $old_src_image_dir"
   rm -rf "$old_src_image_dir" 2>/dev/null
+  generated_img_location="$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
+  rm -rf "$generated_img_location"
+  rm -rf "$generated_img_location".sha
 }
 
 function main() {
