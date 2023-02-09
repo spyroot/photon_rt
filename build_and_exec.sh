@@ -449,6 +449,11 @@ function print_and_validate_specs() {
 
 function main() {
 
+  # delete 0 byte files.
+  find direct_rpms/ -size 0c -delete
+  find docker_images/ -size 0c -delete
+  find direct/ -size 0c -delete
+
   print_and_validate_specs
   local choice
   read -r -p "Please check and confirm (y/n)?" choice
