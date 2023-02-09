@@ -58,6 +58,17 @@ function mac_random() {
   fi
 }
 
+function is_tar() {
+  local file_name=$1
+  local is_tar
+  is_tar=$(file "$file_name" | grep tar)
+  if [[ -z "$is_tar" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
 # function generate random
 # in case mac it read from /dev/random
 # in all other cases /proc/sys/kernel/random/uuid
@@ -94,16 +105,33 @@ function download() {
     if is_not_empty "$user"; then
         wget --user="$user" --password="$password" -b -nc "$url" -o "$rand_seq.log"
     else
-      wget -b -nc "$url" -o -O "$file_name".zip "$rand_seq.log"
+      wget -b -nc "$url" -o -O "$file_name" "$rand_seq.log"
     fi
   fi
 }
 
+# Function tar file to gz
+function compress_tar() {
+  local tar_filename=$1
+  if [ -f "$tar_filename" ]; then
+    if is_tar "$tar_filename"; then
+      echo "Compressing $tar_filename"
+      gzip -c "$tar_filename" > "$tar_filename.gz" >/dev/null 2>&1
+    fi
+  fi
+}
+
+#
 if is_not_empty "$BUILD_WEB_HOST"; then
   rm -rf ./*.log
   echo "Downloading images from $BUILD_WEB_HOST"
   download "$BUILD_WEB_HOST"/testnf/testnf-du-flexran-base210.tar "testnf-du-flexran-base210.tar"
-  download "$BUILD_WEB_HOST"/testnf/testnf-du-flexran-base210.tar "testnf-du-flexran-base210.tar"
+  download "$BUILD_WEB_HOST"/testnf/testnf-du-flexran-base220.tar "testnf-du-flexran-base220.tar"
   download "$BUILD_WEB_HOST"/testnf/testnf-du-lite210.tar "testnf-du-lite210.tar"
   download "$BUILD_WEB_HOST"/testnf/testnf-du-lite220.tar "testnf-du-lite220.tar"
 fi
+
+compress_tar "testnf-du-flexran-base210.tar"
+compress_tar "testnf-du-flexran-base220.tar"
+compress_tar "testnf-du-lite210.tar"
+compress_tar "testnf-du-lite220.tar"
