@@ -382,6 +382,7 @@ function download_direct() {
 }
 
 function print_and_validate_specs() {
+  echo "Build type $BUILD_TYPE"
   echo "Using $ADDITIONAL_FILES"
   echo "Using $ADDITIONAL_PACKAGES"
   echo "Using $ADDITIONAL_DIRECT_RPMS"
