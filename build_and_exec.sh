@@ -401,7 +401,7 @@ function print_and_validate_specs() {
   print_value_green "Will download" "$INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
   print_value_green "Will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
   print_value_green "Will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
-  print_value_green "All RPMS wil downloaded to" $DEFAULT_RPM_DIR"
+  print_value_green "All RPMS wil downloaded to" "$DEFAULT_RPM_DIR"
   print_value_green "All GIT tars will be wil downloaded to" "$ADDITIONAL_GIT_REPOS"
   print_value_green "All archive  will be wil downloaded to" "$ADDITIONAL_GIT_REPOS"
   print_value_green "All archive  will be wil downloaded to" "$DEFAULT_ARC_DIR"
