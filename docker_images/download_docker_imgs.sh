@@ -3,8 +3,12 @@
 # and HTTP
 #
 # export BUILD_WEB_HOST="http://my_server download_docker_imgs.sh
+# if you want remove tars if downloaded file tars.
+# export BUILD_WEB_HOST="http://my_server REMOVE_TAR="yes" download_docker_imgs.sh
 # spyroot@gmail.com
 # Author Mustafa Bayramov
+
+REMOVE_TAR="no"
 
 # Function check if string "yes"
 function is_yes() {
@@ -123,6 +127,9 @@ function compress_tar() {
     if is_tar "$tar_filename"; then
       echo "Compressing $tar_filename $tar_filename.gz"
       gzip -c "$tar_filename" > "$tar_filename.gz"
+      if is_yes "$REMOVE_TAR"; then
+        rm "$tar_filename"
+      fi
     fi
   fi
 }
