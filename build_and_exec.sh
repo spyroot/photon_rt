@@ -421,7 +421,9 @@ function print_and_validate_specs() {
   done
 
   log "Builder will copy to IOS files:"
-  cat $$ADDITIONAL_FILES | jq -c '.additional_files'
+  local additional_files
+  additional_files=$(cat $$ADDITIONAL_FILES | jq '.additional_files')
+  echo "$additional_files"
 
   print_value_green "Builder will generate:" "$KICK_START_FILE"
   print_value_green "ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
