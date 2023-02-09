@@ -105,7 +105,7 @@ function download() {
     if is_not_empty "$user"; then
         wget --user="$user" --password="$password" -b -nc "$url" -o "$rand_seq.log"
     else
-      wget -b -nc "$url" -o -O "$file_name" "$rand_seq.log"
+      wget -b -nc "$url" -O "$file_name" -o "$rand_seq.log"
     fi
   fi
 }
