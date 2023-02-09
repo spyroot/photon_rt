@@ -131,7 +131,8 @@ function main() {
   cp -r "$src_iso_dir"/* "$dst_iso_dir"/
 
   cp post.sh "$dst_iso_dir"/ > /dev/null
-  echo "" > "$dst_iso_dir"/overwrite.env
+  cp overwrite.env "$dst_iso_dir"/ > /dev/null
+  echo "" >> "$dst_iso_dir"/overwrite.env
 
   local docker_files
   docker_files=$(cat "$additional_files" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")

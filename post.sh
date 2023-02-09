@@ -81,23 +81,45 @@ SKIP_CLEANUP="yes"
 BUILD_LOAD_DOCKER_IMAGE="yes"
 
 if [ -z "$OVERWRITE_DPDK_BUILD" ]; then
-  log "Using default DPDK_BUILD."
+  echo "Using default DPDK_BUILD."
 else
   DPDK_BUILD=$OVERWRITE_DPDK_BUILD
 fi
-
-if [ -z "$OVERWRITE_DPDK_BUILD" ]; then
-  log "Using default DPDK_BUILD."
+if [ -z "$OVERWRITE_BUILD_TUNED" ]; then
+  echo "Using default BUILD_TUNED."
 else
-  DPDK_BUILD=$OVERWRITE_DPDK_BUILD
+  BUILD_TUNED=$OVERWRITE_BUILD_TUNED
 fi
-
 if [ -z "$OVERWRITE_BUILD_SRIOV" ]; then
-  log "Using default BUILD_TUNED."
+  echo "Using default BUILD_SRIOV."
 else
   BUILD_SRIOV=$OVERWRITE_BUILD_SRIOV
 fi
-
+if [ -z "$OVERWRITE_INTEL_BUILD" ]; then
+  echo "Using default BUILD_SRIOV."
+else
+  INTEL_BUILD=$OVERWRITE_INTEL_BUILD
+fi
+if [ -z "$OVERWRITE_IPSEC_BUILD" ]; then
+  echo "Using default BUILD_SRIOV."
+else
+  IPSEC_BUILD=$OVERWRITE_IPSEC_BUILD
+fi
+if [ -z "$OVERWRITE_BUILD_HUGEPAGES" ]; then
+  echo "Using default BUILD_SRIOV."
+else
+  BUILD_HUGEPAGES=$OVERWRITE_BUILD_HUGEPAGES
+fi
+if [ -z "$OVERWRITE_BUILD_PTP" ]; then
+  echo "Using default BUILD_SRIOV."
+else
+  BUILD_PTP=$OVERWRITE_BUILD_PTP
+fi
+if [ -z "$OVERWRITE_BUILD_TRUNK" ]; then
+  echo "Using default BUILD_SRIOV."
+else
+  BUILD_TRUNK=$OVERWRITE_BUILD_TRUNK
+fi
 # location where we get all tar.gz from cloned repos.
 DEFAULT_GIT_IMAGE_DIR="/git_images"
 
@@ -105,11 +127,34 @@ DEFAULT_GIT_IMAGE_DIR="/git_images"
 # each PCI resolved to respected ethX adapter
 SRIOV_PCI_LIST="pci@0000:51:00.0,pci@0000:51:00.1"
 MAX_VFS_PER_PCI=8
+# overwrite default pci list
+if [ -z "$OVERWRITE_SRIOV_PCI" ]; then
+  echo "Using default SRIOV_PCI_LIST."
+else
+  SRIOV_PCI_LIST=$OVERWRITE_SRIOV_PCI
+fi
+# overwrite max vs
+if [ -z "$OVERWRITE_MAX_VFS_PER_PCI" ]; then
+  echo "Using default MAX_VFS_PER_PCI."
+else
+  MAX_VFS_PER_PCI=$OVERWRITE_MAX_VFS_PER_PCI
+fi
 
 # list of vlan interface that we need create.
 # pci resolved to adapter that we want to use for a trunk
 DOT1Q_VLAN_ID_LIST="2000,2001"
 DOT1Q_VLAN_TRUNK_PCI="pci@0000:18:00.1"
+if [ -z "$OVERWRITE_DOT1Q_VLAN_ID_LIST" ]; then
+  echo "Using default DOT1Q_VLAN_ID_LIST."
+else
+  DOT1Q_VLAN_ID_LIST=$OVERWRITE_DOT1Q_VLAN_ID_LIST
+fi
+if [ -z "$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI" ]; then
+  echo "Using default DOT1Q_VLAN_TRUNK_PCI."
+else
+  DOT1Q_VLAN_TRUNK_PCI=$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI
+fi
+
 # prefix used to generate each trunk ethernet and netdev
 DOT1Q_SYSTEMD_DEFAULT_PREFIX="10-vlan"
 DOT1Q_ETH_NAME="main"
