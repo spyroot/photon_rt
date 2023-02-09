@@ -80,41 +80,51 @@ LOAD_VFIO="yes"
 SKIP_CLEANUP="yes"
 BUILD_LOAD_DOCKER_IMAGE="yes"
 
+# overwrite for dpkd
 if [ -z "$OVERWRITE_DPDK_BUILD" ]; then
   echo "Using default DPDK_BUILD."
 else
   DPDK_BUILD=$OVERWRITE_DPDK_BUILD
 fi
+# overwrite for tuned
 if [ -z "$OVERWRITE_BUILD_TUNED" ]; then
   echo "Using default BUILD_TUNED."
 else
   BUILD_TUNED=$OVERWRITE_BUILD_TUNED
 fi
+# overwrite for sriov
 if [ -z "$OVERWRITE_BUILD_SRIOV" ]; then
   echo "Using default BUILD_SRIOV."
 else
   BUILD_SRIOV=$OVERWRITE_BUILD_SRIOV
 fi
+# overwrite for intel driver
 if [ -z "$OVERWRITE_INTEL_BUILD" ]; then
   echo "Using default BUILD_SRIOV."
 else
   INTEL_BUILD=$OVERWRITE_INTEL_BUILD
 fi
+# overwrite for ipsec lib
 if [ -z "$OVERWRITE_IPSEC_BUILD" ]; then
   echo "Using default BUILD_SRIOV."
 else
   IPSEC_BUILD=$OVERWRITE_IPSEC_BUILD
 fi
+# overwrite for hugepages
 if [ -z "$OVERWRITE_BUILD_HUGEPAGES" ]; then
   echo "Using default BUILD_SRIOV."
 else
   BUILD_HUGEPAGES=$OVERWRITE_BUILD_HUGEPAGES
 fi
+
+# overwrite for ptp
 if [ -z "$OVERWRITE_BUILD_PTP" ]; then
   echo "Using default BUILD_SRIOV."
 else
   BUILD_PTP=$OVERWRITE_BUILD_PTP
 fi
+
+# build trunk overwrite
 if [ -z "$OVERWRITE_BUILD_TRUNK" ]; then
   echo "Using default BUILD_SRIOV."
 else
@@ -132,12 +142,14 @@ if [ -z "$OVERWRITE_SRIOV_PCI" ]; then
   echo "Using default SRIOV_PCI_LIST."
 else
   SRIOV_PCI_LIST=$OVERWRITE_SRIOV_PCI
+  echo "Change sriov vfs to $SRIOV_PCI_LIST"
 fi
 # overwrite max vs
 if [ -z "$OVERWRITE_MAX_VFS_PER_PCI" ]; then
   echo "Using default MAX_VFS_PER_PCI."
 else
   MAX_VFS_PER_PCI=$OVERWRITE_MAX_VFS_PER_PCI
+  echo "Change max vfs to $MAX_VFS_PER_PCI"
 fi
 
 # list of vlan interface that we need create.
@@ -148,11 +160,14 @@ if [ -z "$OVERWRITE_DOT1Q_VLAN_ID_LIST" ]; then
   echo "Using default DOT1Q_VLAN_ID_LIST."
 else
   DOT1Q_VLAN_ID_LIST=$OVERWRITE_DOT1Q_VLAN_ID_LIST
+  echo "Change default VLAN ID LIST to $DOT1Q_VLAN_ID_LIST"
 fi
+
 if [ -z "$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI" ]; then
   echo "Using default DOT1Q_VLAN_TRUNK_PCI."
 else
   DOT1Q_VLAN_TRUNK_PCI=$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI
+  echo "Change default PCI address for dot1q to $DOT1Q_VLAN_TRUNK_PCI"
 fi
 
 # prefix used to generate each trunk ethernet and netdev
