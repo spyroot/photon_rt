@@ -404,9 +404,12 @@ function print_and_validate_specs() {
   print_value_green "Will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
 
   print_value_green "WIll download RPMS, read spec from" "$DEFAULT_RPM_DIR"
+  total_rpms=$(cat "$ADDITIONAL_DIRECT_RPMS" | jq '. | length')
+  print_value_green "Number of direct rpms in rpms spec" "$total_rpms"
   total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
-  print_value_green "Number of rpms in rpms spec" "$total_rpms"
-
+  print_value_green "Number of additional rpms in additional spec" "$total_rpms"
+  total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
+  print_value_green "Number of additional rpms in additional spec" "$total_rpms"
 
   print_value_green "All archive read from spec " "$ADDITIONAL_GIT_REPOS"
   print_value_green "All archive downloaded spec read from" "$DEFAULT_ARC_DIR"
