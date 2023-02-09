@@ -33,6 +33,11 @@ then
 exit 2
 fi
 
+function file_exists {
+  local -r a_file="$1"
+  [[ -f "$a_file" ]]
+}
+
 workspace_dir=$(pwd)
 rm "$DEFAULT_DST_IMAGE_NAME" 2>/dev/null
 umount -q "$DEFAULT_SRC_ISO_DIR"  2>/dev/null
