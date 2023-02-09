@@ -370,9 +370,7 @@ function download_rpms() {
     jq --raw-output -c '.[]' "$ADDITIONAL_DIRECT_RPMS" | while read -r rpm_pkg; do
       mkdir -p $DEFAULT_RPM_DIR
       local url_target
-      pkg_name="$rpm_pkg"
-      echo "$pkg_name"
-      if  [[ "$pkg_name" == *"noarch"* ]]; then
+      if  echo "$rpm_pkg" | grep noarch; then
             url_target="$DEFAULT_NOARCH_PACAKGE_LOCATION${rpm_pkg}.rpm"
       else
             url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
