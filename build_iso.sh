@@ -70,9 +70,17 @@ cp $DEFAULT_ARC_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
 KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
 CURRENT_KICKSTART=$workspace_dir/$KICK_START_FILE
 
-log "Copy $CURRENT_KICKSTART to isolinux/ks.cfg"
+log "Caning director to $DEFAULT_DST_ISO_DIR"
+
 pushd "$DEFAULT_DST_ISO_DIR"/ || exit
-cp "$CURRENT_KICKSTART" isolinux/ks.cfg
+log "Copy $CURRENT_KICKSTART to isolinux/ks.cfg"
+if file_exists "$CURRENT_KICKSTART"; then
+  if file_exists "isolinux/ks.cfg"; then
+    echo "Failed locate source ks"
+    exit 99;
+  fi
+  cp "$CURRENT_KICKSTART" isolinux/ks.cfg
+fi
 
 # generate isolinux
 cat > isolinux/isolinux.cfg << EOF
