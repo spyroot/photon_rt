@@ -7,9 +7,11 @@ In the case of a VM, the ISO is used to boot the VM and install OS from kick-sta
 is an unattended installation.  Thus, In both cases, the automated build system, first build a reference iso file.  
 For example local directory contains ph4-rt-refresh.iso. or system fetch the reference ISO from the web. 
 
-## What it builds system ?
+## What it builds  ?
 
-An automated system consists build three phases. 
+An automated system for VMware Real time Photon OS version 4 and 5 and 
+consists build three phases. Make sure you familiar with Photon OS itself.
+https://github.com/vmware/photon
 
 Phase one system generates reference kick-start ISO. During this phase
 We decided to build an online or offline version.
