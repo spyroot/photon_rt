@@ -182,7 +182,7 @@ function generate_kick_start() {
   generate_key_if_need
 
   # read additional_packages and add required.
-  [ ! -f $ADDITIONAL_PACKAGES ] && {
+  [ ! -f "$ADDITIONAL_PACKAGES" ] && {
     echo "$ADDITIONAL_PACKAGES file not found"
     exit 99
   }
@@ -218,7 +218,7 @@ function generate_kick_start() {
   jsonlint $current_ks_phase
 
   # adjust installation and adds additional rpms located on remote location.
-  [ ! -f $ADDITIONAL_REMOTE_RPMS ] && {
+  [ ! -f "$ADDITIONAL_REMOTE_RPMS" ] && {
     echo "$ADDITIONAL_REMOTE_RPMS file not found"
     exit 99
   }

@@ -12,8 +12,14 @@ source shared.bash
 echo "$DEFAULT_SRC_IMAGE_NAME"
 echo "$DEFAULT_DST_IMAGE_NAME"
 
+DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
+if [[ -n "$BUILD_TYPE" ]]; then
+  DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
+fi
+
 DEFAULT_SRC_ISO_DIR="/tmp/photon-iso"
 DEFAULT_DST_ISO_DIR="/tmp/photon-ks-iso"
+ADDITIONAL_FILES=$DEFAULT_JSON_SPEC_DIR/additional_files.json
 
 log() {
   printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
@@ -39,6 +45,8 @@ mount "$DEFAULT_SRC_IMAGE_NAME" "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
 
 mkdir -p /tmp/photon-ks-iso
 log "Copy data from $DEFAULT_SRC_ISO_DIR/* to $DEFAULT_DST_ISO_DIR/"
+
+docker_files=$(cat $ADDITIONAL_FILES | jq '.additional_files[][]'|xargs -I {} echo "docker_images{}")
 
 cp -r "$DEFAULT_SRC_ISO_DIR"/* "$DEFAULT_DST_ISO_DIR"/
 if [[ -z "$DEFAULT_DOCKER_IMAGES" ]]; then
