@@ -22,13 +22,17 @@ DEFAULT_GIT_DIR="git_images"
 # all downloaded tar.gz ( drivers and other arc) will be in direct.
 DEFAULT_ARC_DIR="direct"
 
+# default location for spec folder
+DEFAULT_SPEC_FOLDER="specs"
+# default location for docker images
+DEFAULT_DOCKER_IMAGES="docker_images"
 # this directory will be created inside ISO
 DEFAULT_RPM_DST_DIR="direct_rpms"
 # this directory will be created inside ISO
 DEFAULT_GIT_DST_DIR="git_images"
 # this directory will be created inside ISO
 DEFAULT_ARC_DST_DIR="direct"
-
+#
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'

@@ -41,7 +41,10 @@ mkdir -p /tmp/photon-ks-iso
 log "Copy data from $DEFAULT_SRC_ISO_DIR/* to $DEFAULT_DST_ISO_DIR/"
 
 cp -r "$DEFAULT_SRC_ISO_DIR"/* "$DEFAULT_DST_ISO_DIR"/
-cp docker_images/*.tar.gz "$DEFAULT_DST_ISO_DIR"/
+if [[ -z "$DEFAULT_DOCKER_IMAGES" ]]; then
+  cp "$DEFAULT_DOCKER_IMAGES"/*.tar.gz "$DEFAULT_DST_ISO_DIR"/
+fi
+
 cp post.sh "$DEFAULT_DST_ISO_DIR"/
 
 mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"

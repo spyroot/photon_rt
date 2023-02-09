@@ -90,9 +90,9 @@ if [[ -n "$PHOTON_5_X86" ]]; then
 fi
 
 # this default type
-DEFAULT_JSON_SPEC_DIR="online"
+DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
 if [[ -n "$BUILD_TYPE" ]]; then
-  DEFAULT_JSON_SPEC_DIR=$BUILD_TYPE
+  DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
 fi
 
 # default hostname
