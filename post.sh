@@ -490,6 +490,22 @@ function is_tar() {
   fi
 }
 
+# Function check if device mounted
+# Usage:
+# if is_mounted "cdrom"; then
+#     echo "cdrom mounted"
+# fi
+is_cdrom_mounted() {
+  local dev=$1
+  local is_mounted
+  is_mounted=$(mount | grep "$dev")
+  if [[ -z "$is_mounted" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
 # Function check if image already loaded
 # Usage:
 # if is_docker_image_present "spyroot/photon_iso_builder"; then
@@ -1557,10 +1573,11 @@ function main() {
 
 main
 
-if [ -z "$DO_REBOOT" ] && [ "$DO_REBOOT" == "yes" ]; then
+if is_cdrom_mounted "cdrom"; then
+  umount /dev/cdrom
+fi
+
+if is_yes "$DO_REBOOT"; then
   reboot
 fi
 
-if [ -z "$DO_EJECT" ] && [ "$DO_EJECT" == "yes" ]; then
-  umount /dev/cdrom
-fi
