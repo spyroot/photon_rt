@@ -135,7 +135,7 @@ function main() {
       cp "$img" "$dst_iso_dir"
   done
 
-  cp post.sh "$dst_iso_dir"/
+  cp post.sh "$dst_iso_dir"/ > /dev/null
   mkdir -p "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
   mkdir -p "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
   mkdir -p "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
@@ -165,7 +165,7 @@ function main() {
   generate_grub
 
   popd || exit
-  umount "$src_iso_dir"
+  umount "$src_iso_dir" > /dev/null
   log "Generated ISO in $workspace_dir/$DEFAULT_DST_IMAGE_NAME"
 }
 
