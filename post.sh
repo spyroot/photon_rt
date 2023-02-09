@@ -24,8 +24,11 @@ export PATH="$PATH":/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 rm -rf /build/*
 rm -rf rm /root/build/dpdk-21.11/build
 
+# version we are using for IAVF and Mellanox
 AVX_VERSION=4.5.3
 MLNX_VER=5.4-1.0.3.0
+
+# default image loaded.
 DOCKER_IMAGE_PATH="/vcu1.tar.gz"
 DOCKER_IMAGE_NAME="vcu1"
 
@@ -52,7 +55,6 @@ BUILD_TRUNK="yes"
 BUILD_DEFAULT_NETWORK="yes"
 BUILD_STATIC_ADDRESS="no"
 BUILD_TRUNK="yes"
-
 WITH_QAT="yes"
 LOAD_VFIO="yes"
 SKIP_CLEANUP="yes"
@@ -105,14 +107,17 @@ ISA_L_LOCATION"https://github.com/intel/isa-l"
 # mirror for all online files.
 # drivers etc.
 DPDK_URL_LOCATIONS=(
-  "http://fast.dpdk.org/rel/dpdk-21.11.tar.xz" "https://drive.google.com/u/0/uc?id=1EllCI6gkZ3O70CXAXW9F4QCFD6IrGgZx&export=download&confirm=1e-b")
+  "http://fast.dpdk.org/rel/dpdk-21.11.tar.xz"
+  "https://drive.google.com/u/0/uc?id=1EllCI6gkZ3O70CXAXW9F4QCFD6IrGgZx&export=download&confirm=1e-b")
 # Lib NL
 LIB_NL_LOCATION=(
-  "https://www.infradead.org/~tgr/libnl/files/libnl-3.2.25.tar.gz" "https://www.infradead.org/~tgr/libnl/files/libnl-3.2.25.tar.gz"
+  "https://www.infradead.org/~tgr/libnl/files/libnl-3.2.25.tar.gz"
+  "https://www.infradead.org/~tgr/libnl/files/libnl-3.2.25.tar.gz"
 )
 # Mellanox IAVF driver
 IAVF_LOCATION=(
-  "https://downloadmirror.intel.com/738727/iavf-$AVX_VERSION.tar.gz" "https://downloadmirror.intel.com/738727/iavf-$AVX_VERSION.tar.gz"
+  "https://downloadmirror.intel.com/738727/iavf-$AVX_VERSION.tar.gz"
+  "https://downloadmirror.intel.com/738727/iavf-$AVX_VERSION.tar.gz"
 )
 # Mellanox OFED driver
 MELLANOX_LOCATION=(
@@ -141,7 +146,6 @@ BUILD_DPDK_LOG="$BUILD_LOG_LOG/build_dpdk.log"
 BUILD_TUNED_LOG="$BUILD_LOG_LOG/build_tuned.log"
 BUILD_HUGEPAGES_LOG="$BUILD_LOG_LOG/build_hugepages.log"
 BUILD_PTP_IPSEC_BUILD_LOG="$BUILD_LOG_LOG/build_ipsec.log"
-BUILD_VLAN_TRUNK_BUILD_LOG="$BUILD_LOG_LOG/vlan_trunk.log"
 DEFAULT_BUILDER_LOG="$BUILD_LOG_LOG/build_main.log"
 
 # Variable for static network
@@ -153,10 +157,12 @@ STATIC_ETHn_GATEWAY="192.168.254.254"
 STATIC_ETHn_STATIC_DNS="8.8.8.8"
 
 # Functions definition,  scroll down to main.
+#
+#
+#
 
-#
-#
-# remove all spaces from a string
+
+# Function checks if string contains yes or not
 function is_yes() {
   local var=$1
   if [[ -z "$var" ]]; then
@@ -170,7 +176,7 @@ function is_yes() {
   fi
 }
 
-
+# Function check if string empty or not
 function is_not_empty() {
   local var=$1
   if [[ -z "$var" ]]; then
@@ -180,6 +186,7 @@ function is_not_empty() {
   fi
 }
 
+# Function removes blacks
 function remove_all_spaces {
   local str=$1
   echo "${str//[[:blank:]]/}"
@@ -205,7 +212,7 @@ function is_cmd_installed {
   command -v "$cmd_name" > /dev/null
 }
 
-# trim spaces from input str, filters pci device tree
+# Function trim spaces from input str, filters pci device tree
 # by type network and return name of all adapter.
 # pci_to_adapter pci@0000:8a:00.0 return -> eth3
 function pci_to_adapter() {
@@ -430,7 +437,31 @@ function enable_sriov() {
   done
 }
 
-# Functon load docker image
+# Function check if image already loaded
+function is_tar() {
+  local file_name=$1
+  local is_tar
+  is_tar=$(file "$file_name" | grep tar)
+  if [[ -z "$is_tar" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+# Function check if image already loaded
+function is_docker_image_present() {
+  local image_name=$1
+  local docker_image
+  docker_image=$(docker image ls | grep spyroot/photon_iso_builder)
+  if [[ -z "$is_tar" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+# Function load docker image
 # First argument is log file, docker image name, image path.
 # load_docker_image /builder/build_docker.log image_name, image_path
 function build_docker_images() {
@@ -441,15 +472,13 @@ function build_docker_images() {
   if file_exists "$docker_image_path"; then
     log_console_and_file "Loading docker image $docker_image_path"
   else
-    echo "File $file_exists not found."
+    echo "File $docker_image_path not found."
   fi
 
   if [ -z "$BUILD_LOAD_DOCKER_IMAGE" ]; then
     log_console_and_file "Skipping docker load phase."
   else
-    if [ -z "$docker_image_name" ]; then
-      log_console_and_file "Skipping docker load phase."
-    else
+    if is_not_empty; then
       log_console_and_file "Enabling docker services."
       systemctl enable docker
       systemctl start docker
