@@ -108,7 +108,7 @@ MLX_DIR=/tmp/mlnx_ofed_src
 INTEL_DIR=/tmp/iavf
 
 # all logs
-BUILD_LOG_LOG="$/build/"
+BUILD_LOG_LOG="/build"
 BUILD_MELLANOX_LOG="$BUILD_LOG_LOG/build_mellanox_driver.log"
 BUILD_INTEL_LOG="$BUILD_LOG_LOG/build_intel_driver.log"
 BUILD_DOCKER_LOG="$BUILD_LOG_LOG/build_docker_images.log"
@@ -146,6 +146,16 @@ function is_yes() {
     else
       return 1
     fi
+  fi
+}
+
+
+function is_not_empty() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    return 0
   fi
 }
 
@@ -1218,6 +1228,8 @@ function fetch_file() {
   fi
 }
 
+
+
 # Function generate dhcp, by default generate masked for e*
 # if arg: provided will use that arg as Match
 function generate_dhcp_network() {
@@ -1226,8 +1238,7 @@ function generate_dhcp_network() {
   if [ -z "$eth_mask" ]; then
     eth_mask=$default_mask
   fi
-
-  cat > /etc/systemd/network/99-dhcp-en.network << EOF
+  cat >"$DEFAULT_SYSTEMD_PATH/$DEFAULT_DHCP_NET_NAME" <<EOF
 [Match]
 Name=$eth_mask
 [Network]
@@ -1236,32 +1247,128 @@ IPv6AcceptRA=no
 EOF
 }
 
+# function generate static network
+# args eth name ,IP address , gateway, DNS
 function generate_static_network() {
-  local eth_name=$1
-  cat > /etc/systemd/network/99-dhcp-en.network << EOF
+  local adapter_name=$1
+  local address=$2
+  local gateway=$3
+  local dns=$4
+  log_console_and_file "$DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network"
+  cat >"$DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network" <<EOF
 [Match]
-Name=$eth_name
+Name=$adapter_name
 [Network]
-Address=$STATIC_ETHn_ADDRESS
-Gateway=$STATIC_ETHn_GATEWAY
-DNS=$STATIC_ETHn_STATIC_DNS
+Address=$address
+Gateway=$gateway
+DNS=$dns
 EOF
 }
 
 # Function, this a backup if Photon OS
 # never adjusted network
 function generate_default_network() {
-  generate_dhcp_network "e*"
-
-  if [ -z "$BUILD_STATIC_ADDRESS" ] && [ "$BUILD_STATIC_ADDRESS" == "yes" ]; then
-      # if all vars defined
-      if [ -z "$STATIC_ETHn_NAME" ] &&
-      [ -z "$STATIC_ETHn_ADDRESS" ] &&
-      [ -z "$STATIC_ETHn_GATEWAY" ]  &&
-      [ -z "$STATIC_ETHn_STATIC_DNS" ]; then
-         generate_static_network $STATIC_ETHn_NAME
-      fi
+  # generate default dhcp network
+  if is_yes $BUILD_DEFAULT_NETWORK; then
+    generate_dhcp_network "e*"
   fi
+  # generate all static networks
+  if is_yes $BUILD_STATIC_ADDRESS; then
+    if is_not_empty $STATIC_ETHn_NAME &&
+      is_not_empty $STATIC_ETHn_ADDRESS &&
+      is_not_empty $STATIC_ETHn_GATEWAY &&
+      is_not_empty $STATIC_ETHn_STATIC_DNS; then
+      log_console_and_file "generating static network for $STATIC_ETHn_NAME"
+      generate_static_network "$STATIC_ETHn_NAME" \
+        "$STATIC_ETHn_ADDRESS" \
+        "$STATIC_ETHn_GATEWAY" \
+        "$STATIC_ETHn_STATIC_DNS"
+    fi
+  fi
+}
+
+function generate_vlan_netdev() {
+  local vlan_id=$1
+  if is_not_empty vlan_id; then
+    log_console_and_file "Generating $DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev"
+    cat >"$DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev" <<EOF
+[NetDev]
+Name=VLAN$vlan_id
+Kind=vlan
+[VLAN]
+Id=$vlan_id
+EOF
+  fi
+}
+
+function generate_vlan_network() {
+  local vlan_id=$1
+  if is_not_empty vlan_id; then
+    log_console_and_file "Generating $DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.network"
+    cat >"$DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.network" <<EOF
+[Match]
+Name=VLAN$vlan_id
+Type=vlan
+[Network]
+Description=generated vlan config
+[Address]
+Address=DHCP
+EOF
+  fi
+}
+
+function generate_ether_adapter() {
+  local trunk_eth_name=$1
+  local lld=$2
+  local emit_lld=$3
+  if is_not_empty trunk_eth_name; then
+    log_console_and_file "Generating $DEFAULT_SYSTEMD_PATH/00-$trunk_eth_name.network"
+    cat >"$DEFAULT_SYSTEMD_PATH/00-$trunk_eth_name.network" <<EOF
+[Match]
+Name=$trunk_eth_name
+Type=ether
+[Network]
+Description=physical ethernet device
+LLDP=$lld
+EmitLLDP=$emit_lld
+EOF
+  fi
+}
+
+
+
+#
+# Function create vlan interface
+function build_vlans_ifs() {
+  local vlan_id_list=$1
+  local if_name=$2
+  if is_yes $BUILD_TRUNK && is_not_empty $DOT1Q_VLAN_TRUNK_PCI; then
+    local trunk_eth_name
+    trunk_eth_name=$(pci_to_adapter "$DOT1Q_VLAN_TRUNK_PCI")
+    if [ -z "$trunk_eth_name" ]; then
+      log_console_and_file "Failed resolve PCI $DOT1Q_VLAN_TRUNK_PCI address for vlan trunk."
+    fi
+
+    local vlan_ids=""
+    local separator=','
+    IFS=$separator read -ra vlan_ids <<<"$vlan_id_list"
+    # first for all VLANs we generate all netdev
+    for vlan_id in "${vlan_ids[@]}"; do
+      generate_vlan_netdev "$vlan_id"
+    done
+    # generate ether adapter with LLDP on or off etc.
+    generate_ether_adapter "$if_name" $LLDP $LLDP_EMIT
+    IFS=$separator read -ra vlan_ids <<<"$vlan_id_list"
+    for vlan_id in "${vlan_ids[@]}"; do
+      echo "VLAN=VLAN$vlan_id" >> "$DEFAULT_SYSTEMD_PATH/00-$if_name.network"
+    done
+    IFS=$separator read -ra vlan_ids <<<"$vlan_id_list"
+    for vlan_id in "${vlan_ids[@]}"; do
+      generate_vlan_network "$vlan_id"
+      echo "VLAN=VLAN$vlan_id" >> "$DEFAULT_SYSTEMD_PATH/00-$if_name.network"
+    done
+  fi
+  # systemctl restart systemd-networkd
 }
 
 
