@@ -115,8 +115,8 @@ function compress_tar() {
   local tar_filename=$1
   if [ -f "$tar_filename" ]; then
     if is_tar "$tar_filename"; then
-      echo "Compressing $tar_filename"
-      gzip -c "$tar_filename" > "$tar_filename.gz" >/dev/null 2>&1
+      echo "Compressing $tar_filename $tar_filename.gz"
+      gzip -c "$tar_filename" > "$tar_filename.gz"
     fi
   fi
 }
