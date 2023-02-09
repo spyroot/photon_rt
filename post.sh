@@ -49,6 +49,7 @@ BUILD_SRIOV="yes"
 BUILD_HUGEPAGES="yes"
 BUILD_PTP="yes"
 BUILD_TRUNK="yes"
+BUILD_DEFAULT_NETWORK="yes"
 BUILD_STATIC_ADDRESS="no"
 WITH_QAT="yes"
 LOAD_VFIO="yes"
@@ -1387,7 +1388,10 @@ function main() {
   if [ -z "$BUILD_PTP" ] && [ "$BUILD_PTP" == "yes" ]; then
       build_ptp "$BUILD_PTP_IPSEC_BUILD_LOG"
   fi
-
+  # will generate default network dhcp and static networks.
+  if [ -z "$BUILD_DEFAULT_NETWORK" ] && [ "$BUILD_DEFAULT_NETWORK" == "yes" ]; then
+      generate_default_network
+  fi
 }
 
 main
