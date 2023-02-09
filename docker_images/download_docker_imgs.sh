@@ -1,4 +1,10 @@
 #!/bin/bash
+# This scripts image from remote host SCP
+# and HTTP
+#
+# export BUILD_WEB_HOST="http://my_server download_docker_imgs.sh
+# spyroot@gmail.com
+# Author Mustafa Bayramov
 
 # Function check if string "yes"
 function is_yes() {
