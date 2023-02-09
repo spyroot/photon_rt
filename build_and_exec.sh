@@ -438,6 +438,7 @@ function print_and_validate_specs() {
   jsonlint "$DOCKER_LOAD_POST_INSTALL"
   jsonlint "$ADDITIONAL_GIT_REPOS"
   jsonlint "$ADDITIONAL_REMOTE_RPMS"
+  print_value_green "All JSON looks ok" ""
 }
 
 function main() {
