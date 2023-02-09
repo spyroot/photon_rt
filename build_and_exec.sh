@@ -414,6 +414,7 @@ function print_and_validate_specs() {
 
   print_value_green "All archive read from spec " "$ADDITIONAL_GIT_REPOS"
   print_value_green "All archive downloaded spec read from" "$DEFAULT_ARC_DIR"
+  print_value_green "All git clone will be downloaded:" "$DEFAULT_GIT_DIR"
 
   jq -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r repo; do
     mkdir -p direct
