@@ -52,10 +52,9 @@ separator=' '
 docker_images=""
 IFS=$separator read -ra docker_images <<<"$docker_files"
 for img in "${docker_images[@]}"; do
-    log "copy $img to $DEFAULT_DST_ISO_DIR"
+    log "Copy $img to $DEFAULT_DST_ISO_DIR"
     cp "$img" $DEFAULT_DST_ISO_DIR
 done
-
 
 cp post.sh "$DEFAULT_DST_ISO_DIR"/
 mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
@@ -69,11 +68,10 @@ cp $DEFAULT_GIT_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
 log "Copy arcs from $DEFAULT_ARC_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_ARC_DST_DIR"
 cp $DEFAULT_ARC_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
 KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
-log "Copy arcs from $DEFAULT_ARC_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_ARC_DST_DIR"
+CURRENT_KICKSTART=$workspace_dir/$KICK_START_FILE
 
-pushd "$DEFAULT_DST_ISO_DIR"/ || exit
-CURRENT_KICKSTART="$workspace_dir"/"$KICK_START_FILE"
 log "Copy $CURRENT_KICKSTART to isolinux/ks.cfg"
+pushd "$DEFAULT_DST_ISO_DIR"/ || exit
 cp "$CURRENT_KICKSTART" isolinux/ks.cfg
 
 # generate isolinux
