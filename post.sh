@@ -619,6 +619,15 @@ function build_mellanox_driver() {
   then
       log_console_and_file "Skipping Mellanox driver build."
   else
+    if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building mellanox driver from $build_dir (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+    fi
     cd "$build_dir" || exit; tar -zxvf MLNX_OFED_SRC-debian-* -C  mlnx_ofed_src --strip-components=1 > "$log_file" 2>&1
   fi
 }
@@ -634,6 +643,15 @@ function build_intel_iavf() {
   then
       log_console_and_file "Skipping intel driver build."
   else
+    if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building intel iavf driver from $build_dir (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+    fi
     mkdir -p "$build_dir"
     cd "$build_dir" || exit; tar -zxvf iavf-* -C iavf --strip-components=1 > "$log_file" 2>&1
     cd "$build_dir"/src || exit; make > "$log_file" 2>&1; make install > "$log_file.iavf.install.log" 2>&1
@@ -675,6 +693,15 @@ function build_lib_nl() {
   if [ -z "$LIBNL_BUILD" ]; then
     log_console_and_file "Skipping libnl driver build"
   else
+    if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building lib nl in $build_dir parallel build 8 (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+    fi
     log_console_and_file "Extracting libnl to $build_dir"
     cd "$build_dir" || exit; tar -zxvf libnl-*.tar.gz -C libnl --strip-components=1 > "$log_file" 2>&1
     cd "$build_dir" || exit
@@ -695,13 +722,23 @@ function build_lib_isa() {
   if [ -z "$LIBNL_ISA" ]; then
     log_console_and_file "Skipping isa-l driver build"
   else
+     if is_yes "$IS_INTERACTIVE"; then
+        local choice
+        read -r -p "Building lib isa in $LIB_ISAL_TARGET_DIR_BUILD parallel build 8 (y/n)?" choice
+        case "$choice" in
+        y | Y) echo "yes" ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+    fi
      if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
-        log_console_and_file "Building isa-l from local copy."
-        tar xfz tar xfz /git_images/isa-l.tar.gz -C /root/build --strip-components=1
+        log_console_and_file "Building isa-l from local from $DEFAULT_GIT_IMAGE_DIR copy."
+        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* -C $ROOT_BUILD --strip-components=1
     else
-      log_console_and_file "Building isa-l lib from a git copy."
+      log_console_and_file "Building isa-l lib from a git."
       cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
     fi
+    mkdir -p $LIB_ISAL_TARGET_DIR_BUILD
     cd $LIB_ISAL_TARGET_DIR_BUILD || exit
     chmod 700 autogen.sh && ./autogen.sh > "$log_file" 2>&1
     ./configure > "$log_file" 2>&1
@@ -718,6 +755,8 @@ function build_dpdk() {
     local log_file=$1
     local build_dir=$2
     local custom_kern_prefix=$3
+    local build_flags="-Dplatform=native -Dexamples=all -Denable_kmods=true -Dibverbs_link=shared -Dwerror=true"
+
     touch "$log_file" 2>/dev/null
     local default_kernel_prefix="/usr/src/linux-headers-"
 
@@ -753,6 +792,18 @@ function build_dpdk() {
       kernel_src_path=$default_kernel_prefix$target_system
       meson_build_dir=$build_dir/"build"
 
+      if is_yes "$IS_INTERACTIVE"; then
+        echo "Using kernel $kernel_src_path meson build location $meson_build_dir"
+        echo "Using $build_flags"
+
+        local choice
+        read -r -p "Building DPDK isa in $LIB_ISAL_TARGET_DIR_BUILD parallel build 8 (y/n)?" choice
+        case "$choice" in
+        y | Y) echo "yes" ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+      fi
       log_console_and_file "Building DPDK."
       log_console_and_file "Using kernel source tree $kernel_src_path"
       if [ ! -d "$kernel_src_path" ]; then
@@ -768,7 +819,7 @@ function build_dpdk() {
       ldconfig; ldconfig /usr/local/lib
       log_console_and_file "DPDK meson dir $meson_build_dir as build staging. target /lib/modules/$target_system"
       cd "$build_dir" || exit
-      meson setup -Dplatform=native -Dexamples=all -Denable_kmods=true -Dibverbs_link=shared -Dwerror=true build > "$log_file.meson.log" 2>&1
+      meson setup "$build_flags" build > "$log_file.meson.log" 2>&1
       # meson -Dplatform=native -Dexamples=all -Denable_kmods=true -Dkernel_dir=/lib/modules/"$target_system" -Dibverbs_link=shared -Dwerror=true build > "$log_file.meson.log" 2>&1
       cd "$meson_build_dir" || exit; ninja -j 8 > "$log_file.build.log" 2>&1
       log_console_and_file "Finished building DPDK."
@@ -1190,7 +1241,7 @@ function search_file() {
   local found_in=""
   local found=false
 
-  log_console_and_file "Searching search_pattern $search_pattern target_name $target_name suffix $suffix var name $__resul_search_var"
+  log_console_and_file "Searching search_pattern $search_pattern target_name $target_name suffix $suffix"
   # first check all expected dirs
   for expected_dir in "${EXPECTED_DIRS[@]}"; do
     log_console_and_file "Searching $target_name in $expected_dir"
@@ -1446,7 +1497,8 @@ function unpack_all_files() {
   local search_result
   search_file "$search_criterion" "$file_name" "$suffix" search_result
   if file_exists "$search_result"; then
-    log_console_and_file "Found existing file $search_result"
+    log_console_and_file "* Found existing file $search_result"
+    log_console_and_file ""
     mkdir -p "$build_location"
     tar -xf "$search_result" --directory "$build_location" --strip-components=1
   else
@@ -1454,7 +1506,8 @@ function unpack_all_files() {
     log_console_and_file "File not found need downloading $file_name"
     fetch_file $ROOT_BUILD download_result "${mirrors[@]}"
     if file_exists "$download_result"; then
-      log_console_and_file "File successfully downloaded $file_name location $download_result"
+      log_console_and_file "* File successfully downloaded $file_name location $download_result"
+      log_console_and_file ""
       mkdir -p "$build_location"
       tar -xf "$download_result" --directory "$build_location" --strip-components=1
     fi
@@ -1481,12 +1534,48 @@ function clean_up() {
   fi
 }
 
-function print_all_varibles()
+function print_build_spec() {
+  echo "----------------------* build spec  *----------------------------"
+  echo "AVX_VERSION $AVX_VERSION"
+  echo "AVX_VERSION $MLNX_VER"
+  echo "DOCKER_IMAGE_PATH $DOCKER_IMAGE_PATH"
+  echo "DOCKER_IMAGE_PATH $DOCKER_IMAGE_NAME"
+  echo "DOCKER_IMAGE_PATH $ROOT_BUILD"
+  echo "build mellanox $MLX_BUILD"
+  echo "build intel $INTEL_BUILD"
+  echo "build ipsec $IPSEC_BUILD"
+  echo "build DPDK $DPDK_BUILD"
+  echo "build lib isa $LIBNL_ISA"
+  echo "build lib nl $LIBNL_ISA"
+  echo "build tuned profile $BUILD_TUNED"
+  echo "build sriov adapter $BUILD_SRIOV"
+  echo "build trunk adapter $BUILD_TRUNK"
+  echo "build default networks $BUILD_DEFAULT_NETWORK"
+  echo "build static networks $BUILD_STATIC_ADDRESS"
+  echo "enable QAT $WITH_QAT"
+  echo "load vfio $LOAD_VFIO"
+  echo "skip clean up $SKIP_CLEANUP"
+  echo "build docker images $BUILD_LOAD_DOCKER_IMAGE"
+  echo "reboot post $DO_REBOOT"
+  echo "----------------------* spec  *----------------------------"
+  echo "Default location to check for docker images: $DEFAULT_GIT_IMAGE_DIR"
+  echo "----------------------* network spec  *----------------------------"
+  echo "SRIOV PCIs $SRIOV_PCI_LIST max vfs: $MAX_VFS_PER_PCI"
+  echo "VLAN ranges $DOT1Q_VLAN_ID_LIST trunk pci address: $DOT1Q_VLAN_TRUNK_PCI"
+  echo "enable LLDP on trunk $LLDP emit LLDP $LLDP_EMIT"
+  echo "Default systemd network prefix for files $DOT1Q_SYSTEMD_DEFAULT_PREFIX"
+  echo "Default name for trunk $DOT1Q_ETH_NAME"
+  echo "Default static network adapter $STATIC_ETHn_NAME address $STATIC_ETHn_ADDRESS gw $STATIC_ETHn_GATEWAY dns $STATIC_ETHn_STATIC_DNS"
+  echo "----------------------* hugepages  *----------------------------"
+  echo "Small pages $PAGES"
+  echo "1GB pages $PAGES_1GB"
+  echo "----------------------* ptp  *----------------------------"
+  echo "ptp adapter pci $PTP_ADAPTER"
+}
 
 # main entry for a script
 #
 function main() {
-
 
   local log_main_dir
   log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
@@ -1534,15 +1623,16 @@ function main() {
   unpack_all_files "libnl-3.2.25" "libnl-3.2.25" "tar.gz" libnl_build_location "${LIB_NL_LOCATION[@]}"
   unpack_all_files "MLNX_OFED_SRC" "MLNX_OFED_SRC-debian-$MLNX_VER" "tgz" mellanox_build_location "${MELLANOX_LOCATION[@]}"
 
-  echo "DPDK Build location $dpdk_build_location"
-  echo "IAVF Build location $iavf_build_location"
-  echo "LIBNL Build location $libnl_build_location"
-  echo "Mellanox Build location $mellanox_build_location"
-
+  echo "-DPDK Build location $dpdk_build_location"
+  echo "-IAVF Build location $iavf_build_location"
+  echo "-LIBNL Build location $libnl_build_location"
+  echo "-Mellanox Build location $mellanox_build_location"
 
   # if we do interactive.
   # we want run script by hand post install.
   if is_yes "$IS_INTERACTIVE"; then
+    print_build_spec
+
     local choice
     read -r -p "Please check and confirm (y/n)?" choice
     case "$choice" in
@@ -1591,16 +1681,16 @@ function main() {
 
   # generate adapter
   build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" $DOT1Q_VLAN_TRUNK_PCI
+
+
+  if is_cdrom_mounted "cdrom"; then
+    umount /dev/cdrom
+  fi
+
+  if is_yes "$DO_REBOOT"; then
+    reboot
+  fi
 }
 
 
 main
-
-if is_cdrom_mounted "cdrom"; then
-  umount /dev/cdrom
-fi
-
-if is_yes "$DO_REBOOT"; then
-  reboot
-fi
-
