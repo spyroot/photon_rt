@@ -427,6 +427,10 @@ function print_and_validate_specs() {
   additional_files=$(cat $ADDITIONAL_FILES | jq '.additional_files')
   echo "$additional_files"
 
+  local docker_files
+  docker_files=$cat specs/offline_testnf_os4_flex21/additional_files.json | jq '.additional_files[][]'|xargs -I {} echo "docker_images{}"
+  log "$docker_files"
+
   print_value_green "Builder will generate:" "$KICK_START_FILE"
   print_value_green "ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
   print_value_green "ISO builder will generate:" "$DEFAULT_DST_IMAGE_NAME"
