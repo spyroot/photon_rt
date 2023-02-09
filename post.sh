@@ -453,8 +453,8 @@ function is_tar() {
 function is_docker_image_present() {
   local image_name=$1
   local docker_image
-  docker_image=$(docker image ls | grep spyroot/photon_iso_builder)
-  if [[ -z "$is_tar" ]]; then
+  docker_image=$(docker image ls | grep "$image_name")
+  if [[ -z "$docker_image" ]]; then
     return 1
   else
     return 0
