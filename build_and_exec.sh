@@ -79,7 +79,7 @@ log() {
 
 function print_value_green() {
   local prefix_text=$1
-  shit 1
+  shift 1
   printf "%s %b %s. %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
 }
 
