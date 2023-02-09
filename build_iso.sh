@@ -95,7 +95,7 @@ function main() {
   local kick_start_file=""
   local full_path_kick_start=""
   if [[ -z "$BUILD_TYPE" ]]; then
-    echo "Please make sure you have in shared\.bash BUILD_TYPE var"
+    echo "Please make sure you have in shared.bash BUILD_TYPE var"
     exit 99
   fi
 
@@ -163,6 +163,7 @@ function main() {
   generate_isolinux
   generate_menu
   generate_grub
+  generate_iso
 
   popd || exit
   umount "$src_iso_dir" > /dev/null
