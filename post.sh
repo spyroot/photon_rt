@@ -1252,12 +1252,15 @@ function generate_default_network() {
 }
 
 
-# Function search each required package by default all offline are in /direct
-# this function uses function search_file to locate.  i.e. it first checks /direct
-# if not found mount cdrom ( after first mount it might un mounted) search tar.gz , xy etc.
-# in cdrom , if not does deep search with find --depth 6, if all failed poll from internet.
-# unpack all files and return build location.
-# all driver, git clone etc are moved by default to $BUILD_ROOT
+# The function search each required package by default;
+# all offline are in /direct directory.
+# It created during first boot.
+# This function uses function search_file to locate each respected file required.
+# i.e., it first checks /direct
+# if not found mount cdrom ( after the first mount, it might un-mounted) search tar.gz , xy etc.
+# in cdrom, if not, does a deep search with find --depth 6, if all failed poll from the internet.
+# Unpack all files and return the build location.
+# All drivers, git clone, etc., are moved by default to $BUILD_ROOT
 # i.e /root/build.
 function unpack_all_files() {
   local search_criterion=$1

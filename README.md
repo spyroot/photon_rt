@@ -151,9 +151,12 @@ Note **build_and_exec.sh** uses following json files to produce final kickstart.
 
 All mentioned files contain a JSON list.
 
-In the case of the VMware VC environment, **main.tf** is the main terraform file that uses generated ISO to install VM or VMs. Note in the case of terraform, there are a number of post-installation pipelines that customize a VM.
+In the case of the VMware VC environment, **main.tf** is the main terraform file that uses 
+generated ISO to install VM or VMs. Note in the case of terraform, there are a number of
+post-installation pipelines that customize a VM.
 
-In both cases, customization for post-install, the first boot includes polling the latest Intel drivers, fixing kernel boot parameters, and optimizing VM/Host for the real-time workload.
+In both cases, customization for post-install, the first boot includes polling the 
+latest Intel drivers, fixing kernel boot parameters, and optimizing VM/Host for the real-time workload.
 
 
 ## Requirements.
@@ -161,6 +164,7 @@ In both cases, customization for post-install, the first boot includes polling t
 Requirements.
 
 - Make sure you have a network segment in VC that provide DHCP services.
+- If you do bare-metal online you also need make sure post kick-start host will get IP address.
 - Make sure the same segment has an internet connection.
 - Make sure that DHCP allocates the DNS server.
 - The port-group name must match whatever you see in VC.
@@ -238,6 +242,8 @@ Now we can generate iso.  Run inside a container.
 '''
 
 ### Example
+
+Build ISO generate target ISO.
 
 ```bash
 root@08c5d91599b9:/home/vmware/photon_gen/photongen/build_iso# ./build_iso.sh
