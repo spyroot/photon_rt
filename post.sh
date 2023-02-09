@@ -692,7 +692,12 @@ function build_intel_iavf() {
     fi
     mkdir -p "$build_dir"
     cd "$build_dir" || exit; tar -zxvf iavf-* -C iavf --strip-components=1 > "$log_file" 2>&1
-    cd "$build_dir"/src || exit; make > "$log_file" 2>&1; make install > "$log_file.iavf.install.log" 2>&1
+    if is_yes "$IS_INTERACTIVE"; then
+      cd "$build_dir"/src || exit; make
+      make install
+    else
+      cd "$build_dir"/src || exit; make > "$log_file" 2>&1; make install > "$log_file.iavf.install.log" 2>&1
+    fi
   fi
 }
 
@@ -907,10 +912,6 @@ function build_dpdk() {
       cd "$build_dir" || exit
       if is_yes "$IS_INTERACTIVE"; then
         meson setup "$build_flags" build
-        echo "Using kernel $kernel_src_path"
-        echo "meson build location $meson_build_dir"
-        echo "Using $build_flags"
-
         local choice
         read -r -p "Building DPDK build location $meson_build_dir number of concurrent make: 8 (y/n)?" choice
         case "$choice" in
