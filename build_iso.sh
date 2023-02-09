@@ -154,7 +154,7 @@ function main() {
   cp $DEFAULT_ARC_DIR/* "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
   log "Changing director to $dst_iso_dir"
-  pushd "$dst_iso_dir"/ || exit
+  pushd "$dst_iso_dir"/ || exit > /dev/null
   log "Copy $full_path_kick_start to isolinux/ks.cfg"
   if file_exists "$full_path_kick_start"; then
     if file_exists "isolinux/ks.cfg"; then
@@ -169,7 +169,7 @@ function main() {
   generate_grub
   generate_iso
 
-  popd || exit
+  popd || exit > /dev/null
   umount "$src_iso_dir" > /dev/null
   local generated_img_location=""
   generated_img_location="$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
