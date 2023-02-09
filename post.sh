@@ -51,21 +51,42 @@ BUILD_PTP="yes"
 BUILD_TRUNK="yes"
 BUILD_DEFAULT_NETWORK="yes"
 BUILD_STATIC_ADDRESS="no"
+BUILD_TRUNK="yes"
+
 WITH_QAT="yes"
 LOAD_VFIO="yes"
 SKIP_CLEANUP="yes"
 BUILD_LOAD_DOCKER_IMAGE="yes"
 
 # SRIOV NIC make sure it up.
-# SRIOV_NIC_LIST="eth4,eth5"
+# each PCI resolved to respected ethX adapter
 SRIOV_PCI_LIST="pci@0000:51:00.0,pci@0000:51:00.1"
 MAX_VFS_PER_PCI=8
 
 # list of vlan interface that we need create.
+# pci resolved to adapter that we want to use for a trunk
 DOT1Q_VLAN_ID_LIST="2000,2001"
 DOT1Q_VLAN_TRUNK_PCI="pci@0000:18:00.1"
+# prefix used to generate each trunk ethernet and netdev
+DOT1Q_SYSTEMD_DEFAULT_PREFIX="10-vlan"
 DOT1Q_ETH_NAME="main"
+# enables LLD on ethe adapter
 LLDP="yes"
+LLDP_EMIT="yes"
+
+# adapter that we want use for static IP.
+STATIC_ETHn_NAME="eth0"
+STATIC_ETHn_ADDRESS="192.168.254.1/24"
+STATIC_ETHn_GATEWAY="192.168.254.254"
+STATIC_ETHn_STATIC_DNS="8.8.8.8"
+# by default can generate DHCP and static.
+# DHCP enabled masked e* while static for particular adapter.
+DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX="99-static"
+# default name used to generate DHCP
+DEFAULT_DHCP_NET_NAME="99-dhcp-en.network"
+
+# default path to system d
+DEFAULT_SYSTEMD_PATH="/etc/systemd/network"
 
 # number of huge pages for 2k and 1GB
 # make sure this number is same or less than what I do for mus_rt tuned profile.
