@@ -140,8 +140,9 @@ function main() {
   for img in "${docker_images[@]}"; do
       log "Copy $img to $dst_iso_dir"
       cp "$img" "$dst_iso_dir"
-      cat "$dst_iso_dir"/post.sh | sed "s/DOCKER_IMAGE=/DOCKER_IMAGE=\"$img/g" > post.sh
+#      cat "$dst_iso_dir"/post.sh | sed "s/DOCKER_IMAGE=/DOCKER_IMAGE=\"$img/g" >> post.sh
       cp post.sh "$dst_iso_dir"/ > /dev/null
+      cat "$dst_iso_dir"/post.sh | sed "s/DOCKER_IMAGE=/DOCKER_IMAGE=\"$img/g" > post_adjusted.sh
   done
 
   mkdir -p "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
