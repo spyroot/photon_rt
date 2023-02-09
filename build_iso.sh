@@ -9,19 +9,6 @@
 
 source shared.bash
 
-echo "$DEFAULT_SRC_IMAGE_NAME"
-echo "$DEFAULT_DST_IMAGE_NAME"
-rm -rf "$DEFAULT_DST_IMAGE_NAME"
-
-DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
-if [[ -n "$BUILD_TYPE" ]]; then
-  DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
-fi
-
-DEFAULT_SRC_ISO_DIR="/tmp/photon-iso"
-DEFAULT_DST_ISO_DIR="/tmp/photon-ks-iso"
-ADDITIONAL_FILES=$DEFAULT_JSON_SPEC_DIR/additional_files.json
-
 log() {
   printf "%b %s %b\n" "${GREEN}" "$@" "${NC}"
 }
@@ -90,13 +77,29 @@ function generate_iso() {
 }
 
 function clean_up() {
-  rm "$DEFAULT_DST_IMAGE_NAME" 2>/dev/null
-  umount -q "$DEFAULT_SRC_ISO_DIR"  2>/dev/null
-  rm -rf "$DEFAULT_SRC_ISO_DIR"  2>/dev/null
-  rm -rf /tmp/photon-ks-iso  2>/dev/null
+  log "Removing old build from $DEFAULT_DST_IMAGE_NAME"
+  rm -rf "$DEFAULT_DST_IMAGE_NAME"
+  log "Unmount $DEFAULT_SRC_ISO_DIR"
+  umount -q "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
+  log "Removing old $DEFAULT_SRC_ISO_DIR"
+  rm -rf "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
 }
 
 function main() {
+  local DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
+  if [[ -n "$BUILD_TYPE" ]]; then
+    DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
+  fi
+
+  DEFAULT_SRC_ISO_DIR="/tmp/$BUILD_TYPE_photon-iso"
+  DEFAULT_DST_ISO_DIR="/tmp/$BUILD_TYPE_photon-ks-iso"
+  ADDITIONAL_FILES=$DEFAULT_JSON_SPEC_DIR/additional_files.json
+
+  clean_up
+
+  log "Source image tmp $DEFAULT_SRC_ISO_DIR"
+  log "Source image tmp $DEFAULT_DST_ISO_DIR"
+
   local KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
   local CURRENT_KICKSTART=$workspace_dir/$KICK_START_FILE
 
