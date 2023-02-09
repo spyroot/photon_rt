@@ -2,31 +2,97 @@
 
 The automated system is designed to work with a bare-metal host. (Dell) or with 
 VMware VC environment.
-Note to have a consistent build. A builder generates ISO that is used in both VM and Bare metal.    
+
+Note to have a consistent build. A builder build system generates ISO 
+is used in both VM and Bare metal.    
+
 In the case of a VM, the ISO is used to boot the VM and install OS from kick-start. i.e., it 
 is an unattended installation.  Thus, In both cases, the automated build system, first build a reference iso file.  
-For example local directory contains ph4-rt-refresh.iso. or system fetch the reference ISO from the web. 
+
+For example local directory contains ph4-rt-refresh.iso or system fetch the reference ISO from the web. 
 
 ## What it builds  ?
 
 An automated system for VMware Real time Photon OS version 4 and 5 and 
 consists build three phases. Make sure you familiar with Photon OS itself.
-https://github.com/vmware/photon
+[Photon OS](https://github.com/vmware/photon)
+
+It leverages build in Photon OS capability to install OS from 
+kickstart installation.
 
 Phase one system generates reference kick-start ISO. During this phase
-We decided to build an online or offline version.
+the first step is to decide whether to build an online or offline version.
 
 ### Online version
 
-Online version is the flavor when post kick-start phase. i.e., after the first reboot post-installation. 
-All post-install components polled from the internet. It polls all drivers,  
-git repo DPDK, IPSEC lib, lib-nl, and many other libs from the internet. 
-During this phase all RPMs , pip packages installed from internet.
+Online version is the flavor when post kick-start phase. i.e., after the first 
+reboot post-installation.  All post-install components polled from the internet. 
+It first poll all toolchains required to compile dependencies, polls all drivers,  
+git repos, DPDK, IPSEC lib, lib-nl, lib-isa, and many other libs from the internet. 
+During this phase all RPMs, pip packages installed from internet.
 
 ### Offline version
 
 In the offline version, all components are serialized to ISO and, after first boot, 
 moved to / partition.
+
+What serialized to offline dictated by configuration JSON files.
+In offline directory.
+
+[Specs]](https://github.com/spyroot/photon_rt/tree/main/offline)
+
+All specs JSON files. For example for DPKD we need meson, nasm and ninja build system
+
+'''additional_direct_rpms.json
+[
+  "ninja-build-1.10.2-2.ph4.x86_64",
+  "meson-0.64.1-1.ph4.noarch",
+  "nasm-2.15.05-1.ph4.x86_64"
+]
+'''
+
+'''additional_git_clone.json
+[
+  "https://github.com/intel/isa-l",
+  "https://github.com/spyroot/tuned.git",
+  "https://github.com/intel/intel-ipsec-mb.git"
+]
+'''
+
+'''additional_packages.json
+[
+  "docker"
+]
+'''
+
+'''additional_rpms.json
+[
+  "docker"
+]
+'''
+
+Additional files pushed during install
+'''additional_files.json
+{
+  "additional_files": [
+    {
+      "/mnt/media/vcu1.tar.gz": "/vcu1.tar.gz"
+    },
+    {
+      "/mnt/media/post.sh": "/post.sh"
+    }
+  ]
+}
+'''
+
+'''additional_load_docker.json
+
+Additional RPMS we install in online version.
+
+'''additional_remote_rpms.json
+  "wget -nc http://MY_HTTP_SERVER/MY.rpm -P /tmp/  >> /etc/postinstall"
+''' 
+
 
 ## What customization option does it have?
 
