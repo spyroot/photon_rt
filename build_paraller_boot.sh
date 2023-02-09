@@ -37,7 +37,7 @@ SKIP_BIOS="yes"
 # all envs
 if [ ! -f cluster.env ]
 then
-    echo "Please create cluster\.env file"
+    echo "Please create cluster.env file"
     exit 99
 else
   source cluster.env
@@ -56,7 +56,7 @@ log() {
   printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
 }
 
-if [ ! -f $DEFAULT_IMAGE_NAME ]
+if [ ! -f "$DEFAULT_IMAGE_NAME" ]
 then
     echo "Please create iso file $DEFAULT_IMAGE_NAME first."
     exit 99
@@ -78,12 +78,12 @@ pip --quiet install idrac_ctl -U &> /dev/null
 pip --quiet pygments tqdm requests -U &> /dev/null
 
 ## build-iso.sh generates ph4-rt-refresh_adj.iso
-src_hash=$(md5sum $DEFAULT_IMAGE_NAME)
-dst_hash=$(md5sum $DEFAULT_LOCATION_MOVE/$DEFAULT_IMAGE_NAME)
+src_hash=$(md5sum "$DEFAULT_IMAGE_NAME")
+dst_hash=$(md5sum $DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME")
 if [ "$src_hash" != "$dst_hash" ]
 then
   log "Coping $DEFAULT_IMAGE_NAME to $DEFAULT_LOCATION_MOVE"
-  cp $DEFAULT_IMAGE_NAME $DEFAULT_LOCATION_MOVE
+  cp "$DEFAULT_IMAGE_NAME" $DEFAULT_LOCATION_MOVE
 fi
 
 # by a default we always do clean build
