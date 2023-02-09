@@ -126,7 +126,7 @@ DOCKER_LOAD_POST_INSTALL=$DEFAULT_JSON_SPEC_DIR/additional_load_docker.json
 ADDITIONAL_RPMS=$DEFAULT_JSON_SPEC_DIR/additional_rpms.json
 ADDITIONAL_GIT_REPOS=$DEFAULT_JSON_SPEC_DIR/additional_git_clone.json
 ADDITIONAL_REMOTE_RPMS=$DEFAULT_JSON_SPEC_DIR/additional_remote_rpms.json
-KICK_START_FILE="$BUILD_TYPE_ks.cfg"
+KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
 
 function generate_key_if_need() {
   # add ssh key
