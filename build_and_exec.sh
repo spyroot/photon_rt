@@ -422,7 +422,7 @@ function print_and_validate_specs() {
 
   log "Builder will copy to IOS files:"
   local additional_files
-  additional_files=$(cat $$ADDITIONAL_FILES | jq '.additional_files')
+  additional_files=$(cat $ADDITIONAL_FILES | jq '.additional_files')
   echo "$additional_files"
 
   print_value_green "Builder will generate:" "$KICK_START_FILE"
