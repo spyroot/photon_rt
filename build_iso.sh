@@ -123,7 +123,7 @@ function main() {
   mount "$DEFAULT_SRC_IMAGE_NAME" "$src_iso_dir" 2>/dev/null
 
   log "Copy data from $src_iso_dir/* to $dst_iso_dir/"
-  cp -r "$DEFAULT_SRC_ISO_DIR"/* "$DEFAULT_DST_ISO_DIR"/
+  cp -r "$src_iso_dir"/* "$dst_iso_dir"/
 
   local docker_files
   docker_files=$(cat "$additional_files" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
