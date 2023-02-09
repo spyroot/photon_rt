@@ -74,13 +74,13 @@ DEFAULT_FLAVOR="linux-rt"
 
 # usage log "msg"
 log() {
-  printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
+  printf "%b %s %b\n" "${GREEN}" "$@" "${NC}"
 }
 
 function print_value_green() {
   local prefix_text=$1
   shift 1
-  printf "%s %b %s. %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
+  printf "%s %b %s %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
 }
 
 function is_not_empty() {
