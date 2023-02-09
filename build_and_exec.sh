@@ -472,6 +472,11 @@ function main() {
   download_rpms
   git_clone
   generate_kick_start
+
+   # delete 0 byte files.
+  find direct_rpms/ -size 0c -delete
+  find docker_images/ -size 0c -delete
+  find direct/ -size 0c -delete
 }
 
 main
