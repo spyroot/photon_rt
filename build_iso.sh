@@ -39,73 +39,31 @@ function file_exists {
 }
 
 workspace_dir=$(pwd)
-rm "$DEFAULT_DST_IMAGE_NAME" 2>/dev/null
-umount -q "$DEFAULT_SRC_ISO_DIR"  2>/dev/null
-rm -rf "$DEFAULT_SRC_ISO_DIR"  2>/dev/null
-rm -rf /tmp/photon-ks-iso  2>/dev/null
 
-mkdir -p "$DEFAULT_SRC_ISO_DIR"
-
-log "Mount $DEFAULT_SRC_IMAGE_NAME to $DEFAULT_SRC_ISO_DIR"
-mount "$DEFAULT_SRC_IMAGE_NAME" "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
-
-mkdir -p /tmp/photon-ks-iso
-log "Copy data from $DEFAULT_SRC_ISO_DIR/* to $DEFAULT_DST_ISO_DIR/"
-
-docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
-separator=' '
-docker_images=""
-IFS=$separator read -ra docker_images <<<"$docker_files"
-for img in "${docker_images[@]}"; do
-    log "Copy $img to $DEFAULT_DST_ISO_DIR"
-    cp "$img" $DEFAULT_DST_ISO_DIR
-done
-
-cp post.sh "$DEFAULT_DST_ISO_DIR"/
-mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
-mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
-mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
-
-log "Copy rpms from $DEFAULT_RPM_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_RPM_DST_DIR"
-cp $DEFAULT_RPM_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
-log "Copy git tar.gz from $DEFAULT_GIT_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_GIT_DST_DIR"
-cp $DEFAULT_GIT_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
-log "Copy arcs from $DEFAULT_ARC_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_ARC_DST_DIR"
-cp $DEFAULT_ARC_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
-KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
-CURRENT_KICKSTART=$workspace_dir/$KICK_START_FILE
-
-log "Caning director to $DEFAULT_DST_ISO_DIR"
-
-pushd "$DEFAULT_DST_ISO_DIR"/ || exit
-log "Copy $CURRENT_KICKSTART to isolinux/ks.cfg"
-if file_exists "$CURRENT_KICKSTART"; then
-  if file_exists "isolinux/ks.cfg"; then
-    echo "Failed locate source ks"
-    exit 99;
-  fi
-  cp "$CURRENT_KICKSTART" isolinux/ks.cfg
-fi
-
-# generate isolinux
-cat > isolinux/isolinux.cfg << EOF
+function generate_isolinux() {  
+  # generate isolinux
+  cat > isolinux/isolinux.cfg << EOF
 include menu.cfg
 default vesamenu.c32
 prompt 1
 timeout 1
 EOF
+}
 
-# generate menu
-cat >> isolinux/menu.cfg << EOF
+function generate_menu() {  
+  # generate isolinux
+   cat >> isolinux/menu.cfg << EOF
 label my_unattended
 	menu label ^Unattended Install
     menu default
 	kernel vmlinuz
 	append initrd=initrd.img root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=cdrom
 EOF
+}
 
-# generate grub
-cat > boot/grub2/grub.cfg << EOF
+function generate_grub() {
+  # generate grub
+  cat > boot/grub2/grub.cfg << EOF
 set default=1
 set timeout=1
 loadfont ascii
@@ -121,13 +79,76 @@ menuentry "Install" {
     initrd /isolinux/initrd.img
 }
 EOF
+}
 
-sed -i 's/default install/default my_unattended/g' /tmp/photon-ks-iso/isolinux/menu.cfg
+function generate_iso() {
+  sed -i 's/default install/default my_unattended/g' /tmp/photon-ks-iso/isolinux/menu.cfg
+  mkisofs -quiet -R -l -L -D -b isolinux/isolinux.bin -c isolinux/boot.cat -log-file /tmp/mkisofs.log \
+    -no-emul-boot -boot-load-size 4 -boot-info-table \
+    -eltorito-alt-boot --eltorito-boot boot/grub2/efiboot.img -no-emul-boot \
+    -V "PHOTON_$(date +%Y%m%d)" . >"$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
+}
 
-mkisofs -quiet -R -l -L -D -b isolinux/isolinux.bin -c isolinux/boot.cat -log-file /tmp/mkisofs.log \
-                -no-emul-boot -boot-load-size 4 -boot-info-table \
-                -eltorito-alt-boot --eltorito-boot boot/grub2/efiboot.img -no-emul-boot \
-                -V "PHOTON_$(date +%Y%m%d)" . > "$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
-popd || exit
-umount "$DEFAULT_SRC_ISO_DIR"
-log "Generated ISO in $workspace_dir/$DEFAULT_DST_IMAGE_NAME"
+function clean_up() {
+  rm "$DEFAULT_DST_IMAGE_NAME" 2>/dev/null
+  umount -q "$DEFAULT_SRC_ISO_DIR"  2>/dev/null
+  rm -rf "$DEFAULT_SRC_ISO_DIR"  2>/dev/null
+  rm -rf /tmp/photon-ks-iso  2>/dev/null
+}
+
+function main() {
+  local KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
+  local CURRENT_KICKSTART=$workspace_dir/$KICK_START_FILE
+
+  mkdir -p "$DEFAULT_SRC_ISO_DIR"
+  mkdir -p /tmp/photon-ks-iso
+
+  log "Mount $DEFAULT_SRC_IMAGE_NAME to $DEFAULT_SRC_ISO_DIR"
+  mount "$DEFAULT_SRC_IMAGE_NAME" "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
+  mkdir -p /tmp/photon-ks-iso
+  log "Copy data from $DEFAULT_SRC_ISO_DIR/* to $DEFAULT_DST_ISO_DIR/"
+
+  local docker_files
+  docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
+
+  local separator=' '
+  local docker_images=""
+  IFS=$separator read -ra docker_images <<<"$docker_files"
+  for img in "${docker_images[@]}"; do
+      log "Copy $img to $DEFAULT_DST_ISO_DIR"
+      cp "$img" $DEFAULT_DST_ISO_DIR
+  done
+
+  cp post.sh "$DEFAULT_DST_ISO_DIR"/
+  mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
+  mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
+  mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
+
+  log "Copy rpms from $DEFAULT_RPM_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_RPM_DST_DIR"
+  cp $DEFAULT_RPM_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
+  log "Copy git tar.gz from $DEFAULT_GIT_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_GIT_DST_DIR"
+  cp $DEFAULT_GIT_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
+  log "Copy arcs from $DEFAULT_ARC_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_ARC_DST_DIR"
+  cp $DEFAULT_ARC_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
+
+  log "Changing director to $DEFAULT_DST_ISO_DIR"
+  pushd "$DEFAULT_DST_ISO_DIR"/ || exit
+  log "Copy $CURRENT_KICKSTART to isolinux/ks.cfg"
+  if file_exists "$CURRENT_KICKSTART"; then
+    if file_exists "isolinux/ks.cfg"; then
+      echo "Failed locate source ks"
+      exit 99;
+    fi
+    cp "$CURRENT_KICKSTART" isolinux/ks.cfg
+  fi
+
+  generate_isolinux
+  generate_menu
+  generate_grub
+
+  popd || exit
+  umount "$DEFAULT_SRC_ISO_DIR"
+  log "Generated ISO in $workspace_dir/$DEFAULT_DST_IMAGE_NAME"
+}
+
+main
