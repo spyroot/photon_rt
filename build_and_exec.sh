@@ -77,10 +77,10 @@ log() {
   printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
 }
 
-print_value_green() {
+function print_value_green() {
   local prefix_text=$1
   shit 1
-  printf "%s %b %s. %b\n" "$prefix_text" "${GREEN}" $@" "${NC}"
+  printf "%s %b %s. %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
 }
 
 function is_not_empty() {
@@ -388,23 +388,23 @@ function download_direct() {
 }
 
 function print_and_validate_specs() {
-  echo "Build type ${GREEN} $BUILD_TYPE ${NC}"
-  print_value_green "Using $ADDITIONAL_FILES"
-  print_value_green "Using $ADDITIONAL_PACKAGES"
-  print_value_green "Using $ADDITIONAL_DIRECT_RPMS"
-  print_value_green "Using $ADDITIONAL_RPMS"
-  print_value_green "Using $ADDITIONAL_REMOTE_RPMS"
-  print_value_green "Using $DOCKER_LOAD_POST_INSTALL"
+  print_value_green "Build type" "${GREEN} $BUILD_TYPE ${NC}"
+  print_value_green "Using" "$ADDITIONAL_FILES"
+  print_value_green "Using" "$ADDITIONAL_PACKAGES"
+  print_value_green "Using" "$ADDITIONAL_DIRECT_RPMS"
+  print_value_green "Using" "$ADDITIONAL_RPMS"
+  print_value_green "Using" "$ADDITIONAL_REMOTE_RPMS"
+  print_value_green "Using" "$DOCKER_LOAD_POST_INSTALL"
 
-  print_value_green "Will download $DEFAULT_IMAGE_LOCATION"
-  print_value_green "Will download $MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
-  print_value_green "Will download $INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
-  print_value_green "Will download $LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
-  print_value_green "Will download $DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
-  print_value_green "All RPMS wil downloaded to $DEFAULT_RPM_DIR"
-  print_value_green "All GIT tars will be wil downloaded to $ADDITIONAL_GIT_REPOS"
-  print_value_green "All archive  will be wil downloaded to $ADDITIONAL_GIT_REPOS"
-  print_value_green "All archive  will be wil downloaded to $DEFAULT_ARC_DIR"
+  print_value_green "Will download" "$DEFAULT_IMAGE_LOCATION"
+  print_value_green "Will download" "$MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "Will download" "$INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "Will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
+  print_value_green "Will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
+  print_value_green "All RPMS wil downloaded to" $DEFAULT_RPM_DIR"
+  print_value_green "All GIT tars will be wil downloaded to" "$ADDITIONAL_GIT_REPOS"
+  print_value_green "All archive  will be wil downloaded to" "$ADDITIONAL_GIT_REPOS"
+  print_value_green "All archive  will be wil downloaded to" "$DEFAULT_ARC_DIR"
 
   jq -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r repo; do
     mkdir -p direct
