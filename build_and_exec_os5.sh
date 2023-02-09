@@ -4,4 +4,4 @@
 #
 # spyroot@gmail.com
 # Author Mustafa Bayramov
-export PHOTON_5_X86=yes ./build_and_exec.sh
+export DEFAULT_IMAGE_NAME="http://www.mgmt.vmw-nfv.rocks" ./build_and_exec.sh

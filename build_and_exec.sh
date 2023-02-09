@@ -77,6 +77,15 @@ log() {
   printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
 }
 
+function is_not_empty() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
 if [[ -n "$PHOTON_5_ARM" ]]; then
   log "Building photon 5 arm iso."
   DEFAULT_IMAGE_LOCATION=$DEFAULT_ISO_PHOTON_5_ARM
@@ -117,15 +126,19 @@ function generate_key_if_need() {
   local pub_key_location
   pub_key_location=$HOME/.ssh/id_rsa.pub
   current_ks_phase="ks.ref.cfg"
+  local ssh_key
   if test -f "$pub_key_location"; then
-    local ssh_key
     ssh_key=$(cat "$HOME"/.ssh/id_rsa.pub)
     export ssh_key
-    jq --arg key "$ssh_key" '.public_key = $key' ks.ref.cfg >ks.phase1.cfg
-    current_ks_phase="ks.phase1.cfg"
-    jsonlint ks.phase1.cfg
   else
     ssh-keygen
+    ssh_key=$(cat "$HOME"/.ssh/id_rsa.pub)
+  fi
+
+  if is_not_empty "$ssh_key"; then
+      jq --arg key "$ssh_key" '.public_key = $key' ks.ref.cfg >ks.phase1.cfg
+      current_ks_phase="ks.phase1.cfg"
+      jsonlint ks.phase1.cfg
   fi
 }
 

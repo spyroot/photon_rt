@@ -136,6 +136,19 @@ STATIC_ETHn_STATIC_DNS="8.8.8.8"
 #
 #
 # remove all spaces from a string
+function is_yes() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    if [ "$var" == "yes" ]; then
+      return 0
+    else
+      return 1
+    fi
+  fi
+}
+
 function remove_all_spaces {
   local str=$1
   echo "${str//[[:blank:]]/}"
