@@ -165,7 +165,7 @@ function main() {
   generate_grub
 
   popd || exit
-  umount "$DEFAULT_SRC_ISO_DIR"
+  umount "$src_iso_dir"
   log "Generated ISO in $workspace_dir/$DEFAULT_DST_IMAGE_NAME"
 }
 
