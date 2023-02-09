@@ -19,7 +19,8 @@
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 
-source shared.bash
+# all overwrite loaded from overwrite
+source /overwrite.env
 
 export LANG=en_US.UTF-8
 export LC_ALL=$LANG
