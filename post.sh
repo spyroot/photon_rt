@@ -431,6 +431,16 @@ function enable_sriov() {
   adapters_from_pci_list eth_array "$list_of_pci_devices"
   log_console_and_file "Enabling SRIOV ${eth_array[*]} target num vfs $target_num_vfs"
 
+  if is_yes "$IS_INTERACTIVE"; then
+        local choice
+        read -r -p "Building SRIOV resolved adapter $eth_array (y/n)?" choice
+        case "$choice" in
+        y | Y) echo "yes" ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+  fi
+
   if [ -z "$BUILD_SRIOV" ]; then
     log_console_and_file "Skipping SRIOV phase."
     return 0
@@ -563,8 +573,19 @@ function build_docker_images() {
   fi
 
   if [ -z "$BUILD_LOAD_DOCKER_IMAGE" ]; then
-    log_console_and_file "Skipping docker load phase."
+    log_console_and_file "Loading docker image $docker_image_path docker load phase."
   else
+
+    if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building docker and loading $docker_image_path (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+    fi
+
     if is_not_empty; then
       log_console_and_file "Enabling docker services."
       systemctl enable docker
@@ -810,11 +831,26 @@ function build_dpdk() {
       default_kernel_prefix=$custom_kern_prefix
     fi
 
+    log_console_and_file "linux-rt-devel $"
     # kernel source and DPDK, we're building with Intel and Mellanox driver.
-    yum --quiet -y install stalld dkms linux-devel linux-rt-devel \
+    local yum_tools=("linux-rt-devel" "linux-devel" "dkms" "stalld" "openssl-devel" "libmlx5" "dtc" "dtc-devel")
+    for yum_tool in "${yum_tools[@]}"
+    do
+      local is_installed
+      is_installed=$(rpm -qa yum_tool)
+      log_console_and_file "Check required packages"
+      if is_not_empty is_installed; then
+        log_console_and_file " tools $yum_tool installed."
+      else
+        log_console_and_file " tool $tool not installed."
+      fi
+    done
+
+    yum --quiet -y install stalld dkms linux-devel linux-rt-devel dtc dtc-devel\
     openssl-devel libmlx5 > "$log_file" 2>&1
     # first we check all tools in place.
     local dpdk_tools=("meson" "python3" "ninja")
+    log_console_and_file " Checking required pip packages"
     for tool in "${dpdk_tools[@]}"
     do
       if is_cmd_installed "$tool"
@@ -836,11 +872,12 @@ function build_dpdk() {
       meson_build_dir=$build_dir/"build"
 
       if is_yes "$IS_INTERACTIVE"; then
-        echo "Using kernel $kernel_src_path meson build location $meson_build_dir"
+        echo "Using kernel $kernel_src_path"
+        echo "meson build location $meson_build_dir"
         echo "Using $build_flags"
 
         local choice
-        read -r -p "Building DPDK isa in $LIB_ISAL_TARGET_DIR_BUILD parallel build 8 (y/n)?" choice
+        read -r -p "Building DPDK build location $meson_build_dir number of concurrent make: 8 (y/n)?" choice
         case "$choice" in
         y | Y) echo "yes" ;;
         n | N) return 1 ;;
