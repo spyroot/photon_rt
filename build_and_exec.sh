@@ -343,7 +343,7 @@ function git_clone() {
       repo_name=${repo_name##*/}
       mkdir -p git_repos/"$repo_name"
       echo "Git cloning git clone $git_repo $repo_name"
-      git clone "$git_repo" $git_repos_dir/"$repo_name"
+      git clone "$git_repo" $git_repos_dir/"$repo_name" > "git_clone.log" 2>&1
       repo_tmp_dir="$git_repos_dir/$repo_name"
       echo "Compressing $repo_tmp_dir"
       tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
