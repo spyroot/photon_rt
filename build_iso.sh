@@ -166,7 +166,9 @@ function main() {
 
   popd || exit
   umount "$src_iso_dir" > /dev/null
-  log "Generated ISO in $workspace_dir/$DEFAULT_DST_IMAGE_NAME"
+  dst_hash=$(md5sum "$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME")
+  log "Generated ISO in $workspace_dir/$DEFAULT_DST_IMAGE_NAME hash $dst_hash"
+  echo "$dst_hash" > "$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME".sha
 }
 
 main
