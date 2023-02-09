@@ -77,12 +77,15 @@ function generate_iso() {
 }
 
 function clean_up() {
-  log "Removing old build from $DEFAULT_DST_IMAGE_NAME"
-  rm -rf "$DEFAULT_DST_IMAGE_NAME"
-  log "Unmount $DEFAULT_SRC_ISO_DIR"
-  umount -q "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
-  log "Removing old $DEFAULT_SRC_ISO_DIR"
-  rm -rf "$DEFAULT_SRC_ISO_DIR" 2>/dev/null
+  local old_dst_image=$1
+  local old_src_image_dir=$2
+
+  log "Removing old build from $old_dst_image"
+  rm -rf "$old_dst_image"
+  log "Unmount $old_src_image_dir"
+  umount -q "$old_src_image_dir" 2>/dev/null
+  log "Removing old $old_src_image_dir"
+  rm -rf "$old_src_image_dir" 2>/dev/null
 }
 
 function main() {
@@ -95,7 +98,7 @@ function main() {
   DEFAULT_DST_ISO_DIR="/tmp/$BUILD_TYPE_photon-ks-iso"
   ADDITIONAL_FILES=$DEFAULT_JSON_SPEC_DIR/additional_files.json
 
-  clean_up
+  clean_up DEFAULT_DST_ISO_DIR DEFAULT_SRC_ISO_DIR
 
   log "Source image tmp $DEFAULT_SRC_ISO_DIR"
   log "Source image tmp $DEFAULT_DST_ISO_DIR"
