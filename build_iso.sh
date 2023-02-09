@@ -69,7 +69,8 @@ EOF
 }
 
 function generate_iso() {
-  sed -i 's/default install/default my_unattended/g' /tmp/photon-ks-iso/isolinux/menu.cfg
+  local dst_iso_dir=$1
+  sed -i 's/default install/default my_unattended/g' "$dst_iso_dir"/isolinux/menu.cfg
   mkisofs -quiet -R -l -L -D -b isolinux/isolinux.bin -c isolinux/boot.cat -log-file /tmp/mkisofs.log \
     -no-emul-boot -boot-load-size 4 -boot-info-table \
     -eltorito-alt-boot --eltorito-boot boot/grub2/efiboot.img -no-emul-boot \
@@ -167,7 +168,7 @@ function main() {
   generate_isolinux
   generate_menu
   generate_grub
-  generate_iso
+  generate_iso "$dst_iso_dir"
 
   popd || exit > /dev/null
   umount "$src_iso_dir" > /dev/null
