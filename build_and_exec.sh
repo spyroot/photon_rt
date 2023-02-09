@@ -80,7 +80,7 @@ log() {
 print_value_green() {
   local prefix_text=$1
   shit 1
-  printf "%s %b %s. %b\n" "$prefix_text ${GREEN}" "$@" "${NC}"
+  printf "%s %b %s. %b\n" "$prefix_text" "${GREEN}" $@" "${NC}"
 }
 
 function is_not_empty() {
