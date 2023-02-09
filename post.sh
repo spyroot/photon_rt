@@ -38,21 +38,22 @@ PIP_PKG_REQUIRED=("pyelftools" "sphinx")
 
 # What we are building, all flags on by default.
 # i.e. by default we build all.
-#MLX_BUILD="yes"
-#INTEL_BUILD="yes"
-#DPDK_BUILD="yes"
-#IPSEC_BUILD="yes"
-#LIBNL_BUILD="yes"
-#LIBNL_ISA="yes"
-#BUILD_TUNED="yes"
-#BUILD_SRIOV="yes"
-#BUILD_HUGEPAGES="yes"
-#BUILD_PTP="yes"
+MLX_BUILD="yes"
+INTEL_BUILD="yes"
+DPDK_BUILD="yes"
+IPSEC_BUILD="yes"
+LIBNL_BUILD="yes"
+LIBNL_ISA="yes"
+BUILD_TUNED="yes"
+BUILD_SRIOV="yes"
+BUILD_HUGEPAGES="yes"
+BUILD_PTP="yes"
 BUILD_TRUNK="yes"
-#WITH_QAT="yes"
-#LOAD_VFIO="yes"
-#SKIP_CLEANUP="yes"
-#BUILD_LOAD_DOCKER_IMAGE="yes"
+BUILD_STATIC_ADDRESS="no"
+WITH_QAT="yes"
+LOAD_VFIO="yes"
+SKIP_CLEANUP="yes"
+BUILD_LOAD_DOCKER_IMAGE="yes"
 
 # SRIOV NIC make sure it up.
 # SRIOV_NIC_LIST="eth4,eth5"
@@ -106,23 +107,33 @@ MLX_DIR=/tmp/mlnx_ofed_src
 INTEL_DIR=/tmp/iavf
 
 # all logs
-BUILD_MELLANOX_LOG="/build/build_mellanox_driver.log"
-BUILD_INTEL_LOG="/build/build_intel_driver.log"
-BUILD_DOCKER_LOG="/build/build_docker_images.log"
-BUILD_IPSEC_LOG="/build/build_ipsec_lib.log"
-BUILD_PIP_LOG="/build/build_pip_deps.log"
-BUILD_NL_LOG="/build/build_nl.log"
-BUILD_ISA_LOG="/build/build_isa.log"
-BUILD_DPDK_LOG="/build/build_dpdk.log"
-BUILD_TUNED_LOG="/build/build_tuned.log"
-BUILD_HUGEPAGES_LOG="/build/build_hugepages.log"
-BUILD_PTP_IPSEC_BUILD_LOG="/build/build_ipsec.log"
-BUILD_VLAN_TRUNK_BUILD_LOG="/build/vlan_trunk.log"
-DEFAULT_BUILDER_LOG="/build/build_main.log"
+BUILD_LOG_LOG="$/build/"
+BUILD_MELLANOX_LOG="$BUILD_LOG_LOG/build_mellanox_driver.log"
+BUILD_INTEL_LOG="$BUILD_LOG_LOG/build_intel_driver.log"
+BUILD_DOCKER_LOG="$BUILD_LOG_LOG/build_docker_images.log"
+BUILD_IPSEC_LOG="$BUILD_LOG_LOG/build_ipsec_lib.log"
+BUILD_PIP_LOG="$BUILD_LOG_LOG/build_pip_deps.log"
+BUILD_NL_LOG="$BUILD_LOG_LOG/build_nl.log"
+BUILD_ISA_LOG="$BUILD_LOG_LOG/build_isa.log"
+BUILD_DPDK_LOG="$BUILD_LOG_LOG/build_dpdk.log"
+BUILD_TUNED_LOG="$BUILD_LOG_LOG/build_tuned.log"
+BUILD_HUGEPAGES_LOG="$BUILD_LOG_LOG/build_hugepages.log"
+BUILD_PTP_IPSEC_BUILD_LOG="$BUILD_LOG_LOG/build_ipsec.log"
+BUILD_VLAN_TRUNK_BUILD_LOG="$BUILD_LOG_LOG/vlan_trunk.log"
+DEFAULT_BUILDER_LOG="$BUILD_LOG_LOG/build_main.log"
 
+# Variable for static network
+# mainly if we want set static IP for adapter
+# Note by default BUILD_STATIC_ADDRESS=no
+STATIC_ETHn_NAME="eth0"
+STATIC_ETHn_ADDRESS="192.168.254.1/24"
+STATIC_ETHn_GATEWAY="192.168.254.254"
+STATIC_ETHn_STATIC_DNS="8.8.8.8"
 
 # Functions definition,  scroll down to main.
 
+#
+#
 # remove all spaces from a string
 function remove_all_spaces {
   local str=$1
@@ -1193,6 +1204,53 @@ function fetch_file() {
   fi
 }
 
+# Function generate dhcp, by default generate masked for e*
+# if arg: provided will use that arg as Match
+function generate_dhcp_network() {
+  local eth_mask=$1
+  local default_mask="e*"
+  if [ -z "$eth_mask" ]; then
+    eth_mask=$default_mask
+  fi
+
+  cat > /etc/systemd/network/99-dhcp-en.network << EOF
+[Match]
+Name=$eth_mask
+[Network]
+DHCP=yes
+IPv6AcceptRA=no
+EOF
+}
+
+function generate_static_network() {
+  local eth_name=$1
+  cat > /etc/systemd/network/99-dhcp-en.network << EOF
+[Match]
+Name=$eth_name
+[Network]
+Address=$STATIC_ETHn_ADDRESS
+Gateway=$STATIC_ETHn_GATEWAY
+DNS=$STATIC_ETHn_STATIC_DNS
+EOF
+}
+
+# Function, this a backup if Photon OS
+# never adjusted network
+function generate_default_network() {
+  generate_dhcp_network "e*"
+
+  if [ -z "$BUILD_STATIC_ADDRESS" ] && [ "$BUILD_STATIC_ADDRESS" == "yes" ]; then
+      # if all vars defined
+      if [ -z "$STATIC_ETHn_NAME" ] &&
+      [ -z "$STATIC_ETHn_ADDRESS" ] &&
+      [ -z "$STATIC_ETHn_GATEWAY" ]  &&
+      [ -z "$STATIC_ETHn_STATIC_DNS" ]; then
+         generate_static_network $STATIC_ETHn_NAME
+      fi
+  fi
+}
+
+
 # Function search each required package by default all offline are in /direct
 # this function uses function search_file to locate.  i.e. it first checks /direct
 # if not found mount cdrom ( after first mount it might un mounted) search tar.gz , xy etc.
@@ -1317,14 +1375,19 @@ function main() {
 
   build_vlans_ifs $DOT1Q_ETH_NAME $DOT1Q_ETH_NAME
 
+  # optional steps
   build_qat
   if [ -z "$BUILD_SRIOV" ] && [ "$BUILD_SRIOV" == "yes" ]; then
     log_console_and_file "Skipping SRIOV phase."
     enable_sriov "$SRIOV_PCI_LIST" "$MAX_VFS_PER_PCI"
   fi
+  if [ -z "$BUILD_HUGEPAGES" ] && [ "$BUILD_HUGEPAGES" == "yes" ]; then
+    build_hugepages "$BUILD_HUGEPAGES_LOG" "$PAGES" "$PAGES_1GB"
+  fi
+  if [ -z "$BUILD_PTP" ] && [ "$BUILD_PTP" == "yes" ]; then
+      build_ptp "$BUILD_PTP_IPSEC_BUILD_LOG"
+  fi
 
-  build_hugepages "$BUILD_HUGEPAGES_LOG" "$PAGES" "$PAGES_1GB"
-  build_ptp "$BUILD_PTP_IPSEC_BUILD_LOG"
 }
 
 main
