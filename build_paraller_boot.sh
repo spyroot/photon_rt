@@ -1,4 +1,5 @@
 #!/bin/bash
+# This scripts bare-metal installer.
 # source should have following.
 # comma separated list of IPS in the env.
 #example:
@@ -25,6 +26,7 @@ if [[ -z "$DEFAULT_DST_IMAGE_NAME" ]]; then
   exit 99
 fi
 
+# image name in shared.bash
 DEFAULT_IMAGE_NAME=$DEFAULT_DST_IMAGE_NAME
 # a location where to copy iso, assume same host runs http.
 DEFAULT_LOCATION_MOVE="/var/www/html/"
@@ -93,7 +95,7 @@ else
 fi
 
 # first trim all whitespace and then iterate.
-IDRAC_IP_LIST=$(trim $IDRAC_IPS)
+IDRAC_IP_LIST=$(trim "$IDRAC_IPS")
 echo "$IDRAC_IP_ADDR"
 IFS=',' read -ra IDRAC_IP_ADDR <<< "$IDRAC_IP_LIST"
 for IDRAC_HOST in "${IDRAC_IP_ADDR[@]}"

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Upgrades Ubuntu distro upgrade and docker.
-#
+# this used for build system.
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 

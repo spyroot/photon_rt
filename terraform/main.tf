@@ -118,7 +118,7 @@ resource "null_resource" "tinytkg" {
     type = "ssh"
     host = vsphere_virtual_machine.vm.default_ip_address
     user = "root"
-    private_key = "${file(pathexpand("~/.ssh/id_rsa"))}"
+    private_key = file(pathexpand("~/.ssh/id_rsa"))
     port  = "22"
     agent = false
   }
@@ -147,7 +147,7 @@ resource "null_resource" "dpdk" {
     type = "ssh"
     host = vsphere_virtual_machine.vm.default_ip_address
     user = "root"
-    private_key = "${file(pathexpand("~/.ssh/id_rsa"))}"
+    private_key = file(pathexpand("~/.ssh/id_rsa"))
     port  = "22"
     agent = false
   }

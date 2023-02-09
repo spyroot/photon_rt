@@ -3,17 +3,6 @@
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 
-if [ -z "$PHOTON_5_X86" ]
-then
-    echo "PHOTON_5_X86 $PHOTON_5_X86 is unset, target build photon 4"
-    DEFAULT_SRC_IMAGE_NAME="ph4-rt-refresh.iso"
-    DEFAULT_DST_IMAGE_NAME="ph4-rt-refresh_adj.iso"
-else
-    echo "PHOTON_5_X86 is $PHOTON_5_X86 is set, target build photon 5"
-    DEFAULT_SRC_IMAGE_NAME="ph5-rt-refresh.iso"
-    DEFAULT_DST_IMAGE_NAME="ph5-rt-refresh_adj.iso"
-fi
-
 export BUILD_TYPE="offline"
 # all direct rpms will download and stored in direct_rpms
 DEFAULT_RPM_DIR="direct_rpms"
@@ -36,3 +25,14 @@ DEFAULT_ARC_DST_DIR="direct"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+
+if [ -z "$PHOTON_5_X86" ]
+then
+    echo "PHOTON_5_X86 $PHOTON_5_X86 is unset, target build photon 4"
+    DEFAULT_SRC_IMAGE_NAME="ph4-rt-refresh.iso"
+    DEFAULT_DST_IMAGE_NAME="ph4-rt-refresh_adj_$BUILD_TYPE.iso"
+else
+    echo "PHOTON_5_X86 is $PHOTON_5_X86 is set, target build photon 5"
+    DEFAULT_SRC_IMAGE_NAME="ph5-rt-refresh.iso"
+    DEFAULT_DST_IMAGE_NAME="ph5-rt-refresh_adj_$BUILD_TYPE.iso"
+fi

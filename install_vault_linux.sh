@@ -1,5 +1,8 @@
 #!/bin/bash
 # Create hash corp vault where we store all secrets including VC pass.
+#
+# ##### you need that only for VM installer. #######
+#
 # token.txt contains a token for a vault. Make sure you set right tf env.
 # Author Mustafa Bayramov 
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Resize disk ,  it used if and only if disk size resized for VM.
+# Resize disk,  it used if and only if disk size resized for VM.
 # For example if you changed disk size in vCenter for VM
 # and you need resize disk.
 #

@@ -1,4 +1,8 @@
 #!/bin/bash
+# get a token for terraform build.
+
+# spyroot@gmail.com
+# Author Mustafa Bayramov
 TOKEN=$(cat vault.log | grep Root | awk '{print $3}')
 echo "$TOKEN" > token.txt
 echo "export VAULT_ADDR='http://127.0.0.1:8200'"
