@@ -5,3 +5,4 @@
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 BUILD_TYPE="offline_testnf_os4_flex21" ./build_and_exec.sh
+BUILD_TYPE="offline_testnf_os4_flex21" ./build_iso.sh
