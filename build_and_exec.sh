@@ -375,7 +375,6 @@ function download_rpms() {
       else
             url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
       fi
-      url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
       log "Downloading $url_target to $DEFAULT_RPM_DIR"
       wget -q -nc "$url_target" -O $DEFAULT_RPM_DIR/"${rpm_pkg}".rpm
     done
