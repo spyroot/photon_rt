@@ -45,6 +45,7 @@ DEFAULT_ISO_LOCATION_4_X86="https://drive.google.com/u/0/uc?id=101hVCV14ln0hkbjX
 DEFAULT_ISO_PHOTON_5_X86="https://packages.vmware.com/photon/5.0/Beta/iso/photon-rt-5.0-9e778f409.iso"
 DEFAULT_ISO_PHOTON_5_ARM="https://packages.vmware.com/photon/5.0/Beta/iso/photon-5.0-9e778f409-aarch64.iso"
 DEFAULT_PACAKGE_LOCATION="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
+DEFAULT_NOARCH_PACAKGE_LOCATION="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/noarch/"
 DEFAULT_IMAGE_LOCATION=$DEFAULT_ISO_LOCATION_4_X86
 DEFAULT_DOCKER_IMAGE="spyroot/photon_iso_builder:latest"
 #
@@ -369,6 +370,11 @@ function download_rpms() {
     jq --raw-output -c '.[]' "$ADDITIONAL_DIRECT_RPMS" | while read -r rpm_pkg; do
       mkdir -p $DEFAULT_RPM_DIR
       local url_target
+      if  [[ $rpm_pkg == *"noarch"* ]]; then
+            url_target="$DEFAULT_NOARCH_PACAKGE_LOCATION${rpm_pkg}.rpm"
+      else
+            url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
+      fi
       url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
       log "Downloading $url_target to $DEFAULT_RPM_DIR"
       wget -q -nc "$url_target" -O $DEFAULT_RPM_DIR/"${rpm_pkg}".rpm
