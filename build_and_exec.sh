@@ -126,6 +126,7 @@ DOCKER_LOAD_POST_INSTALL=$DEFAULT_JSON_SPEC_DIR/additional_load_docker.json
 ADDITIONAL_RPMS=$DEFAULT_JSON_SPEC_DIR/additional_rpms.json
 ADDITIONAL_GIT_REPOS=$DEFAULT_JSON_SPEC_DIR/additional_git_clone.json
 ADDITIONAL_REMOTE_RPMS=$DEFAULT_JSON_SPEC_DIR/additional_remote_rpms.json
+KICK_START_FILE="$BUILD_TYPE_ks.cfg"
 
 function generate_key_if_need() {
   # add ssh key
@@ -260,9 +261,9 @@ function generate_kick_start() {
   }
   local additional_files
   additional_files=$(cat "$ADDITIONAL_FILES")
-  jq --argjson f "$additional_files" '. += $f' $current_ks_phase >ks.cfg
-  current_ks_phase="ks.cfg"
-  jsonlint $current_ks_phase
+  jq --argjson f "$additional_files" '. += $f' $current_ks_phase > "$KICK_START_FILE"
+  current_ks_phase=$KICK_START_FILE
+  jsonlint "$current_ks_phase"
 
   rm ks.phase[0-9].cfg
 
@@ -419,6 +420,7 @@ function print_and_validate_specs() {
     print_value_green "Will git clone" "$repo"
   done
 
+  print_value_green "Builder will generate:" "$KICK_START_FILE"
   print_value_green "ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
   print_value_green "ISO builder will generate:" "$DEFAULT_DST_IMAGE_NAME"
 
