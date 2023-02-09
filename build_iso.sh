@@ -11,6 +11,7 @@ source shared.bash
 
 echo "$DEFAULT_SRC_IMAGE_NAME"
 echo "$DEFAULT_DST_IMAGE_NAME"
+rm -rf "$DEFAULT_DST_IMAGE_NAME"
 
 DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
 if [[ -n "$BUILD_TYPE" ]]; then
