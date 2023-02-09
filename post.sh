@@ -28,6 +28,8 @@ rm -rf rm /root/build/dpdk-21.11/build
 AVX_VERSION=4.5.3
 MLNX_VER=5.4-1.0.3.0
 GREEN_CUSTOM='\033[0;32m'
+NC_CUSTOM='\033[0m'
+
 
 # default image loaded.
 DEFAULT_DOKCER_IMAGE_DIR=""
@@ -424,6 +426,25 @@ function log_console_and_file() {
   fi
 }
 
+# log message to console and file.
+# for keep, it separates
+function log_green_console_and_file() {
+  local log_dir
+  local default_log=$DEFAULT_BUILDER_LOG
+  printf "%b %s %b\n" "${GREEN_CUSTOM}" "$@" "${NC_CUSTOM}"
+
+  log_dir=$(extrac_dir $default_log)
+  if [ ! -d log_dir ]; then
+    mkdir -p "$log_dir"
+  fi
+
+  if file_exists "$default_log"; then
+    echo "$@" >>"$default_log"
+  else
+    echo "$@" >"$default_log"
+  fi
+}
+
 # Function take list of PCI devices, and number of target VFs,
 # Checks each PCI address in sysfs,
 # Resolves each PCI address from format the input pci@0000:BB:AA.0 to
@@ -797,13 +818,28 @@ function link_kernel() {
   local default_kernel_prefix="/usr/src/linux-headers-"
 
   target_system=$(uname -r)
-  if [ -z "$custom_kern_prefix" ]; then
-    log_console_and_file "Using default kernel header prefix $default_kernel_prefix"
+  if is_not_empty "$custom_kern_prefix"; then
+    log_console_and_file "Using custom provided kernel header dir $default_kernel_prefix"
+    kernel_src_path=$custom_kern_prefix
   else
-    log_console_and_file "Using user supplied prefix $default_kernel_prefix"
-    default_kernel_prefix=$custom_kern_prefix
+    kernel_src_path=$default_kernel_prefix$target_system
+    log_console_and_file "Using default kernel header prefix $kernel_src_path"
   fi
-  kernel_src_path=$default_kernel_prefix$target_system
+
+  if [ ! -d "$kernel_src_path" ]; then
+    log_console_and_file "Failed resole kernel $kernel_src_path taking current from /boot/photon.cfg"
+    local ver
+    local min
+    ver=$(cat /boot/photon.cfg|grep vmlinuz|cut -d '=' -f 2|cut -d '-' -f 2)
+    min=$(cat /boot/photon.cfg|grep vmlinuz|cut -d '=' -f 2|cut -d '-' -f 3)
+    kernel_src_path=/usr/src/linux-headers-$ver-$min
+    if [ ! -d "$kernel_src_path" ]; then
+      log_console_and_file "Failed resole kernel again. please stop check system."
+    else
+      log_green_console_and_file "Resolved kernel headers."
+      depmod
+    fi
+  fi
 
   if is_yes "$IS_INTERACTIVE"; then
         local choice
@@ -814,7 +850,6 @@ function link_kernel() {
         *) echo "invalid" ;;
         esac
   fi
-
   rm -rf /usr/src/linux
   ln -s "$kernel_src_path"/ /usr/src/linux 2>/dev/null
   if [ ! -d "/usr/src/linux" ]; then
@@ -1353,7 +1388,7 @@ function check_installed() {
   do
     if is_cmd_installed "$tool"
     then
-      log_console_and_file "tools $tool installed."
+      log_green_console_and_file "tools $tool installed."
     else
       log_console_and_file "tool $tool not installed."
       errors+=1
