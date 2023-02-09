@@ -41,6 +41,7 @@ PIP_PKG_REQUIRED=("pyelftools" "sphinx")
 
 # What we are building, all flags on by default.
 # i.e. by default we build all.
+DO_REBOOT="no"
 MLX_BUILD="yes"
 INTEL_BUILD="yes"
 DPDK_BUILD="yes"
