@@ -2,10 +2,73 @@
 
 The automated system is designed to work with a bare-metal host. (Dell) or with 
 VMware VC environment.
-In both cases, the automated build system, first build a reference iso file.  For example
-local directory contains ph4-rt-refresh.iso. or system fetch the reference ISO from the web. 
+Note to have a consistent build. A builder generates ISO that is used in both VM and Bare metal.    
+In the case of a VM, the ISO is used to boot the VM and install OS from kick-start. i.e., it 
+is an unattended installation.  Thus, In both cases, the automated build system, first build a reference iso file.  
+For example local directory contains ph4-rt-refresh.iso. or system fetch the reference ISO from the web. 
 
-There are three main build scripts that exposed.
+## What it builds system ?
+
+An automated system consists build three phases. 
+
+Phase one system generates reference kick-start ISO. During this phase
+We decided to build an online or offline version.
+
+### Online version
+
+Online version is the flavor when post kick-start phase. i.e., after the first reboot post-installation. 
+All post-install components polled from the internet. It polls all drivers,  
+git repo DPDK, IPSEC lib, lib-nl, and many other libs from the internet. 
+During this phase all RPMs , pip packages installed from internet.
+
+### Offline version
+
+In the offline version, all components are serialized to ISO and, after first boot, 
+moved to / partition.
+
+## What customization option does it have?
+
+Currently, system perform following.
+
+* First it unattended install.
+  * Bare metal leverage **idrac_ctl** first perform all BIOS customization.
+  * Bare metal clear all pending BIOS state and boot generate ISO.
+* Install latest mellanox driver upon first boot.
+* Install latest intel IAVF driver.
+* Pool kernel-rt source and link iavf and mellanox against latest rt.
+* kernel-header and src update during install.
+* The toolchain list is extensive. For example:, 
+  * DPDK complied with support Mellanox, crypto (Intel IPSEC lib), and iFPGA and is ready for Intel Flexran.
+
+* DPDK build with kernel module support.  
+* VFIO and VFIO-PCI both enabled by default with SRIOV support.
+* Build system detect numa topology and adjust system for HUGE PAGE support.
+* All hugepages mounted and fstab adjusted.
+* The build system automatically builds SRIOV VFs on multiply adapters from the list of PCI devices provided.
+* Check **post.sh** variable $SRIOV_PCI_LIST
+* Build system push ssh key from $HOME/.ssh/ thus after on the first boot can hook ansible.
+* Build system adjust optimize kernel for real time.
+  * In first boot system install tuned.
+  * Install mus_rt profile optimized for real time. 
+  * Initial setting  4 kernel thread allocated for general scheduler.
+  * All other isolated for real time.
+    * Default profile generated **mus_rt**
+    * Profile setting intel_pstate=disable intel_iommu=on iommu=pt (Note idrac_ctl by default disable C state)
+    * nosoftlockup tsc=reliable
+    * Huge pages by default set to 16 pages and default size 1G
+      * transparent_hugepage=never hugepages=16 default_hugepagesz=1G hugepagesz=1G 
+    * **NOHZ** In full mode and set for all isolated cores
+      * nohz_full=${isolated_cores} rcu_nocbs=${isolated_cores}
+    * RCU_NOCB** set for isolated_cores
+      * Logic behind this.  RCU callbacks are invoked in **softirq** context. 
+        This imposes allocator deallocate memory.  (take cycles we don't want that)
+        Check kernel.org docs for the rest
+
+* Build system build default PTP configuration and enabled PTP on dedicate adapter.
+  * CHeck **post.sh** variable PTP_ADAPTER,  note it PCI address.
+
+  
+* There are three main build scripts that exposed.
 * **build_and_exec.sh**  Build a kick-start and all customization and docker container.
 * **build_iso.sh** Build the final ISO file.
 * **build_praller_boot.sh** (Optional bare-metal only) leverages idract_ctl and boots N hosts from final customized ISO via remote HTTP media and installs the real-time OS.
