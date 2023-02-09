@@ -23,7 +23,7 @@ DEFAULT_DST_ISO_DIR="/tmp/photon-ks-iso"
 ADDITIONAL_FILES=$DEFAULT_JSON_SPEC_DIR/additional_files.json
 
 log() {
-  printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
+  printf "%b %s %b\n" "${GREEN}" "$@" "${NC}"
 }
 
 current_os=$(uname -a)
@@ -56,13 +56,8 @@ for img in "${docker_images[@]}"; do
     cp "$img" $DEFAULT_DST_ISO_DIR
 done
 
-#cp -r "$DEFAULT_SRC_ISO_DIR"/* "$DEFAULT_DST_ISO_DIR"/
-#if [[ -z "$DEFAULT_DOCKER_IMAGES" ]]; then
-#  cp "$DEFAULT_DOCKER_IMAGES"/*.tar.gz "$DEFAULT_DST_ISO_DIR"/
-#fi
 
 cp post.sh "$DEFAULT_DST_ISO_DIR"/
-
 mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_RPM_DST_DIR"
 mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_GIT_DST_DIR"
 mkdir -p "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
@@ -76,7 +71,10 @@ cp $DEFAULT_ARC_DIR/* "$DEFAULT_DST_ISO_DIR"/"$DEFAULT_ARC_DST_DIR"
 KICK_START_FILE=$BUILD_TYPE"_ks.cfg"
 
 pushd "$DEFAULT_DST_ISO_DIR"/ || exit
-cp "$workspace_dir"/"$KICK_START_FILE" isolinux/ks.cfg
+CURRENT_KICKSTART="$workspace_dir"/"$KICK_START_FILE"
+log "Copy arcs from $DEFAULT_ARC_DIR to $DEFAULT_DST_ISO_DIR / $DEFAULT_ARC_DST_DIR"
+log "Copy $CURRENT_KICKSTART to isolinux/ks.cfg"
+cp "$CURRENT_KICKSTART" isolinux/ks.cfg
 
 # generate isolinux
 cat > isolinux/isolinux.cfg << EOF
