@@ -113,6 +113,8 @@ PTP_ADAPTER="pci@0000:8a:00.1"
 # All links and directories
 IPSEC_LIB_LOCATION="https://github.com/intel/intel-ipsec-mb.git"
 ISA_L_LOCATION="https://github.com/intel/isa-l"
+TUNED_LOCATION="https://github.com/spyroot/tuned.git"
+
 
 # mirror for all online files.
 # drivers etc.
@@ -591,6 +593,15 @@ function build_ipsec_lib() {
   then
       log_console_and_file "Skipping ipsec lib build."
   else
+      if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building ipsec lib (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+    fi
     log_console_and_file "Building ipsec lib."
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
@@ -744,6 +755,38 @@ function build_lib_isa() {
     ./configure > "$log_file" 2>&1
     make -j 8 > "$log_file.build.log" 2>&1; make install > "$log_file.isa.install.log" 2>&1
     ldconfig; ldconfig /usr/local/lib; ldconfig /usr/lib
+  fi
+}
+
+function link_kernel() {
+  local custom_kern_prefix=$1
+  local target_system
+  local kernel_src_path
+  local default_kernel_prefix="/usr/src/linux-headers-"
+
+  target_system=$(uname -r)
+  if [ -z "$custom_kern_prefix" ]; then
+    log_console_and_file "Using default kernel header prefix $default_kernel_prefix"
+  else
+    log_console_and_file "Using user supplied prefix $default_kernel_prefix"
+    default_kernel_prefix=$custom_kern_prefix
+  fi
+  kernel_src_path=$default_kernel_prefix$target_system
+
+  if is_yes "$IS_INTERACTIVE"; then
+        local choice
+        read -r -p "Linking /usr/src/link to $kernel_src_path (y/n)?" choice
+        case "$choice" in
+        y | Y) echo "yes" ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+  fi
+
+  rm -rf /usr/src/linux
+  ln -s "$kernel_src_path"/ /usr/src/linux 2>/dev/null
+  if [ ! -d "/usr/src/linux" ]; then
+    echo log_console_and_file "Failed create link /usr/src/linux to a current kernel source."
   fi
 }
 
@@ -917,8 +960,7 @@ function build_tuned() {
         tar xfz $DEFAULT_GIT_IMAGE_DIR/tuned.tar.gz -C $ROOT_BUILD --strip-components=1
     else
       log_console_and_file "Cloning tuned form remote repo."
-      git clone https://github.com/spyroot/tuned.git; cd tuned || exit;
-      cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
+      cd $ROOT_BUILD || exit; git clone "$TUNED_LOCATION" > "$log_file" 2>&1; cd tuned || exit;
     fi
 
     cp -Rf tuned /usr/lib/python3.10/site-packages
@@ -1678,6 +1720,8 @@ function main() {
   if [[ $errs -gt 0 ]]; then
     echo "Please check required commands."
   fi
+
+  link_kernel ""
 
   # fix-up all vars in case of mistake.
   SRIOV_PCI_LIST=$(remove_all_spaces "$SRIOV_PCI_LIST")
