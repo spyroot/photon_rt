@@ -94,8 +94,8 @@ function main() {
     DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
   fi
 
-  DEFAULT_SRC_ISO_DIR="/tmp/$BUILD_TYPE_photon-iso"
-  DEFAULT_DST_ISO_DIR="/tmp/$BUILD_TYPE_photon-ks-iso"
+  DEFAULT_SRC_ISO_DIR=/tmp/$BUILD_TYPE_photon-iso
+  DEFAULT_DST_ISO_DIR=/tmp/$BUILD_TYPE_photon-ks-iso
   ADDITIONAL_FILES=$DEFAULT_JSON_SPEC_DIR/additional_files.json
 
   clean_up $DEFAULT_DST_ISO_DIR $DEFAULT_SRC_ISO_DIR
