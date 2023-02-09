@@ -30,8 +30,9 @@ if is_not_empty "$DEFAULT_IMAGE_NAME" && is_not_empty "$BUILD_HOST"; then
 fi
 
 if is_not_empty "$BUILD_WEB_HOST"; then
-  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-flexran-base210.tar &
-  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-flexran-base220.tar &
-  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-lite210.tar &
-  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-lite220.tar &
+  echo "Downloading images from $BUILD_WEB_HOST"
+  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-flexran-base210.tar > download01.log &
+  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-flexran-base220.tar > download02.log &
+  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-lite210.tar > download03.log &
+  wget -q -nc http://"$BUILD_WEB_HOST"/testnf/testnf-du-lite220.tar > download04.log &
 fi
