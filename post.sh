@@ -832,6 +832,16 @@ function build_dpdk() {
 # Functions load vfio and vfio_pci
 function load_vfio_pci() {
 
+    if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Load vfio and adjusting /etc/modules-load.d (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+  fi
+
   if [ -z "$LOAD_VFIO" ] || [ "$LOAD_VFIO" == "no" ]; then
     log_console_and_file "Skipping QAT phase."
   else
@@ -883,6 +893,17 @@ EOF
 # Function fix tuned and some build in, generate a new tuned profile
 # updates tuned python and make it active.
 function build_tuned() {
+
+   if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Build tuned profile (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+  fi
+
   local log_file=$1
   touch "$log_file" 2>/dev/null
   #### create tuned profile.
@@ -893,7 +914,7 @@ function build_tuned() {
     mkdir -p $ROOT_BUILD/tuned 2>/dev/null
     if [ -d "/git_images" ]; then
         log_console_and_file "Unpacking tuned lib from a local copy."
-        tar xfz /git_images/tuned.tar.gz -C $ROOT_BUILD --strip-components=1
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/tuned.tar.gz -C $ROOT_BUILD --strip-components=1
     else
       log_console_and_file "Cloning tuned form remote repo."
       git clone https://github.com/spyroot/tuned.git; cd tuned || exit;
@@ -980,6 +1001,17 @@ trim() {
 
 # Function enables Intel QAT.
 function build_qat() {
+
+   if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Loading QAT (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+  fi
+
   if [ -z "$WITH_QAT" ]; then
     log_console_and_file "Skipping QAT phase."
   else
@@ -1003,6 +1035,22 @@ function build_hugepages() {
   then
       log_console_and_file "Skipping hugepages allocation."
   else
+
+    # Huge pages for each NUMA NODE
+    log_console_and_file "Adjusting numa pages."
+    local IS_SINGLE_NUMA
+    IS_SINGLE_NUMA=$(numactl --hardware | grep available | grep 0-1)
+
+     if is_yes "$IS_INTERACTIVE"; then
+        local choice
+        read -r -p "Building huge 2048 $pages 1GB $page_1gb, pages detected $IS_SINGLE_NUMA (y/n)?" choice
+        case "$choice" in
+        y | Y) echo "yes" ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+    fi
+
     # Huge pages for each NUMA NODE
     log_console_and_file "Adjusting numa pages."
     local IS_SINGLE_NUMA
@@ -1046,6 +1094,16 @@ function build_ptp() {
   then
       log_console_and_file "Skipping ptp configuration."
   else
+      if is_yes "$IS_INTERACTIVE"; then
+        local choice
+        read -r -p "Building ptp configuration (y/n)?" choice
+        case "$choice" in
+        y | Y) echo "yes" ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+    fi
+
     # enable ptp4l start and create config, restart.
     log_console_and_file "Enabling ptp4l ptp4l."
     systemctl enable ptp4l
@@ -1371,6 +1429,16 @@ EOF
 # if static required it will also generate static.
 function generate_default_network() {
   # generate default dhcp network
+  if is_yes "$IS_INTERACTIVE"; then
+    local choice
+    read -r -p "Building default DHCP and static network (y/n)?" choice
+    case "$choice" in
+    y | Y) echo "yes" ;;
+    n | N) return 1 ;;
+    *) echo "invalid" ;;
+    esac
+  fi
+
   if is_yes $BUILD_DEFAULT_NETWORK; then
     log_console_and_file "Generating default dhcp network"
     generate_dhcp_network "e*"
@@ -1453,6 +1521,16 @@ function build_vlans_ifs() {
       log_console_and_file "Failed resolve PCI $DOT1Q_VLAN_TRUNK_PCI address for vlan trunk."
     fi
 
+    if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building trunk profile VLAN range $vlan_id_list adapter $trunk_eth_name (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+    fi
+
     local vlan_ids=""
     local separator=','
     IFS=$separator read -ra vlan_ids <<<"$vlan_id_list"
@@ -1472,7 +1550,19 @@ function build_vlans_ifs() {
       echo "VLAN=VLAN$vlan_id" >> "$DEFAULT_SYSTEMD_PATH/00-$if_name.network"
     done
   fi
-  # systemctl restart systemd-networkd
+
+
+  if is_yes "$IS_INTERACTIVE"; then
+    local choice
+    read -r -p "Restarting networkd (y/n)?" choice
+    case "$choice" in
+    y | Y) echo "yes" ;;
+    n | N) return 1 ;;
+    *) echo "invalid" ;;
+    esac
+  fi
+
+  systemctl restart systemd-networkd
 }
 
 
