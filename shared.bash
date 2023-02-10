@@ -79,12 +79,12 @@ function is_yes() {
   fi
 }
 
-function is_true() {
+function already_ejected() {
   local var=$1
   if [[ -z "$var" ]]; then
     return 1
   else
-    if [ "$var" == "true" ]; then
+    if [ "$var" == "true" ] || [ "$var" == "Image already ejected" ]; then
       return 0
     else
       return 1
