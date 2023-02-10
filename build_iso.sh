@@ -9,7 +9,7 @@
 
 source shared.bash
 
-log() {
+function log() {
   printf "%b %s %b\n" "${GREEN}" "$@" "${NC}"
 }
 
@@ -110,6 +110,8 @@ function clean_up() {
     log "Removing old $generated_img_location"
     rm -rf "$generated_img_location"
     rm -rf "$generated_img_location".sha
+  else
+    log "Failed locate $generated_img_location"
   fi
 }
 
