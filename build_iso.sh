@@ -181,8 +181,8 @@ function main() {
   if file_exists "$DEFAULT_SRC_IMAGE_NAME"; then
     mount "$DEFAULT_SRC_IMAGE_NAME" "$src_iso_dir" 2>/dev/null
   else
-    log_red "Failed locate $DEFAULT_SRC_IMAGE_NAME, please first run build_run_exec
-    and poll source ISO and generate kickstart spec"
+    log_red "Failed locate $DEFAULT_SRC_IMAGE_NAME, please first run build_run_exec.sh
+    and poll the source ISO and generate kickstart from the specs."
     exit 99
   fi
 
