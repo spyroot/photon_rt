@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="bashsupport-pro.project">
+    <globalVariables>
+      <var name="vlan" />
+      <var name="IPv6_SEND_RA" />
+      <var name="j" />
+      <var name="sriov_pci_array" />
+      <var name="rand_num" />
+      <var name="BUILD_TYPE_photon" />
+    </globalVariables>
+  </component>
+</project>

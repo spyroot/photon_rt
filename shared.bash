@@ -3,8 +3,10 @@
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 
+DEFAULT_BUILD_TYPE="offline_testnf_os4_flex21"
+# offline
 if [ -z "$BUILD_TYPE" ]; then
-  export BUILD_TYPE="offline"
+  export BUILD_TYPE=$DEFAULT_BUILD_TYPE
 fi
 
 # all direct rpms will download and stored in direct_rpms
