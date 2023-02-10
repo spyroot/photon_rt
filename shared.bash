@@ -79,12 +79,12 @@ function is_yes() {
   fi
 }
 
-function is_true() {
+function is_cdrom_connected() {
   local var=$1
   if [[ -z "$var" ]]; then
     return 1
   else
-    if [ "$var" == "true" ] || [ "$var" == "Image already ejected" ]; then
+    if [ "$var" == "False" ]; then
       return 0
     else
       return 1
@@ -92,6 +92,18 @@ function is_true() {
   fi
 }
 
+function is_enabled() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    if [ "$var" == "Enabled" ]; then
+      return 0
+    else
+      return 1
+    fi
+  fi
+}
 
 function dir_exists() {
   local -r a_dir="$1"

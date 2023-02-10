@@ -96,31 +96,29 @@ function compare_sha() {
   fi
 }
 
-function adjust_bios() {
+function adjust_bios_if_needed() {
   local addr=$1
-  local bios_config=$2
+  local sriov_enabled=""
   local default_bios_config="bios/bios.json"
   # first we check if SRIOV enabled or not, ( Default disabled)
-  if is_yes "$SKIP_BIOS"; then
-    log "Skipping bios reconfiguration"
+  sriov_enabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter SriovGlobalEnable | jq --raw-output '.data[]')"
+  if is_enabled "$sriov_enabled"; then
+    log "Skipping bios reconfiguration sriov already enabled."
   else
     # reset all bios pending.
-    export IDRAC_IP="$addr"
-    idrac_ctl idrac_ctl bios-clear-pending --from_spec "$bios_config"
-    export IDRAC_IP="$addr"
-    idrac_ctl job-apply job-apply
-    # commit changes and reboot
-    export IDRAC_IP="$addr"
-    idrac_ctl idrac_ctl bios-change --from_spec bios/bios.json on-reset --commit --reboot
+    IDRAC_IP="$addr" idrac_ctl job-apply job-apply
+    IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
   fi
 }
+
 function boot_host() {
   local addr=$1
   local resp=""
+
   IDRAC_IP="$addr" idrac_ctl eject_vm --device_id 1
   resp=$(IDRAC_IP="$addr" idrac_ctl --nocolor get_vm --device_id 1 --filter_key Inserted | jq --raw-output -r '.data')
   log "Respond for get virtual medial $resp"
-  if is_true "$resp"; then
+  if is_cdrom_connected "$resp"; then
     log "cdrom ejected on server $addr."
   fi
 
@@ -156,6 +154,9 @@ function main() {
   for IDRAC_HOST in "${IDRAC_IP_ADDR[@]}"; do
     local addr
     addr=$(trim "$IDRAC_HOST")
+
+    adjust_bios_if_needed "$addr"
+
     boot_host "$addr"
   done
 }
