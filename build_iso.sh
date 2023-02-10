@@ -233,11 +233,10 @@ function main() {
   for r in $additional_rpms
   do
     if file_exists "$r"; then
-      log "copy %r to $noarch"
+      log "copy $r to $noarch"
       cp "$r" "$noarch"
     fi
   done
-
 
   log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
   cp $DEFAULT_RPM_DIR/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
