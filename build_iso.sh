@@ -210,6 +210,15 @@ function main() {
   mkdir -p "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
   mkdir -p "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
+  additional_rpms=$(cat "$kick_start_file" | jq -r '.additional_packages[]' |
+	xargs -I {} echo "direct_rpms/{}*.rpm")
+  cp "$additional_rpms" "$dst_iso_dir"/RPMS/x86_64
+
+  # narch we copy to noarch
+  additional_noarch_rpms=$(cat "$kick_start_file" | jq -r '.additional_packages[]' |
+	xargs -I {} echo "direct_rpms/{}*.noarch.rpm")
+  cp "$additional_noarch_rpms" "$dst_iso_dir"/RPMS/noarch
+
   log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
   cp $DEFAULT_RPM_DIR/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
 
