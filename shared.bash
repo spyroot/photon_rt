@@ -105,6 +105,18 @@ function is_enabled() {
   fi
 }
 
+function is_disabled() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    if [ "$var" == "Disabled" ]; then
+      return 0
+    else
+      return 1
+    fi
+  fi
+}
 function dir_exists() {
   local -r a_dir="$1"
   [[ -d "$a_dir" ]]

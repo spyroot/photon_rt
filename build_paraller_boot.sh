@@ -99,12 +99,23 @@ function compare_sha() {
 function adjust_bios_if_needed() {
   local addr=$1
   local sriov_enabled=""
+  local cstate_disabled=""
+
   local default_bios_config="bios/bios.json"
   # first we check if SRIOV enabled or not, ( Default disabled)
   log "Check default SRIOV settings."
   sriov_enabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter SriovGlobalEnable | jq --raw-output '.data[]')"
   if is_enabled "$sriov_enabled"; then
     log "Skipping bios reconfiguration sriov already enabled."
+  else
+    # reset all bios pending.
+    IDRAC_IP="$addr" idrac_ctl job-apply job-apply
+    IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
+  fi
+  # cstate must disabled
+  cstate_disabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter ProcCStates | jq --raw-output '.data[]')"
+  if is_disabled "$cstate_disabled"; then
+    log "Skipping c state it already disabled.."
   else
     # reset all bios pending.
     IDRAC_IP="$addr" idrac_ctl job-apply job-apply
