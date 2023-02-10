@@ -1,7 +1,8 @@
 [
   "docker",
   "docker-cli",
-  "docker-engine"
+  "docker-engine",
+  "irqbalance"
 ]
 
 
