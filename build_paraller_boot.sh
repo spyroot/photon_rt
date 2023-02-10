@@ -41,7 +41,11 @@ SKIP_BIOS="yes"
 
 # all envs
 if [ ! -f cluster.env ]; then
-  echo "Please create cluster.env file"
+  echo "Please create cluster.env file.  Content should look like
+  export IDRAC_IPS=\"x.x.x.x\"
+  export IDRAC_PASSWORD=\"passs\"
+  export IDRAC_USERNAME=root
+  export IDRAC_REMOTE_HTTP=x.x.x.x"
   exit 99
 else
   source cluster.env
