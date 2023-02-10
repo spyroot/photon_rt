@@ -44,7 +44,7 @@ function generate_menu() {
    cat >> isolinux/menu.cfg << EOF
 label my_unattended
 	menu label ^Unattended Install
-    menu default
+  menu default
 	kernel vmlinuz
 	append initrd=initrd.img root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=cdrom
 EOF
@@ -65,7 +65,7 @@ terminal_output gfxterm
 probe -s photondisk -u (\$root)
 
 menuentry "Install" {
-    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=UUID=\$photondisk
+    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=UUID=\$photondisk photon.media.mount_retry=5
     initrd /isolinux/initrd.img
 }
 EOF
