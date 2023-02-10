@@ -1799,7 +1799,7 @@ function build_vlans_ifs() {
       generate_vlan_netdev "$vlan_id"
     done
     # generate ether adapter with LLDP on or off etc.
-    generate_ether_adapter "$if_name" $LLDP $LLDP_EMIT
+    generate_ether_adapter "$trunk_eth_name" $LLDP $LLDP_EMIT
     IFS=$separator read -ra vlan_ids <<<"$vlan_id_list"
     for vlan_id in "${vlan_ids[@]}"; do
       echo "VLAN=VLAN$vlan_id" >> "$DEFAULT_SYSTEMD_PATH/00-$if_name.network"
