@@ -21,7 +21,7 @@
 
 # all overwrite loaded from overwrite
 source /overwrite.env
-rpm -i /mnt/cdrom/direct_rpms/*
+rpm -i /mnt/media/direct_rpms/*
 
 export LANG=en_US.UTF-8
 export LC_ALL=$LANG
