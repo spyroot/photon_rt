@@ -1774,11 +1774,12 @@ EOF
 function build_vlans_ifs() {
   local vlan_id_list=$1
   local if_name=$2
-  if is_yes $BUILD_TRUNK && is_not_empty $DOT1Q_VLAN_TRUNK_PCI; then
+  if is_yes "$BUILD_TRUNK" && is_not_empty "$DOT1Q_VLAN_TRUNK_PCI"; then
     local trunk_eth_name
     trunk_eth_name=$(pci_to_adapter "$DOT1Q_VLAN_TRUNK_PCI")
     if [ -z "$trunk_eth_name" ]; then
       log_console_and_file "Failed resolve PCI $DOT1Q_VLAN_TRUNK_PCI address for vlan trunk."
+      return 1
     fi
 
     if is_yes "$IS_INTERACTIVE"; then
@@ -2032,7 +2033,7 @@ function main() {
   generate_default_network
 
   # generate adapter
-  build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" $DOT1Q_VLAN_TRUNK_PCI
+  build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" "$DOT1Q_VLAN_TRUNK_PCI"
 
 
   if is_cdrom_mounted "cdrom"; then
