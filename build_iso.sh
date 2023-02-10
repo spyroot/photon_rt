@@ -20,25 +20,32 @@ then
 exit 2
 fi
 
-function file_exists {
+function dir_exists() {
+  local -r a_dir="$1"
+  [[ -d "$a_dir" ]]
+}
+
+function file_exists() {
   local -r a_file="$1"
   [[ -f "$a_file" ]]
 }
 
 workspace_dir=$(pwd)
 
+# function generate isolinux.cfg
 function generate_isolinux() {  
-  # generate isolinux
+  local default_prompt_timeout=1
+  local default_timeout=1
   cat > isolinux/isolinux.cfg << EOF
 include menu.cfg
 default vesamenu.c32
-prompt 1
-timeout 1
+prompt $default_prompt_timeout
+timeout $default_timeout
 EOF
 }
 
+# function generate menu
 function generate_menu() {  
-  # generate isolinux
    cat >> isolinux/menu.cfg << EOF
 label my_unattended
 	menu label ^Unattended Install
@@ -48,6 +55,7 @@ label my_unattended
 EOF
 }
 
+# function generate grub config
 function generate_grub() {
   # generate grub
   cat > boot/grub2/grub.cfg << EOF
@@ -77,21 +85,32 @@ function generate_iso() {
     -V "PHOTON_$(date +%Y%m%d)" . >"$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
 }
 
+
 function clean_up() {
   local old_dst_image=$1
   local old_src_image_dir=$2
   local generated_img_location=""
 
-  log "Removing old build from $old_dst_image"
-  rm -rf "$old_dst_image"
+  if dir_exists "$old_dst_image"; then
+    log "Removing old build from $old_dst_image"
+    rm -rf "${old_dst_image:?}/"*
+  fi
+
   log "Unmount $old_src_image_dir"
   umount -q "$old_src_image_dir" 2>/dev/null
-  log "Removing old $old_src_image_dir"
-  rm -rf "$old_src_image_dir" 2>/dev/null
+
+  if dir_exists "$old_src_image_dir"; then
+    log "Removing old $old_src_image_dir"
+    rm -rf "${old_src_image_dir:?}/"*
+#    rm -rf "$old_src_image_dir" 2>/dev/null
+  fi
+
   generated_img_location="$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
-  log "Removing old $generated_img_location"
-  rm -rf "$generated_img_location"
-  rm -rf "$generated_img_location".sha
+  if file_exists "$generated_img_location"; then
+    log "Removing old $generated_img_location"
+    rm -rf "$generated_img_location"
+    rm -rf "$generated_img_location".sha
+  fi
 }
 
 function main() {
@@ -100,14 +119,20 @@ function main() {
   local additional_files=""
   local kick_start_file=""
   local full_path_kick_start=""
+
   if [[ -z "$BUILD_TYPE" ]]; then
     echo "Please make sure you have in shared.bash BUILD_TYPE var"
     exit 99
   fi
 
-  local DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
-  if [[ -n "$BUILD_TYPE" ]]; then
-    DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
+  if is_not_empty "$BUILD_TYPE"; then
+    local DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/"online"
+    if [[ -n "$BUILD_TYPE" ]]; then
+      DEFAULT_JSON_SPEC_DIR=$DEFAULT_SPEC_FOLDER/$BUILD_TYPE
+    fi
+  else
+    echo "Please make you have correct BUILD_TYPE defined"
+    exit 99
   fi
 
   src_iso_dir=/tmp/"$BUILD_TYPE"_photon-iso
@@ -116,6 +141,9 @@ function main() {
   additional_files=$DEFAULT_JSON_SPEC_DIR/additional_files.json
 
   clean_up "$dst_iso_dir" "$src_iso_dir"
+  if is_yes "$DO_CLEAN_UP_ONLY"; then
+    return 0
+  fi
 
   log "Source image temp location $src_iso_dir"
   log "Source image temp location $dst_iso_dir"
@@ -141,11 +169,12 @@ function main() {
   local docker_images=""
   IFS=$separator read -ra docker_images <<<"$docker_files"
   for img in "${docker_images[@]}"; do
+      local base_name
       log "Copy $img to $dst_iso_dir"
       cp "$img" "$dst_iso_dir"
       cp post.sh "$dst_iso_dir"/ > /dev/null
-      base_name=$(basename $img)
-      echo "DOCKER_IMAGE=$base_name" >> "$dst_iso_dir"/overwrite.env
+      base_name=$(basename "$img")
+      echo "DOCKER_IMAGE=$base_name" >> "$dst_iso_dir"/"$DEFAULT_OVERWRITE_FILE"
   done
 
   mkdir -p "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"

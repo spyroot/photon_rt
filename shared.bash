@@ -24,6 +24,8 @@ DEFAULT_RPM_DST_DIR="direct_rpms"
 DEFAULT_GIT_DST_DIR="git_images"
 # this directory will be created inside ISO
 DEFAULT_ARC_DST_DIR="direct"
+# default overwrite file we copy to ISO
+DEFAULT_OVERWRITE_FILE="overwrite.env"
 #
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -39,3 +41,15 @@ else
     DEFAULT_SRC_IMAGE_NAME="ph5-rt-refresh.iso"
     DEFAULT_DST_IMAGE_NAME="ph5-rt-refresh_adj_$BUILD_TYPE.iso"
 fi
+
+DO_CLEAN_UP_ONLY="yes"
+
+# Function check if string empty or not
+function is_not_empty() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
