@@ -57,6 +57,13 @@ function generate_grub() {
 set default=1
 set timeout=1
 loadfont ascii
+insmod gfxterm
+insmod vbe
+insmod tga
+insmod png
+insmod ext2
+insmod part_gpt
+
 set gfxmode="1024x768"
 gfxpayload=keep
 
@@ -65,7 +72,7 @@ terminal_output gfxterm
 probe -s photondisk -u (\$root)
 
 menuentry "Install" {
-    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=cdrom photon.media.mount_retry=20
+    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media= photon.media.mount_retry=20
     initrd /isolinux/initrd.img
 }
 EOF
