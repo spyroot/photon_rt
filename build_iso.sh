@@ -178,7 +178,12 @@ function main() {
   mkdir -p "$src_iso_dir"
   mkdir -p "$dst_iso_dir"
   log "Mount $DEFAULT_SRC_IMAGE_NAME to $src_iso_dir"
-  mount "$DEFAULT_SRC_IMAGE_NAME" "$src_iso_dir" 2>/dev/null
+  if file_exists "$DEFAULT_SRC_IMAGE_NAME"; then
+    mount "$DEFAULT_SRC_IMAGE_NAME" "$src_iso_dir" 2>/dev/null
+  else
+    log_red "Failed locate $DEFAULT_SRC_IMAGE_NAME, please first run build_run_exec
+    and poll source ISO and generate kickstart spec"
+  fi
 
   log "Copy data from $src_iso_dir/* to $dst_iso_dir/"
   cp -r "$src_iso_dir"/* "$dst_iso_dir"/
