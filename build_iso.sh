@@ -89,7 +89,7 @@ function clean_up() {
   log "Removing old $old_src_image_dir"
   rm -rf "$old_src_image_dir" 2>/dev/null
   generated_img_location="$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
-  log "Removing old"$generated_img_location"
+  log "Removing old $generated_img_location"
   rm -rf "$generated_img_location"
   rm -rf "$generated_img_location".sha
 }
