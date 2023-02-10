@@ -210,14 +210,18 @@ function main() {
   mkdir -p "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
   mkdir -p "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
-  additional_rpms=$(cat "$kick_start_file" | jq -r '.additional_packages[]' |
-	xargs -I {} echo "direct_rpms/{}*.rpm")
-  cp "$additional_rpms" "$dst_iso_dir"/RPMS/x86_64
+  rpm_dir="$dst_iso_dir"/RPMS/x86_64
+  local additional_rpms
+  log "Copy additional to $rpm_dir"
+  additional_rpms=$(cat "$kick_start_file" | jq --raw-output -r '.additional_packages[]' | xargs -I {} echo "$DEFAULT_RPM_DST_DIR/{}*.rpm")
+  cp "$additional_rpms" "$rpm_dir"
 
   # narch we copy to noarch
-  additional_noarch_rpms=$(cat "$kick_start_file" | jq -r '.additional_packages[]' |
-	xargs -I {} echo "direct_rpms/{}*.noarch.rpm")
-  cp "$additional_noarch_rpms" "$dst_iso_dir"/RPMS/noarch
+  noarch="$dst_iso_dir"/RPMS/noarch
+  local additional_noarch_rpms
+  log "Copy additional to $noarc"
+  additional_noarch_rpms=$(cat "$kick_start_file" | jq --raw-output -r '.additional_packages[]' | xargs -I {} echo "$DEFAULT_RPM_DST_DIR/{}*.noarch.rpm")
+  cp "$additional_noarch_rpms" "$noarch"
 
   log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
   cp $DEFAULT_RPM_DIR/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
