@@ -77,6 +77,7 @@ fi
 pip --quiet install idrac_ctl -U &> /dev/null
 pip --quiet pygments tqdm requests -U &> /dev/null
 
+rm rf $DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"
 ## build-iso.sh generates ph4-rt-refresh_adj.iso
 src_hash=$(md5sum "$DEFAULT_IMAGE_NAME")
 dst_hash=$(md5sum $DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME")
