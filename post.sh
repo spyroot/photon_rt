@@ -1,6 +1,9 @@
 #!/bin/bash
 # This is post install script.  This script executed
 # after first post install.
+# Post install builder support two mode interactive and none interactive mode (default)
+# IS_INTERACTIVE design for case if we run manually by hand.
+#
 #
 # The goal here
 # - build mellanox driver and Intel driver.
