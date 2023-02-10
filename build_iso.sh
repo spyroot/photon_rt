@@ -9,6 +9,10 @@
 
 source shared.bash
 
+function log_red() {
+  printf "%b %s %b\n" "${RED}" "$@" "${NC}"
+}
+
 function log() {
   printf "%b %s %b\n" "${GREEN}" "$@" "${NC}"
 }
@@ -111,7 +115,7 @@ function clean_up() {
     rm -rf "$generated_img_location"
     rm -rf "$generated_img_location".sha
   else
-    log "Failed locate $generated_img_location"
+    log_red "Failed locate $generated_img_location"
   fi
 }
 
