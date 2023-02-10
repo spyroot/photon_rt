@@ -2091,7 +2091,7 @@ function main() {
   clean_up
 
   # either fetch from local or remote
-  unpack_all_files "dpdk" "dpdk-21.11" "tar.xz" dpdk_build_location "${DPDK_URL_LOCATIONS[@]}"
+  unpack_all_files "dpdk" "$DPDK_VERSION" "tar.xz" dpdk_build_location "${DPDK_URL_LOCATIONS[@]}"
   unpack_all_files "iavf-$AVX_VERSION" "iavf-$AVX_VERSION" "tar.gz" iavf_build_location "${IAVF_LOCATION[@]}"
   unpack_all_files "libnl-3.2.25" "libnl-3.2.25" "tar.gz" libnl_build_location "${LIB_NL_LOCATION[@]}"
   unpack_all_files "MLNX_OFED_SRC" "MLNX_OFED_SRC-debian-$MLNX_VER" "tgz" mellanox_build_location "${MELLANOX_LOCATION[@]}"
@@ -2102,7 +2102,7 @@ function main() {
   echo "-Mellanox Build location $mellanox_build_location"
 
   # if we do interactive.
-  # we want run script by hand post install.
+  #  for example, we want run manually by hand post install.
   if is_yes "$IS_INTERACTIVE"; then
     print_build_spec
 
