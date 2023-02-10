@@ -106,9 +106,9 @@ function clean_up() {
   if dir_exists "$old_src_image_dir"; then
     log "Removing old $old_src_image_dir"
     rm -rf "${old_src_image_dir:?}/"*
-#    rm -rf "$old_src_image_dir" 2>/dev/null
   fi
 
+  local generated_img_location
   generated_img_location="$workspace_dir"/"$DEFAULT_DST_IMAGE_NAME"
   if file_exists "$generated_img_location"; then
     log "Removing old $generated_img_location"
@@ -118,9 +118,11 @@ function clean_up() {
     log_red "Failed locate $generated_img_location"
   fi
 
-  if file_exists "$DEFAULT_WEB_DIR"; then
-    log "Removing old image from web dir $generated_img_location"
-    rm -rf "$DEFAULT_WEB_DIR"
+  local web_image_location
+  web_image_location="$DEFAULT_WEB_DIR"/"$DEFAULT_DST_IMAGE_NAME"
+  if file_exists web_image_location; then
+    log "Removing old image from web dir $web_image_location"
+    rm -rf "$web_image_location"
   fi
 }
 
