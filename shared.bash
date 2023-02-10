@@ -79,7 +79,7 @@ function is_yes() {
   fi
 }
 
-function already_ejected() {
+function is_true() {
   local var=$1
   if [[ -z "$var" ]]; then
     return 1
