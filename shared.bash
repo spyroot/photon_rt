@@ -30,6 +30,13 @@ DEFAULT_GIT_DST_DIR="git_images"
 DEFAULT_ARC_DST_DIR="direct"
 # default overwrite file we copy to ISO
 DEFAULT_OVERWRITE_FILE="overwrite.env"
+# default post.
+DEFAULT_POST_SH="post.sh"
+
+#
+DPDK_VER="21.11.3"
+AVX_VERSION=4.5.3
+
 #
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,7 +53,7 @@ else
     DEFAULT_DST_IMAGE_NAME="ph5-rt-refresh_adj_$BUILD_TYPE.iso"
 fi
 
-DO_CLEAN_UP_ONLY="yes"
+DO_CLEAN_UP_ONLY="no"
 
 # Function check if string empty or not
 function is_not_empty() {

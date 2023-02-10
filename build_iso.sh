@@ -151,7 +151,19 @@ function main() {
   src_iso_dir=/tmp/"$BUILD_TYPE"_photon-iso
   dst_iso_dir=/tmp/"$BUILD_TYPE"_photon-ks-iso
   kick_start_file=$BUILD_TYPE"_ks.cfg"
+  if file_exists "$DEFAULT_OVERWRITE_FILE"; then
+      log "Using kick file $kick_start_file"
+  else
+      log "Failed locate generate kick-start file $kick_start_file in current dir"
+      exit 99
+  fi
+
   additional_files=$DEFAULT_JSON_SPEC_DIR/additional_files.json
+  if file_exists "$DEFAULT_OVERWRITE_FILE"; then
+    log "Using additional json spec file $additional_files"
+  else
+      log "Failed locate generate kick-start file $additional_files in current dir"
+  fi
 
   clean_up "$dst_iso_dir" "$src_iso_dir"
   if is_yes "$DO_CLEAN_UP_ONLY"; then
@@ -161,7 +173,6 @@ function main() {
   log "Source image temp location $src_iso_dir"
   log "Source image temp location $dst_iso_dir"
 
-  kick_start_file=$BUILD_TYPE"_ks.cfg"
   full_path_kick_start=$workspace_dir/$kick_start_file
 
   mkdir -p "$src_iso_dir"
@@ -172,9 +183,17 @@ function main() {
   log "Copy data from $src_iso_dir/* to $dst_iso_dir/"
   cp -r "$src_iso_dir"/* "$dst_iso_dir"/
 
-  cp post.sh "$dst_iso_dir"/ > /dev/null
-  cp overwrite.env "$dst_iso_dir"/ > /dev/null
-  echo "" >> "$dst_iso_dir"/overwrite.env
+  if file_exists "$DEFAULT_OVERWRITE_FILE"; then
+    cp overwrite.env "$dst_iso_dir"/ > /dev/null
+  else
+    log_red "Warning can't locate $DEFAULT_OVERWRITE_FILE file in current dir."
+  fi
+
+  if file_exists "$DEFAULT_POST_SH"; then
+      cp "$DEFAULT_POST_SH" "$dst_iso_dir"/ > /dev/null
+  else
+      log_red "Warning can't locate $DEFAULT_POST_SH file in current dir."
+  fi
 
   local docker_files
   docker_files=$(cat "$additional_files" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
@@ -208,7 +227,7 @@ function main() {
   log "Copy $full_path_kick_start to isolinux/ks.cfg"
   if file_exists "$full_path_kick_start"; then
     if file_exists "isolinux/ks.cfg"; then
-      echo "Failed locate source ks"
+      echo "Failed locate source kick-start file."
       exit 99;
     fi
     cp "$full_path_kick_start" isolinux/ks.cfg

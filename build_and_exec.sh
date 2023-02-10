@@ -53,17 +53,28 @@ DEFAULT_RPM_DIR="direct_rpms"
 DEFAULT_GIT_DIR="git_images"
 DEFAULT_ARC_DIR="direct"
 
-AVX_VERSION=4.5.3
+DEFAULT_AVX_VERSION=4.5.3
+if [[ -z "$AVX_VERSION" ]]; then
+  echo "Using default DEFAULT_AVX_VERSION"
+else
+  DEFAULT_DPDK_VER=$AVX_VERSION
+fi
+
 MLNX_VER=5.4-1.0.3.0
 NL_VER="3.2.25"
 
-DPDK_VER="21.11.3"
 # 22.11, 22.11.1, 22.07, 22.03. 21.11, 21.11.3, 21.11.2
+DEFAULT_DPDK_VER="21.11.3"
+if [[ -z "$DPDK_VER" ]]; then
+  echo "Using default DPDK_VER"
+else
+  DEFAULT_DPDK_VER=$DPDK_VER
+fi
 
-MELLANOX_DOWNLOAD_URL="http://www.mellanox.com/downloads/ofed/MLNX_OFED-"$MLNX_VER"/MLNX_OFED_SRC-debian-"$MLNX_VER".tgz"
-INTEL_DOWNLOAD_URL="https://downloadmirror.intel.com/738727/iavf-$AVX_VERSION.tar.gz"
+MELLANOX_DOWNLOAD_URL="http://www.mellanox.com/downloads/ofed/MLNX_OFED-$MLNX_VER/MLNX_OFED_SRC-debian-$MLNX_VER.tgz"
+INTEL_DOWNLOAD_URL="https://downloadmirror.intel.com/738727/iavf-$DEFAULT_AVX_VERSION.tar.gz"
 LIB_NL_DOWNLOAD="https://www.infradead.org/~tgr/libnl/files/libnl-$NL_VER.tar.gz"
-DPDK_DOWNLOAD="http://fast.dpdk.org/rel/dpdk-$DPDK_VER.tar.xz"
+DPDK_DOWNLOAD="http://fast.dpdk.org/rel/dpdk-$DEFAULT_DPDK_VER.tar.xz"
 
 SKIP_GIT="no"
 SKIP_RPMS_DOWNLOAD="no"
@@ -259,6 +270,7 @@ function generate_kick_start() {
     echo "$ADDITIONAL_FILES file not found"
     exit 99
   }
+
   local additional_files
   additional_files=$(cat "$ADDITIONAL_FILES")
   jq --argjson f "$additional_files" '. += $f' $current_ks_phase > "$KICK_START_FILE"
@@ -282,7 +294,7 @@ function generate_kick_start() {
 # to generate iso file from a spec.
 function build_container() {
   if [ -z "$SKIP_BUILD_CONTAINER" ] || [ $SKIP_BUILD_CONTAINER == "yes" ]; then
-    log "Skipping rpm downloading."
+    log "Skipping building container."
   else
     # by a default we always do clean build
     if [[ ! -v DEFAULT_ALWAYS_CLEAN ]]; then
@@ -341,14 +353,20 @@ function git_clone() {
       local repo_name
       repo_name=${git_repo/%$suffix/}
       repo_name=${repo_name##*/}
-      mkdir -p git_repos/"$repo_name"
-      echo "Git cloning git clone $git_repo $repo_name"
-      git clone "$git_repo" $git_repos_dir/"$repo_name" > "git_clone.log" 2>&1
-      repo_tmp_dir="$git_repos_dir/$repo_name"
-      echo "Compressing $repo_tmp_dir"
-      tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
-      mkdir -p git_images
-      mv "$repo_name".tar.gz $DEFAULT_GIT_DIR
+      git_tar_name="$DEFAULT_GIT_DIR/$repo_name"
+      if git_tar_name "$git_tar_name"; then
+        log "Skipping git clone file $git_tar_name already exists"
+      else
+        # clone to temp compress and move to final
+        mkdir -p git_repos/"$repo_name"
+        echo "Git cloning git clone $git_repo $repo_name"
+        git clone --quiet "$git_repo" $git_repos_dir/"$repo_name" > /dev/null
+        repo_tmp_dir="$git_repos_dir/$repo_name"
+        echo "Compressing $repo_tmp_dir"
+        tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
+        mkdir -p git_images
+        mv "$repo_name".tar.gz $DEFAULT_GIT_DIR
+      fi
     done
     rm -rf $git_repos_dir
   fi
@@ -357,6 +375,7 @@ function git_clone() {
 # Downloads all rpms to DEFAULT_PACAKGE_LOCATION
 function download_rpms() {
   local rpm_pkg
+
   if [ -z "$DEFAULT_PACAKGE_LOCATION" ]; then
     log "DEFAULT_PACAKGE_LOCATION empty."
     return 1
@@ -429,11 +448,11 @@ function print_and_validate_specs() {
 
   log "Builder will copy to IOS files:"
   local additional_files
-  additional_files=$(cat $ADDITIONAL_FILES | jq '.additional_files')
+  additional_files=$(cat "$ADDITIONAL_FILES" | jq '.additional_files')
   echo "$additional_files"
 
   local docker_files
-  docker_files=$(cat $ADDITIONAL_FILES | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
+  docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
   log "$docker_files"
 
   print_value_green "Builder will generate:" "$KICK_START_FILE"
@@ -452,13 +471,16 @@ function print_and_validate_specs() {
   print_value_green "JSON check:" "all JSON looks ok"
 }
 
-function main() {
-
+function delete_zero_byte_files() {
   # delete 0 byte files.
   find direct_rpms/ -size 0c -delete
   find docker_images/ -size 0c -delete
   find direct/ -size 0c -delete
+}
 
+function main() {
+
+  delete_zero_byte_files
   print_and_validate_specs
   local choice
   read -r -p "Please check and confirm (y/n)?" choice
@@ -472,11 +494,7 @@ function main() {
   download_rpms
   git_clone
   generate_kick_start
-
-   # delete 0 byte files.
-  find direct_rpms/ -size 0c -delete
-  find docker_images/ -size 0c -delete
-  find direct/ -size 0c -delete
+  delete_zero_byte_files
 }
 
 main
