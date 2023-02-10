@@ -131,11 +131,14 @@ function boot_host() {
 function main() {
   local idrac_ip_list
   local existing_file
+
   existing_file=$DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"
   if file_exists $$DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"; then
       echo "Removing $existing_file"
     rm -rf "$existing_file"
   fi
+
+  install_idrac_ctl
 
   # by a default we always do clean build
   if [[ -z "$IDRAC_IPS" ]]; then
