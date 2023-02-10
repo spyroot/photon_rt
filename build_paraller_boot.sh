@@ -119,6 +119,7 @@ function boot_host() {
   local resp=""
   IDRAC_IP="$addr" idrac_ctl eject_vm --device_id 1
   resp=$(IDRAC_IP="$addr" idrac_ctl --nocolor get_vm --device_id 1 --filter_key Inserted | jq --raw-output -r '.data')
+  log "Respond for get virtual medial $resp"
   if is_true "$resp"; then
     log "cdrom ejected on server $addr."
     log "Mount cdrom on server $addr"
