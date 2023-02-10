@@ -1,21 +1,5 @@
 [
-  "vim",
-  "gcc",
-  "git",
-  "wget",
-  "numactl",
-  "make",
-  "curl",
-  "gcc",
-  "meson",
-  "build-essential",
-  "numactl",
-  "ninja-build",
-  "docker",
-  "docker-cli",
-  "docker-engine",
-  "irqbalance",
-  lshw
+  "build-essential"
 ]
 
 
