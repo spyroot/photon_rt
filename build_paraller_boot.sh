@@ -125,7 +125,7 @@ function boot_host() {
   fi
 
   log "Mount cdrom on server $addr"
-  idrac_ctl insert_vm --uri_path http://"$IDRAC_REMOTE_HTTP"/"$DEFAULT_IMAGE_NAME" --device_id 1
+  IDRAC_IP="$addr" idrac_ctl insert_vm --uri_path http://"$IDRAC_REMOTE_HTTP"/"$DEFAULT_IMAGE_NAME" --device_id 1
   log "Booting server $addr from the image"
   IDRAC_IP="$addr" idrac_ctl boot-one-shot --device Cd -r --power_on
 }
