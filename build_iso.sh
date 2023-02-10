@@ -65,11 +65,13 @@ terminal_output gfxterm
 probe -s photondisk -u (\$root)
 
 menuentry "Install" {
-    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=UUID=\$photondisk photon.media.mount_retry=20
+    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=/dev/sr0 photon.media.mount_retry=20
     initrd /isolinux/initrd.img
 }
 EOF
 }
+
+#    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=UUID=\$photondisk photon.media.mount_retry=20
 
 function generate_iso() {
   local dst_iso_dir=$1
