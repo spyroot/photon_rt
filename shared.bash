@@ -79,6 +79,20 @@ function is_yes() {
   fi
 }
 
+function is_true() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    if [ "$var" == "true" ]; then
+      return 0
+    else
+      return 1
+    fi
+  fi
+}
+
+
 function dir_exists() {
   local -r a_dir="$1"
   [[ -d "$a_dir" ]]

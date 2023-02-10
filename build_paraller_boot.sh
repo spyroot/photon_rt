@@ -13,6 +13,11 @@
 # Secondly we want to minimum optimization for
 # a server for real-time.
 #
+# we can check what scheduled / completed etc / check manual, it will be scheduled
+# export IDRAC_IP="$addr"; idrac_ctl --json_only --debug --verbose jobs --scheduled
+# more details verbose mode
+# export IDRAC_IP="$addr"; idrac_ctl --verbose --debug bios-change  --attr_name MemTest,SriovGlobalEnable,OsWatchdogTimer,ProcTurboMode,ProcCStates,MemFrequency --attr_value Disabled,Enabled,Disabled,Disabled,Enabled,Disabled,MaxPerf on-reset -r
+# idrac_ctl bios --attr_only --filter SriovGlobalEnable
 # Example what you should have in env.
 #export IDRAC_IPS="192.168.1.1,192.168.1.2"
 #export IDRAC_PASSWORD="password"
@@ -35,20 +40,19 @@ IDRAC_IP_ADDR=""
 SKIP_BIOS="yes"
 
 # all envs
-if [ ! -f cluster.env ]
-then
-    echo "Please create cluster.env file"
-    exit 99
+if [ ! -f cluster.env ]; then
+  echo "Please create cluster.env file"
+  exit 99
 else
   source cluster.env
 fi
 
 #trim white spaces
 trim() {
-    local var="$*"
-    var="${var#"${var%%[![:space:]]*}"}"
-    var="${var%"${var##*[![:space:]]}"}"
-    echo "$var"
+  local var="$*"
+  var="${var#"${var%%[![:space:]]*}"}"
+  var="${var%"${var##*[![:space:]]}"}"
+  echo "$var"
 }
 
 # usage log "msg"
@@ -56,10 +60,9 @@ log() {
   printf "%b %s. %b\n" "${GREEN}" "$@" "${NC}"
 }
 
-if [ ! -f "$DEFAULT_IMAGE_NAME" ]
-then
-    echo "Please create iso file $DEFAULT_IMAGE_NAME first."
-    exit 99
+if [ ! -f "$DEFAULT_IMAGE_NAME" ]; then
+  echo "Please create iso file $DEFAULT_IMAGE_NAME first."
+  exit 99
 fi
 
 if [[ -z "$IDRAC_IPS" ]]; then
@@ -67,63 +70,85 @@ if [[ -z "$IDRAC_IPS" ]]; then
   exit 99
 fi
 
-if ! command -v pip &> /dev/null
-then
-    echo "please install pip3"
-    exit 99
+if ! command -v pip &>/dev/null; then
+  echo "please install pip3"
+  exit 99
 fi
 
-# always get the latest.
-pip --quiet install idrac_ctl -U &> /dev/null
-pip --quiet pygments tqdm requests -U &> /dev/null
+function install_idrac_ctl() {
+  # always get the latest.
+  pip --quiet install idrac_ctl -U &>/dev/null
+  pip --quiet pygments tqdm requests -U &>/dev/null
+}
 
-echo "Removing  $DEFAULT_LOCATION_MOVE/$DEFAULT_IMAGE_NAME"
-rm -rf $DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"
+function compare_sha() {
+  local src_hash
+  local dst_hash
+  src_hash=$(md5sum "$DEFAULT_IMAGE_NAME")
+  dst_hash=$(md5sum $DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME")
+  if [ "$src_hash" != "$dst_hash" ]; then
+    log "Coping $DEFAULT_IMAGE_NAME to $DEFAULT_LOCATION_MOVE"
+    cp "$DEFAULT_IMAGE_NAME" $DEFAULT_LOCATION_MOVE
+  fi
+}
 
-## build-iso.sh generates ph4-rt-refresh_adj.iso
-src_hash=$(md5sum "$DEFAULT_IMAGE_NAME")
-dst_hash=$(md5sum $DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME")
-if [ "$src_hash" != "$dst_hash" ]
-then
-  log "Coping $DEFAULT_IMAGE_NAME to $DEFAULT_LOCATION_MOVE"
-  cp "$DEFAULT_IMAGE_NAME" $DEFAULT_LOCATION_MOVE
-fi
-
-# by a default we always do clean build
-if [[ -z "$IDRAC_IPS" ]]; then
-  log "IDRAC_IPS variable is empty, it must store either IP address or list comma seperated."
-	exit 99
-else
-  log "Using $IDRAC_IPS."
-fi
-
-# first trim all whitespace and then iterate.
-IDRAC_IP_LIST=$(trim "$IDRAC_IPS")
-echo "$IDRAC_IP_ADDR"
-IFS=',' read -ra IDRAC_IP_ADDR <<< "$IDRAC_IP_LIST"
-for IDRAC_HOST in "${IDRAC_IP_ADDR[@]}"
-do
-  addr=$(trim "$IDRAC_HOST")
+function adjust_bios() {
+  local addr=$1
+  local bios_config=$2
+  local default_bios_config="bios/bios.json"
   # first we check if SRIOV enabled or not, ( Default disabled)
-  if [ -z "$SKIP_BIOS" ] || [ $SKIP_BIOS == "yes" ]; then
+  if is_yes "$SKIP_BIOS"; then
     log "Skipping bios reconfiguration"
   else
-      # reset all bios pending.
-      export IDRAC_IP="$addr"; idrac_ctl idrac_ctl bios-clear-pending --from_spec bios/bios.json
-      export IDRAC_IP="$addr"; idrac_ctl job-apply job-apply
-      # commit changes and reboot
-      export IDRAC_IP="$addr"; idrac_ctl idrac_ctl bios-change --from_spec bios/bios.json on-reset --commit --reboot
+    # reset all bios pending.
+    export IDRAC_IP="$addr"
+    idrac_ctl idrac_ctl bios-clear-pending --from_spec "$bios_config"
+    export IDRAC_IP="$addr"
+    idrac_ctl job-apply job-apply
+    # commit changes and reboot
+    export IDRAC_IP="$addr"
+    idrac_ctl idrac_ctl bios-change --from_spec bios/bios.json on-reset --commit --reboot
   fi
-  # we can check what scheduled / completed etc / check manual, it will be scheduled
-  # export IDRAC_IP="$addr"; idrac_ctl --json_only --debug --verbose jobs --scheduled
-  # more details verbose mode
-  # export IDRAC_IP="$addr"; idrac_ctl --verbose --debug bios-change  --attr_name MemTest,SriovGlobalEnable,OsWatchdogTimer,ProcTurboMode,ProcCStates,MemFrequency --attr_value Disabled,Enabled,Disabled,Disabled,Enabled,Disabled,MaxPerf on-reset -r
-  # idrac_ctl bios --attr_only --filter SriovGlobalEnable
-  #
-  # one shoot boot.
-  log "Mount cdrom server $addr"
-  export IDRAC_IP="$addr"; idrac_ctl get_vm --device_id 1 --filter_key Inserted
-  export IDRAC_IP="$addr"; idrac_ctl eject_vm --device_id 1
-  export IDRAC_IP="$addr"; idrac_ctl insert_vm --uri_path http://"$IDRAC_REMOTE_HTTP"/$DEFAULT_IMAGE_NAME --device_id 1
-  export IDRAC_IP="$addr"; idrac_ctl boot-one-shot --device Cd -r --power_on
-done
+}
+function boot_host() {
+  local addr=$1
+  local resp=""
+  IDRAC_IP="$addr" idrac_ctl eject_vm --device_id 1
+  resp=$(IDRAC_IP="$addr" idrac_ctl --nocolor get_vm --device_id 1 --filter_key Inserted | jq --raw-output -r '.data')
+  if is_true "$resp"; then
+    log "cdrom ejected on server $addr."
+    log "Mount cdrom on server $addr"
+    idrac_ctl insert_vm --uri_path http://"$IDRAC_REMOTE_HTTP"/"$DEFAULT_IMAGE_NAME" --device_id 1
+    log "Booting server $addr from the image"
+    IDRAC_IP="$addr" idrac_ctl boot-one-shot --device Cd -r --power_on
+  fi
+}
+
+function main() {
+  local idrac_ip_list
+  local existing_file
+  existing_file=$DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"
+  if file_exists $$DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"; then
+      echo "Removing $existing_file"
+    rm -rf "$existing_file"
+  fi
+
+  # by a default we always do clean build
+  if [[ -z "$IDRAC_IPS" ]]; then
+    log "IDRAC_IPS variable is empty, it must store either IP address or list comma seperated."
+    exit 99
+  else
+    log "Using $IDRAC_IPS."
+  fi
+
+  # first trim all whitespace and then iterate.
+  idrac_ip_list=$(trim "$IDRAC_IPS")
+  IFS=',' read -ra IDRAC_IP_ADDR <<<"$idrac_ip_list"
+  for IDRAC_HOST in "${IDRAC_IP_ADDR[@]}"; do
+    local addr
+    addr=$(trim "$IDRAC_HOST")
+    boot_host "$addr"
+  done
+}
+
+main
