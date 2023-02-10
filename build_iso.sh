@@ -183,6 +183,7 @@ function main() {
   else
     log_red "Failed locate $DEFAULT_SRC_IMAGE_NAME, please first run build_run_exec
     and poll source ISO and generate kickstart spec"
+    exit 99
   fi
 
   log "Copy data from $src_iso_dir/* to $dst_iso_dir/"
