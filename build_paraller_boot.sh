@@ -101,6 +101,7 @@ function adjust_bios_if_needed() {
   local sriov_enabled=""
   local default_bios_config="bios/bios.json"
   # first we check if SRIOV enabled or not, ( Default disabled)
+  log "Check default SRIOV settings."
   sriov_enabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter SriovGlobalEnable | jq --raw-output '.data[]')"
   if is_enabled "$sriov_enabled"; then
     log "Skipping bios reconfiguration sriov already enabled."
@@ -141,26 +142,26 @@ function main() {
   fi
 
   install_idrac_ctl
-#
-#  # by a default we always do clean build
-#  if [[ -z "$IDRAC_IPS" ]]; then
-#    log "IDRAC_IPS variable is empty, it must store either IP address or list comma seperated."
-#    exit 99
-#  else
-#    log "Using $IDRAC_IPS."
-#  fi
-#
-#  # first trim all whitespace and then iterate.
-#  idrac_ip_list=$(trim "$IDRAC_IPS")
-#  IFS=',' read -ra IDRAC_IP_ADDR <<<"$idrac_ip_list"
-#  for IDRAC_HOST in "${IDRAC_IP_ADDR[@]}"; do
-#    local addr
-#    addr=$(trim "$IDRAC_HOST")
-#
-#    adjust_bios_if_needed "$addr"
-#
-#    boot_host "$addr"
-#  done
+
+  # by a default we always do clean build
+  if [[ -z "$IDRAC_IPS" ]]; then
+    log "IDRAC_IPS variable is empty, it must store either IP address or list comma seperated."
+    exit 99
+  else
+    log "Using $IDRAC_IPS."
+  fi
+
+  # first trim all whitespace and then iterate.
+  idrac_ip_list=$(trim "$IDRAC_IPS")
+  IFS=',' read -ra IDRAC_IP_ADDR <<<"$idrac_ip_list"
+  for IDRAC_HOST in "${IDRAC_IP_ADDR[@]}"; do
+    local addr
+    addr=$(trim "$IDRAC_HOST")
+
+    adjust_bios_if_needed "$addr"
+
+    boot_host "$addr"
+  done
 }
 
 main
