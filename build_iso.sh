@@ -214,7 +214,7 @@ function main() {
   local additional_rpms
   log "Copy additional to $rpm_dir"
   additional_rpms=$(cat "$kick_start_file" | jq --raw-output -r '.additional_packages[]' |
-  xargs -I {} cp echo "$DEFAULT_RPM_DST_DIR/{}*.rpm"  "$rpm_dir")
+  xargs -I {} cp echo -n "$DEFAULT_RPM_DST_DIR/{}*.rpm"  "$rpm_dir")
 #  cp "$additional_rpms" "$rpm_dir"
 
   # narch we copy to noarch
