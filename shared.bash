@@ -78,3 +78,13 @@ function is_yes() {
     fi
   fi
 }
+
+function dir_exists() {
+  local -r a_dir="$1"
+  [[ -d "$a_dir" ]]
+}
+
+function file_exists() {
+  local -r a_file="$1"
+  [[ -f "$a_file" ]]
+}

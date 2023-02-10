@@ -24,15 +24,6 @@ then
 exit 2
 fi
 
-function dir_exists() {
-  local -r a_dir="$1"
-  [[ -d "$a_dir" ]]
-}
-
-function file_exists() {
-  local -r a_file="$1"
-  [[ -f "$a_file" ]]
-}
 
 workspace_dir=$(pwd)
 
