@@ -1,6 +1,7 @@
 #!/bin/bash
-# This is post install script.  This must happened
+# This is post install script.  This script executed
 # after first post install.
+#
 # The goal here
 # - build mellanox driver and Intel driver.
 # - link to current kernel src.
@@ -16,28 +17,76 @@
 # - enable PTP
 # - set VF to trusted mode and disable spoof check.
 # - automatically generate tuned profile , load.
+#
+# Each build value can be overwritten from overwrite.env file.
+# The main point we need overwrite:
+#   - Docker image we need load.
+#   - Set correct PCI address for SRIOV.
+#   - Set correct VLAN ranges and PCI address for trunk adapter.
+#
+# Example disable all
+#
+# OVERWRITE_DPDK_BUILD="no"
+# OVERWRITE_BUILD_SRIOV="no"
+# OVERWRITE_IPSEC_BUILD="no"
+# OVERWRITE_INTEL_BUILD="no"
+# OVERWRITE_BUILD_TUNED="no"
+# OVERWRITE_BUILD_PTP="no"
+# OVERWRITE_BUILD_TRUNK="no"
+# OVERWRITE_BUILD_LIBNL="no"
+# OVERWRITE_BUILD_ISA="no"
+# OVERWRITE_BUILD_DEFAULT_NETWORK="no"
+# OVERWRITE_BUILD_INSTALL_PACKAGES="no"
+# OVERWRITE_BUILD_RE_LINK_KERNEL="no"
+
+# OVERWRITE_LOAD_VFIO="no"
+# OVERWRITE_LOAD_DOCKER_IMAGE="no"
+# OVERWRITE_BUILD_HUGEPAGES="no"
+#
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 
 # all overwrite loaded from overwrite
 source /overwrite.env
-rpm -i /mnt/media/direct_rpms/*
-
 export LANG=en_US.UTF-8
 export LC_ALL=$LANG
 export PATH="$PATH":/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-rm -rf /build/*
-rm -rf rm /root/build/dpdk-21.11/build
-
-# version we are using for IAVF and Mellanox
-AVX_VERSION=4.5.3
-MLNX_VER=5.4-1.0.3.0
 GREEN_CUSTOM='\033[0;32m'
 NC_CUSTOM='\033[0m'
 
+# version we are using for IAVF and Mellanox
+AVX_VERSION=4.5.3
+if [ -z "$OVERWRITE_AVX_VERSION" ]; then
+  echo "Using default AVX_VERSION value:$AVX_VERSION."
+else
+  AVX_VERSION=$OVERWRITE_AVX_VERSION
+fi
+
+MLNX_VER=5.4-1.0.3.0
+if [ -z "$OVERWRITE_MLNX_VER" ]; then
+  echo "Using default MLNX_VER value:$MLNX_VER."
+else
+  MLNX_VER=$OVERWRITE_MLNX_VER
+fi
+
+DPDK_VERSION="dpdk-21.11"
+# overwrite default value,  /overwrite always take precedence.
+if [ -z "$OVERWRITE_DPDK_VERSION" ]; then
+  echo "Using default DPDK_VERSION value:$DPDK_VERSION."
+else
+  DPDK_VERSION=$OVERWRITE_BUILD_INSTALL_PACKAGES
+fi
+
+# if defined we won't install.
+if [ -z "$OVERWRITE_INSTALL_RPMS" ]; then
+  rpm -i /mnt/media/direct_rpms/*
+else
+  echo "Skipping installing rpms"
+fi
+
 DEFAULT_DOCKER_IMAGE=""
 if [ -z "$DOCKER_IMAGE" ]; then
-  log "DOCKER_IMAGE empty using default."
+  echo "DOCKER_IMAGE empty using default."
   DOCKER_IMAGE=$DEFAULT_DOCKER_IMAGE
 fi
 
@@ -78,56 +127,118 @@ BUILD_STATIC_ADDRESS="no"
 BUILD_TRUNK="yes"
 WITH_QAT="yes"
 LOAD_VFIO="yes"
-SKIP_CLEANUP="yes"
+DO_FULL_CLEANUP="yes"
 BUILD_LOAD_DOCKER_IMAGE="yes"
+BUILD_RE_LINK_KERNEL="yes"
+BUILD_INSTALL_PACKAGES="yes"
 
-# overwrite for dpkd
+# overwrite default value,  /overwrite always take precedence.
+if [ -z "$OVERWRITE_BUILD_INSTALL_PACKAGES" ]; then
+  echo "Using default BUILD_INSTALL_PACKAGES value:$BUILD_INSTALL_PACKAGES."
+else
+  BUILD_INSTALL_PACKAGES=$OVERWRITE_BUILD_INSTALL_PACKAGES
+fi
+
+# overwrite default value,  /overwrite always take precedence.
+if [ -z "$OVERWRITE_BUILD_RE_LINK_KERNEL" ]; then
+  echo "Using default BUILD_RE_LINK_KERNEL value:$BUILD_RE_LINK_KERNEL."
+else
+  BUILD_RE_LINK_KERNEL=$OVERWRITE_BUILD_RE_LINK_KERNEL
+fi
+
+# overwrite default value,  /overwrite always take precedence.
+if [ -z "$OVERWRITE_BUILD_DEFAULT_NETWORK" ]; then
+  echo "Using default OVERWRITE_BUILD_DEFAULT_NETWORK value:$BUILD_DEFAULT_NETWORK."
+else
+  BUILD_DEFAULT_NETWORK=$OVERWRITE_BUILD_DEFAULT_NETWORK
+fi
+
+# overwrite for DPDK
 if [ -z "$OVERWRITE_DPDK_BUILD" ]; then
-  echo "Using default DPDK_BUILD."
+  echo "Using default DPDK_BUILD value:$DPDK_BUILD."
 else
   DPDK_BUILD=$OVERWRITE_DPDK_BUILD
 fi
+
 # overwrite for tuned
 if [ -z "$OVERWRITE_BUILD_TUNED" ]; then
-  echo "Using default BUILD_TUNED."
+  echo "Using default BUILD_TUNED value:$BUILD_TUNED."
 else
   BUILD_TUNED=$OVERWRITE_BUILD_TUNED
 fi
+
 # overwrite for sriov
 if [ -z "$OVERWRITE_BUILD_SRIOV" ]; then
-  echo "Using default BUILD_SRIOV."
+  echo "Using default BUILD_SRIOV:$BUILD_SRIOV."
 else
   BUILD_SRIOV=$OVERWRITE_BUILD_SRIOV
 fi
+
 # overwrite for intel driver
 if [ -z "$OVERWRITE_INTEL_BUILD" ]; then
-  echo "Using default BUILD_SRIOV."
+  echo "Using default BUILD_SRIOV value:$INTEL_BUILD."
 else
   INTEL_BUILD=$OVERWRITE_INTEL_BUILD
 fi
+
+# overwrite for intel mellanox
+if [ -z "$OVERWRITE_MLX_BUILD" ]; then
+  echo "Using default MLX_BUILD value:$MLX_BUILD."
+else
+  MLX_BUILD=$OVERWRITE_MLX_BUILD
+fi
+
+# overwrite for libnl
+if [ -z "$OVERWRITE_BUILD_LIBNL" ]; then
+  echo "Using default LIBNL_BUILD value:$LIBNL_BUILD."
+else
+  LIBNL_BUILD=$OVERWRITE_BUILD_LIBNL
+fi
+
+# overwrite for libnl
+if [ -z "$OVERWRITE_BUILD_ISA" ]; then
+  echo "Using default OVERWRITE_BUILD_ISA value: $LIBNL_ISA."
+else
+  LIBNL_ISA=$OVERWRITE_BUILD_ISA
+fi
+
+# overwrite for libnl
+if [ -z "$OVERWRITE_LOAD_VFIO" ]; then
+  echo "Using default LOAD_VFIO value $LOAD_VFIO."
+else
+  LOAD_VFIO=$OVERWRITE_LOAD_VFIO
+fi
+
+# overwrite for libnl
+if [ -z "$OVERWRITE_LOAD_DOCKER_IMAGE" ]; then
+  echo "Using default BUILD_LOAD_DOCKER_IMAGE value $BUILD_LOAD_DOCKER_IMAGE."
+else
+  BUILD_LOAD_DOCKER_IMAGE=$OVERWRITE_LOAD_DOCKER_IMAGE
+fi
+
 # overwrite for ipsec lib
 if [ -z "$OVERWRITE_IPSEC_BUILD" ]; then
-  echo "Using default BUILD_SRIOV."
+  echo "Using default OVERWRITE_IPSEC_BUILD value $IPSEC_BUILD."
 else
   IPSEC_BUILD=$OVERWRITE_IPSEC_BUILD
 fi
 # overwrite for hugepages
 if [ -z "$OVERWRITE_BUILD_HUGEPAGES" ]; then
-  echo "Using default BUILD_SRIOV."
+  echo "Using default BUILD_HUGEPAGES value $BUILD_HUGEPAGES."
 else
   BUILD_HUGEPAGES=$OVERWRITE_BUILD_HUGEPAGES
 fi
 
 # overwrite for ptp
 if [ -z "$OVERWRITE_BUILD_PTP" ]; then
-  echo "Using default BUILD_SRIOV."
+  echo "Using default BUILD_SRIOV value $BUILD_PTP."
 else
   BUILD_PTP=$OVERWRITE_BUILD_PTP
 fi
 
 # build trunk overwrite
 if [ -z "$OVERWRITE_BUILD_TRUNK" ]; then
-  echo "Using default BUILD_SRIOV."
+  echo "Using default BUILD_SRIOV value $OVERWRITE_BUILD_TRUNK."
 else
   BUILD_TRUNK=$OVERWRITE_BUILD_TRUNK
 fi
@@ -140,14 +251,14 @@ SRIOV_PCI_LIST="pci@0000:51:00.0,pci@0000:51:00.1"
 MAX_VFS_PER_PCI=8
 # overwrite default pci list
 if [ -z "$OVERWRITE_SRIOV_PCI" ]; then
-  echo "Using default SRIOV_PCI_LIST."
+  echo "Using default SRIOV_PCI_LIST $OVERWRITE_SRIOV_PCI."
 else
   SRIOV_PCI_LIST=$OVERWRITE_SRIOV_PCI
   echo "Change sriov vfs to $SRIOV_PCI_LIST"
 fi
 # overwrite max vs
 if [ -z "$OVERWRITE_MAX_VFS_PER_PCI" ]; then
-  echo "Using default MAX_VFS_PER_PCI."
+  echo "Using default MAX_VFS_PER_PCI value OVERWRITE_MAX_VFS_PER_PCI."
 else
   MAX_VFS_PER_PCI=$OVERWRITE_MAX_VFS_PER_PCI
   echo "Change max vfs to $MAX_VFS_PER_PCI"
@@ -158,14 +269,14 @@ fi
 DOT1Q_VLAN_ID_LIST="2000,2001"
 DOT1Q_VLAN_TRUNK_PCI="pci@0000:18:00.1"
 if [ -z "$OVERWRITE_DOT1Q_VLAN_ID_LIST" ]; then
-  echo "Using default DOT1Q_VLAN_ID_LIST."
+  echo "Using default DOT1Q_VLAN_ID_LIST value $OVERWRITE_DOT1Q_VLAN_ID_LIST."
 else
   DOT1Q_VLAN_ID_LIST=$OVERWRITE_DOT1Q_VLAN_ID_LIST
   echo "Change default VLAN ID LIST to $DOT1Q_VLAN_ID_LIST"
 fi
 
 if [ -z "$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI" ]; then
-  echo "Using default DOT1Q_VLAN_TRUNK_PCI."
+  echo "Using default DOT1Q_VLAN_TRUNK_PCI value $OVERWRITE_DOT1Q_VLAN_TRUNK_PCI."
 else
   DOT1Q_VLAN_TRUNK_PCI=$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI
   echo "Change default PCI address for dot1q to $DOT1Q_VLAN_TRUNK_PCI"
@@ -189,14 +300,14 @@ if [ -z "$OVERWRITE_STATIC_ETHn_NAME" ]; then
   echo "Using default STATIC_ETHn_NAME."
 else
   STATIC_ETHn_NAME=$OVERWRITE_STATIC_ETHn_NAME
-  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_NAME"
+  echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_NAME"
 fi
 # overwrite for IP address
 if [ -z "$OVERWRITE_STATIC_ETHn_ADDRESS" ]; then
   echo "Using default STATIC_ETHn_NAME."
 else
   STATIC_ETHn_NAME=$OVERWRITE_STATIC_ETHn_ADDRESS
-  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_ADDRESS"
+  echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_ADDRESS"
 fi
 
 # overwrite for gateway
@@ -204,7 +315,7 @@ if [ -z "$OVERWRITE_STATIC_ETHn_GATEWAY" ]; then
   echo "Using default STATIC_ETHn_NAME."
 else
   STATIC_ETHn_GATEWAY=$OVERWRITE_STATIC_ETHn_GATEWAY
-  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_GATEWAY"
+  echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_GATEWAY"
 fi
 
 # overwrite for dns
@@ -526,7 +637,6 @@ function create_log_dir() {
 # log message to console and file.
 # if log dir not present it will create it.
 # if log file already present, log msg will be appended.
-
 # log message to console and file.
 function log_console_and_file() {
   local log_dir
@@ -1872,18 +1982,17 @@ function unpack_all_files() {
 }
 
 # Function cleanup.
+# it will clean build , logs and all tar.gz copied.
 # This mainly useful if you run post manually.
 # or during dev stage for unit testing.
 function clean_up() {
-  if [ -z "$SKIP_CLEANUP" ] || [ "$SKIP_CLEANUP" == "yes" ]; then
-    log_console_and_file "Skipping clean up"
-    rm -rf dpdk*
-    rm -rf iavf-*
-    rm -rf libnl-*.tgz
-    rm -rf MLNX_OFED_SRC-*.tgz
+  if is_yes $DO_FULL_CLEANUP; then
+    log_console_and_file "Performing full clean"
     rm -rf "${ROOT_BUILD:?}/"*
+    rm -rf "${BUILD_LOG_LOG:?}/"*
   fi
 }
+
 
 function print_build_spec() {
   echo "----------------------* build spec  *----------------------------"
@@ -1905,7 +2014,7 @@ function print_build_spec() {
   echo "build static networks $BUILD_STATIC_ADDRESS"
   echo "enable QAT $WITH_QAT"
   echo "load vfio $LOAD_VFIO"
-  echo "skip clean up $SKIP_CLEANUP"
+  echo "skip clean up $DO_FULL_CLEANUP"
   echo "build docker images $BUILD_LOAD_DOCKER_IMAGE"
   echo "reboot post $DO_REBOOT"
   echo "----------------------* spec  *----------------------------"
@@ -1924,25 +2033,13 @@ function print_build_spec() {
   echo "ptp adapter pci $PTP_ADAPTER"
 }
 
-# main entry for a script
-#
-function main() {
+# Function clean only logs and build dir.
+function clean_build_only() {
+  rm -rf "${ROOT_BUILD:?}/"*
+  rm -rf "${BUILD_LOG_LOG:?}/"*
+}
 
-  local log_main_dir
-  log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
-  rm -rf "$log_main_dir"
-  rm -rf $ROOT_BUILD
-  create_log_dir "$DEFAULT_BUILDER_LOG"
-
-  declare -i errs=0
-  check_installed errs "${REQUIRED_TOOLS[@]}"
-  if [[ $errs -gt 0 ]]; then
-    echo "Please check required commands."
-  fi
-
-  link_kernel ""
-
-  # fix-up all vars in case of mistake.
+function check_all_vars() {
   SRIOV_PCI_LIST=$(remove_all_spaces "$SRIOV_PCI_LIST")
   DOT1Q_VLAN_ID_LIST=$(remove_all_spaces "$DOT1Q_VLAN_ID_LIST")
   MAX_VFS_PER_PCI=$(remove_all_spaces "$MAX_VFS_PER_PCI")
@@ -1950,24 +2047,47 @@ function main() {
   MLNX_VER=$(remove_all_spaces "$MLNX_VER")
   DOCKER_IMAGE_PATH=$(remove_all_spaces "$DOCKER_IMAGE_PATH")
   PAGES=$(remove_all_spaces "$PAGES")
+}
 
-  yum --quiet -y install python3-libcap-ng python3-devel \
-  rdma-core-devel util-linux-devel \
-  zip zlib zlib-devel libxml2-devel \
-  libudev-devel &> /build/build_rpms_pull.log
+# Main entry for a script
+function main() {
 
-  # installed.before and after our diff
-  yum list installed > /installed.after.log
-  rpm -qa > /rpm.installed.after.log
+  check_all_vars
+
+  local log_main_dir
+  log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
+  # clear all logs and build
+  clean_build_only
+  create_log_dir "$DEFAULT_BUILDER_LOG"
+  declare -i errs=0
+  check_installed errs "${REQUIRED_TOOLS[@]}"
+  if [[ $errs -gt 0 ]]; then
+    echo "Please check required commands."
+  fi
+  # re-link kernel to current
+  if is_yes "$BUILD_RE_LINK_KERNEL"; then
+    link_kernel ""
+  fi
+  # install required packages
+  if is_yes "$BUILD_INSTALL_PACKAGES"; then
+    yum --quiet -y install python3-libcap-ng python3-devel \
+    rdma-core-devel util-linux-devel \
+    zip zlib zlib-devel libxml2-devel \
+    libudev-devel &> /build/build_rpms_pull.log
+    # installed.before and after our diff
+    yum list installed > /installed.after.log
+    rpm -qa > /rpm.installed.after.log
+  fi
 
   build_dirs
 
-    # all location updated
+  # all location updated
   local dpdk_build_location=""
   local iavf_build_location=""
   local libnl_build_location=""
   local mellanox_build_location=""
 
+  # optional full clean-up
   clean_up
 
   # either fetch from local or remote
@@ -1995,31 +2115,51 @@ function main() {
     esac
   fi
 
-  build_mellanox_driver "$BUILD_MELLANOX_LOG" "$mellanox_build_location"
-  build_intel_iavf "$BUILD_INTEL_LOG" "$iavf_build_location"
-  build_docker_images $BUILD_DOCKER_LOG "$DOCKER_IMAGE_PATH" "$DOCKER_IMAGE_NAME"
-  build_ipsec_lib "$BUILD_IPSEC_LOG"
+  if is_yes "$MLX_BUILD"; then
+    log_console_and_file "Building mellanox driver."
+    build_mellanox_driver "$BUILD_MELLANOX_LOG" "$mellanox_build_location"
+  fi
+  if is_yes "$INTEL_BUILD"; then
+    log_console_and_file "Building intel driver."
+    build_intel_iavf "$BUILD_INTEL_LOG" "$iavf_build_location"
+  fi
+  if is_yes "$BUILD_LOAD_DOCKER_IMAGE"; then
+    log_console_and_file "Loading docker images."
+    build_docker_images $BUILD_DOCKER_LOG "$DOCKER_IMAGE_PATH" "$DOCKER_IMAGE_NAME"
+  fi
+  if is_yes "$IPSEC_BUILD"; then
+    log_console_and_file "Building ipsec lib."
+    build_ipsec_lib "$BUILD_IPSEC_LOG"
+  fi
   adjust_shared_libs
   build_install_pips_deb "$BUILD_PIP_LOG" "${PIP_PKG_REQUIRED[@]}"
-  build_lib_nl "$BUILD_NL_LOG" "$libnl_build_location"
-  build_lib_isa "$BUILD_ISA_LOG"
-  build_dpdk "$BUILD_DPDK_LOG" "$dpdk_build_location"
-  load_vfio_pci
-
-  if [ -z "$BUILD_TUNED" ] && [ "$BUILD_TUNED" == "yes" ]; then
+  if is_yes "$LIBNL_BUILD"; then
+    build_lib_nl "$BUILD_NL_LOG" "$libnl_build_location"
+  fi
+  if is_yes "$LIBNL_ISA"; then
+    build_lib_isa "$BUILD_ISA_LOG"
+  fi
+  if is_yes "$DPDK_BUILD"; then
+    build_dpdk "$BUILD_DPDK_LOG" "$dpdk_build_location"
+  fi
+  if is_yes "$LOAD_VFIO"; then
+      load_vfio_pci
+  fi
+  if is_yes "$BUILD_TUNED"; then
     build_tuned "$BUILD_TUNED_LOG"
   fi
-
-  build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" $DOT1Q_ETH_NAME
-
-  # optional steps
-  build_qat
-
-  if is_yes $BUILD_SRIOV; then
+  if is_yes "$BUILD_TRUNK"; then
+    build_vlans_ifs "$DOT1Q_VLAN_ID_LIST" $DOT1Q_ETH_NAME
+  fi
+  if is_yes $WITH_QAT; then
+    # optional steps
+    build_qat
+  fi
+  if is_yes "$BUILD_SRIOV"; then
     log_console_and_file "Building SRIOV."
     enable_sriov "$SRIOV_PCI_LIST" "$MAX_VFS_PER_PCI"
   fi
-  if is_yes $BUILD_HUGEPAGES; then
+  if is_yes "$BUILD_HUGEPAGES"; then
     log_console_and_file "Building hugepages."
     build_hugepages "$BUILD_HUGEPAGES_LOG" "$PAGES" "$PAGES_1GB"
   fi
@@ -2027,7 +2167,6 @@ function main() {
       log_console_and_file "Building ptp configuration."
       build_ptp "$BUILD_PTP_IPSEC_BUILD_LOG"
   fi
-
   # generate default dhcp and if needed adapter with static
   # ip address
   generate_default_network

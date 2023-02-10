@@ -14,7 +14,8 @@
   "docker",
   "docker-cli",
   "docker-engine",
-  "irqbalance"
+  "irqbalance",
+  lshw
 ]
 
 
