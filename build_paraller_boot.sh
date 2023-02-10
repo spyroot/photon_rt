@@ -131,14 +131,20 @@ function boot_host() {
 
 function main() {
   local idrac_ip_list
-  local existing_file
+  local target_img_location
 
-  existing_file="$DEFAULT_LOCATION_MOVE"/"$DEFAULT_IMAGE_NAME"
-  if file_exists "$existing_file"; then
-      echo "Removing $existing_file"
-    rm -rf "$existing_file"
+  target_img_location="$DEFAULT_LOCATION_MOVE"/"$DEFAULT_IMAGE_NAME"
+  if file_exists "$target_img_location"; then
+      echo "Removing $target_img_location"
+    rm -rf "$target_img_location"
   else
-      log "Failed locate $existing_file"
+      log "Failed locate $target_img_location"
+  fi
+
+  log "Coping $DEFAULT_IMAGE_NAME to $target_img_location"
+  cp "$DEFAULT_IMAGE_NAME" "$target_img_location"
+  if file_exists "$target_img_location"; then
+    log "File successfully copied $target_img_location"
   fi
 
   install_idrac_ctl
