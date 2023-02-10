@@ -1,2 +1,6 @@
 *.tar
 *.tar.gz
+*.ph4-rt-refresh.iso
+direct/*
+docker_images/*
+git_images/*
