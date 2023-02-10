@@ -341,6 +341,7 @@ function git_clone() {
   local repo_name
   local suffix
   local git_repos_dir
+  local git_tar_name=""
 
   suffix=".git"
   git_repos_dir="git_repos"
