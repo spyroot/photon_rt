@@ -13,6 +13,8 @@ DEFAULT_RPM_DIR="direct_rpms"
 DEFAULT_GIT_DIR="git_images"
 # all downloaded tar.gz ( drivers and other arc) will be in direct.
 DEFAULT_ARC_DIR="direct"
+# DEFAULT WEB DIR
+DEFAULT_WEB_DIR="/var/www/html/"
 
 # default location for spec folder
 DEFAULT_SPEC_FOLDER="specs"

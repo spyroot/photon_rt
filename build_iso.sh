@@ -117,6 +117,11 @@ function clean_up() {
   else
     log_red "Failed locate $generated_img_location"
   fi
+
+  if file_exists "$DEFAULT_WEB_DIR"; then
+    log "Removing old image from web dir $generated_img_location"
+    rm -rf "$DEFAULT_WEB_DIR"
+  fi
 }
 
 function main() {
