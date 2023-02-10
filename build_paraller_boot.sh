@@ -29,7 +29,7 @@ fi
 # image name in shared.bash
 DEFAULT_IMAGE_NAME=$DEFAULT_DST_IMAGE_NAME
 # a location where to copy iso, assume same host runs http.
-DEFAULT_LOCATION_MOVE="/var/www/html/"
+DEFAULT_LOCATION_MOVE="/var/www/html"
 IDRAC_IP_ADDR=""
 # this flag wil skip bios configuration.
 SKIP_BIOS="yes"
