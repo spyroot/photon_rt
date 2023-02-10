@@ -214,7 +214,7 @@ function main() {
   local additional_rpms
   log "Copy additional to $rpm_dir"
   additional_rpms=$(cat "$kick_start_file" | jq --raw-output -r '.additional_packages[]' |
-  xargs -I {} echo -n "$DEFAULT_RPM_DST_DIR/{}*.rpm")
+  xargs -I {} echo -n "$DEFAULT_RPM_DST_DIR/{}*.rpm ")
   cp "$additional_rpms" "$rpm_dir"
 
   # narch we copy to noarch
@@ -223,7 +223,7 @@ function main() {
   local additional_noarch_rpms
   log "Copy additional to $noarch"
   additional_noarch_rpms=$(cat "$kick_start_file" | jq --raw-output -r '.additional_packages[]' |
-  xargs -I {} echo -n "$DEFAULT_RPM_DST_DIR/{}*.noarch.rpm")
+  xargs -I {} echo -n "$DEFAULT_RPM_DST_DIR/{}*.noarch.rpm ")
   cp "$additional_noarch_rpms" "$noarch"
 
   log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
