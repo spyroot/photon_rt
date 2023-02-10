@@ -132,10 +132,12 @@ function main() {
   local idrac_ip_list
   local existing_file
 
-  existing_file=$DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"
-  if file_exists $$DEFAULT_LOCATION_MOVE/"$DEFAULT_IMAGE_NAME"; then
+  existing_file="$DEFAULT_LOCATION_MOVE"/"$DEFAULT_IMAGE_NAME"
+  if file_exists "$existing_file"; then
       echo "Removing $existing_file"
     rm -rf "$existing_file"
+  else
+      log "Failed locate $existing_file"
   fi
 
   install_idrac_ctl
