@@ -117,7 +117,7 @@ function adjust_bios_if_needed() {
   IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > /tmp/"$addr".bios.json
   jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
     bios_value=$(jq --raw-output ".Attributes.$bios_keys" "$DEFAULT_BIOS_CONFIG")
-    curren_bios_value=$( jq --raw-output ".$bios_keys[]" /tmp/"$addr".bios.json)
+    curren_bios_value=$( jq --raw-output ".$bios_keys" /tmp/"$addr".bios.json)
 
     log "Bios value to check $bios_keys expected bios value $bios_value $curren_bios_value"
   done
