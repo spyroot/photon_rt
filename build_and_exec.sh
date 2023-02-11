@@ -516,7 +516,7 @@ function print_and_validate_specs() {
   print_yes_no_default "enable static IP address", "$OVERWRITE_STATIC_ETHn_NAME"
   bios_config=$(cat "$DEFAULT_BIOS_CONFIG" | jq)
   printf "\n# IDRAC CTL will apply BIOS change  :\n"
-  print "$bios_config"
+  echo "$bios_config"
 
   printf "\n# Reading and verifying JSON specs:\n"
   jsonlint ks.ref.cfg
