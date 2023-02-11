@@ -126,7 +126,7 @@ function adjust_bios_if_needed() {
   declare bios_config
 
   if is_not_empty "$addr"; then
-    log_info "Processing server $add"
+    printf "Processing server %s\n"  "$addr"
   else
     log_error "Empty server address"
   fi
