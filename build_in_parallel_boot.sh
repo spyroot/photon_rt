@@ -110,16 +110,17 @@ function adjust_bios_if_needed() {
   bios_values=$(cat "$DEFAULT_BIOS_CONFIG" | jq --raw-output [.Attributes][][])
   bios_keys=$(cat "$DEFAULT_BIOS_CONFIG" | jq --raw-output '.Attributes | keys'[])
 
-  readarray bios_values < bios_keys
-
   local bios_keys_array
-  readarray bios_keys_array < bios_keys
+  local bios_values_array
+  readarray bios_values_array < bios_values
+  readarray bios_keys_array < "$bios_keys"
+
   for bios_idx in "${!bios_keys_array[@]}"; do
       local bios_key
       local expected_bios_value
       local curren_bios_value
       bios_key="${bios_keys_array[$bios_idx]}"
-      expected_bios_value="${bios_values[$bios_idx]}"
+      expected_bios_value="${bios_values_array[$bios_idx]}"
       curren_bios_value="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter "$bios_key" | jq --raw-output '.data[]')"
       log "Bios value $bios_key $expected_bios_value current value $curren_bios_value"
   done
