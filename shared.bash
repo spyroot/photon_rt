@@ -72,6 +72,10 @@ fi
 
 DO_CLEAN_UP_ONLY="no"
 
+function log() {
+  printf "%b %s %b\n" "${RED}" "$@" "${NC}"
+}
+
 function log_error() {
   printf "%b %s %b\n" "${RED}" "$@" "${NC}"
 }
