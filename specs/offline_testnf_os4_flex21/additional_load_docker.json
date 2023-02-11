@@ -1,5 +1,4 @@
 [
     "systemctl enable docker >> /etc/postinstall",
     "systemctl start docker  >> /etc/postinstall",
-    "docker load < /testnf-du-flexran-base210.tar.gz >> /etc/postinstall"
 ]
