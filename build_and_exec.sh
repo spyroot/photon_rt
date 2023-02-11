@@ -477,9 +477,13 @@ function print_and_validate_specs() {
   docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
   log "$docker_files"
 
-  print_value_green "Builder will generate:" "$KICK_START_FILE"
-  print_value_green "ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
-  print_value_green "ISO builder will generate:" "$DEFAULT_DST_IMAGE_NAME"
+  printf "\n# target iso :\n"
+  print_value_green " -Builder will generate:" "$KICK_START_FILE"
+  print_value_green " -ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
+  print_value_green " -ISO builder will generate:" "$DEFAULT_DST_IMAGE_NAME"
+  print_value_green " -Builder will create directory for all rpms in final iso:" "$DEFAULT_RPM_DST_DIR"
+  print_value_green " -Builder will create directory for all git repos in final iso:" "$DEFAULT_GIT_DST_DIR"
+  print_value_green " -Builder will create directory for all compressed files in final iso:" "$DEFAULT_ARC_DST_DIR"
 
   printf "\n# Reading and verifying JSON specs:\n"
   jsonlint ks.ref.cfg
