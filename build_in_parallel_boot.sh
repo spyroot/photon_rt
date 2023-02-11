@@ -186,14 +186,10 @@ function boot_host() {
 
 function main() {
   declare idrac_ip_list
-  declare target_img_location
   declare idrac_ipaddr_array=""
-  declare -r image_name
-  declare -r image_location
-
-  image_name=$DEFAULT_IMAGE_NAME
-  image_location=$DEFAULT_LOCATION_MOVE
-  target_img_location="$image_location"/"$image_name"
+  declare -r image_name=$DEFAULT_IMAGE_NAME
+  declare -r image_location=$DEFAULT_LOCATION_MOVE
+  declare -r target_img_location="$image_location"/"$image_name"
 
   if file_exists "$target_img_location"; then
     log "Removing $target_img_location"
