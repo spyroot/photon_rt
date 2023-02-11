@@ -481,7 +481,7 @@ function print_and_validate_specs() {
   print_value_green "ISO builder will use iso:" $DEFAULT_SRC_IMAGE_NAME
   print_value_green "ISO builder will generate:" "$DEFAULT_DST_IMAGE_NAME"
 
-  echo "Verifying JSON files"
+  printf "\n# Reading and verifying JSON specs:\n"
   jsonlint ks.ref.cfg
   jsonlint "$ADDITIONAL_FILES"
   jsonlint "$ADDITIONAL_PACKAGES"
@@ -490,7 +490,8 @@ function print_and_validate_specs() {
   jsonlint "$DOCKER_LOAD_POST_INSTALL"
   jsonlint "$ADDITIONAL_GIT_REPOS"
   jsonlint "$ADDITIONAL_REMOTE_RPMS"
-  print_value_green "JSON check:" "all JSON looks ok"
+  print_value_green " - JSON check:" "all JSON looks ok"
+  printf "\n"
 }
 
 function delete_zero_byte_files() {
