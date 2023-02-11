@@ -22,24 +22,42 @@ It leverages build in Photon OS capability to install OS from
 kickstart spec and it unattended installation. i.e. it implies you correctly 
 re-adjusted boot source in BIOS before you install OS.
 
-Phase one system generates reference kick-start ISO. During this phase
+In phase one system generates a reference kick-start ISO. During this phase
 the first step is to decide whether to build an online or offline version.
+The reference ISO copy to dedicate directory that exposed via HTTP. By default, 
+it **DEFAULT_WEB_DIR** in **shared.bash**.   in cluster.env you need to define  
+**IDRAC_REMOTE_HTTP**. By default, I use the same host as the bootstrap host. i.e., 
+I assume that the host that generates ISO also exposes HTTP port 80.   
+You can use docker env. The entry point in the source tree 
+is a script that starts Nginx.
+
+Note that the third step **build_in_parallel_boot.sh**, is optional. 
+After you run build_iso.sh execute ISO generate in the current directory
 
 ### Online version
 
-Online version is the flavor when post kick-start phase. i.e., after the first 
-reboot post-installation.  All post-install components polled from the internet. 
-It first poll all toolchains required to compile dependencies, polls all drivers,  
+The online version is the flavor of when post-kick-start phase. i.e., 
+after the first reboot post-installation. All post-install components polled from the internet. 
+It first polls all toolchains required to compile dependencies, polls all drivers,  
 git repos, DPDK, IPSEC lib, lib-nl, lib-isa, and many other libs from the internet. 
-During this phase all RPMs, pip packages installed from internet.
+During this phase, all RPMs, and pip packages are installed from the internet.
 
 ### Offline version
 
-In the offline version, all components are serialized to ISO and, after first boot, 
-moved to / partition.
+In the offline version, all components are serialized to ISO and, after first boot,  
+moved to root / partition.
 
 What serialized to offline dictated by configuration JSON files.
-In offline directory.
+In the offline settings, it consists of three directories by default.  
+All are defined in shared.bash
+
+```bash
+DEFAULT_RPM_DIR="direct_rpms"
+# all cloned and tar. gzed repositories in git_repos
+DEFAULT_GIT_DIR="git_images"
+# all downloaded tar.gz ( drivers and other arcs) will be in direct.
+DEFAULT_ARC_DIR="direct"
+```
 
 [Specs]](https://github.com/spyroot/photon_rt/tree/main/offline)
 
