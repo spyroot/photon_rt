@@ -65,6 +65,23 @@ function print_value_green() {
   printf "%-5s %b %s %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
 }
 
+# Function print msg expected value and current value
+# first arg is msg , second current value, last arg expected.
+function print_expected_green() {
+  local msg=$1
+  local value_a=$2
+  local value_b=$3
+  printf "%-5s %b %s %b expected %b %s %b\n" "$msg" "${GREEN}" "$value_a" "${NC}" "${GREEN}" "$value_b" "${NC}"
+}
+
+function print_expected_red() {
+  local msg=$1
+  local value_a=$2
+  local value_b=$3
+  printf "%-5s %b %s %b expected %b %s %b\n" "$msg" "${GREEN}" "$value_a" "${NC}" "${RED}" "$value_b" "${NC}"
+}
+
+
 # Function check if string empty or not
 function is_not_empty() {
   local var=$1

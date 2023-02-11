@@ -112,14 +112,15 @@ function adjust_bios_if_needed() {
     if file_exists "$bios_tmp_file"; then
       local bios_value
       local curren_bios_value
+      local bios_keys
       # read current bios for a host and check for any mismatch if we find at least one
       # we apply bios config
       jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
         bios_value=$(jq --raw-output ".Attributes.$bios_keys" "$DEFAULT_BIOS_CONFIG")
         curren_bios_value=$( jq --raw-output ".$bios_keys" /tmp/"$addr".bios.json)
-        log "Bios check $bios_keys expected bios value $bios_value $curren_bios_value"
+        print_expected_green "Bios check" "$bios_keys" "$bios_value $curren_bios_value"
         if $bios_value != "$curren_bios_value"; then
-          log "BIOS configuration must be applied, expected $bios_value current value $curren_bios_value"
+          print_expected_green "BIOS configuration must be applied for:$bios_value" "$bios_value" "$curren_bios_value"
         fi
       done
     else
