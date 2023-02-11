@@ -108,7 +108,7 @@ function adjust_bios_if_needed() {
   if is_enabled "$sriov_enabled"; then
     log "Skipping bios reconfiguration sriov already enabled."
   else
-    IDRAC_IP="$addr" idrac_ctl job-apply job-apply bios
+    IDRAC_IP="$addr" idrac_ctl job-apply bios
     IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
   fi
   # cstate must disabled
@@ -117,7 +117,7 @@ function adjust_bios_if_needed() {
     log "Skipping c state it already disabled.."
   else
     # reset all bios pending.
-    IDRAC_IP="$addr" idrac_ctl job-apply job-apply bios
+    IDRAC_IP="$addr" idrac_ctl job-apply bios
     IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
   fi
 }
