@@ -445,9 +445,11 @@ function print_and_validate_specs() {
   print_value_green "  -Builder will download" "$MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
   print_value_green "  -Builder will download" "$INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
   print_value_green "  -Builder will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
-  print_value_green "Will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
+  printf "\n# Download:"
 
-  print_value_green "WIll download RPMS, read spec from" "$DEFAULT_RPM_DIR"
+  print_value_green "  -Builder will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
+  print_value_green "  -Builder will download RPMS, read spec from" "$DEFAULT_RPM_DIR"
+  printf "\n # RPMS:"
   total_rpms=$(cat "$ADDITIONAL_DIRECT_RPMS" | jq '. | length')
   print_value_green "Number of direct rpms in rpms spec" "$total_rpms"
   total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
