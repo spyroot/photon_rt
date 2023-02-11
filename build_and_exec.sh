@@ -431,8 +431,8 @@ function download_direct() {
 }
 
 function print_yes_no_default() {
-  local name_of_variable = $1
-  local global_var = $2
+  local name_of_variable=$1
+  local global_var=$2
   if [[ -z "$global_var" ]]; then
     print_value_green " -Builder will build $name_of_variable (default):" "yes"
   else
