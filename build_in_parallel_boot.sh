@@ -107,6 +107,7 @@ function adjust_bios_if_needed() {
     log "Skipping bios configuration"
   else
     local bios_tmp_file
+    log "- Checking bios configuration on a server $addr"
     bios_tmp_file="/tmp/$addr.bios.json"
     IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > "$bios_tmp_file"
     if file_exists "$bios_tmp_file"; then
@@ -118,9 +119,9 @@ function adjust_bios_if_needed() {
         bios_value=$(jq --raw-output ".Attributes.$bios_keys" "$DEFAULT_BIOS_CONFIG")
         local curren_bios_value
         curren_bios_value=$(jq --raw-output ".$bios_keys" "$bios_tmp_file")
-        print_expected_green "Check bios configuration for: $bios_keys" "$bios_value $curren_bios_value"
+        print_expected_green "  -Check bios configuration for: $bios_keys" "$bios_value $curren_bios_value"
         if [ "$bios_value" != "$curren_bios_value" ]; then
-          print_expected_green "BIOS configuration must be applied for:$bios_value" "$bios_value" "$curren_bios_value"
+          print_expected_red "BIOS configuration must be applied for:$bios_keys" "$bios_value" "$curren_bios_value"
         fi
       done
     else
