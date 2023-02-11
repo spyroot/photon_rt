@@ -106,8 +106,9 @@ log() {
 
 function print_value_green() {
   local prefix_text=$1
+  local
   shift 1
-  printf "\t%s %b %s %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
+  printf "%-5s %b %s %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
 }
 
 function is_not_empty() {
