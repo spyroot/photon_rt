@@ -197,7 +197,7 @@ function main() {
 
     adjust_bios_if_needed "$addr"
 
-    boot_host "$addr"
+#    boot_host "$addr"
   done
 }
 
