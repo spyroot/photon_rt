@@ -433,18 +433,18 @@ function download_direct() {
 # Function print to stdout all settings
 function print_and_validate_specs() {
   print_value_green "Build type" "$BUILD_TYPE"
-  print_value_green "-Builder will use:" "$ADDITIONAL_FILES"
+  print_value_green "  -Builder will use:" "$ADDITIONAL_FILES"
 
-  print_value_green "-Builder will use:" "$ADDITIONAL_PACKAGES"
-  print_value_green "-Builder will use:" "$ADDITIONAL_DIRECT_RPMS"
-  print_value_green "-Builder will use:" "$ADDITIONAL_RPMS"
-  print_value_green "-Builder will use:" "$ADDITIONAL_REMOTE_RPMS"
-  print_value_green "-Builder will use:" "$DOCKER_LOAD_POST_INSTALL"
+  print_value_green "  -Builder will use:" "$ADDITIONAL_PACKAGES"
+  print_value_green "  -Builder will use:" "$ADDITIONAL_DIRECT_RPMS"
+  print_value_green "  -Builder will use:" "$ADDITIONAL_RPMS"
+  print_value_green "  -Builder will use:" "$ADDITIONAL_REMOTE_RPMS"
+  print_value_green "  -Builder will use:" "$DOCKER_LOAD_POST_INSTALL"
 
-  print_value_green "-Builder will download" "$DEFAULT_IMAGE_LOCATION"
-  print_value_green "-Builder will download" "$MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
-  print_value_green "-Builder will download" "$INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
-  print_value_green "-Builder will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
+  print_value_green "  -Builder will download" "$DEFAULT_IMAGE_LOCATION"
+  print_value_green "  -Builder will download" "$MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "  -Builder will download" "$INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "  -Builder will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
   print_value_green "Will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
 
   print_value_green "WIll download RPMS, read spec from" "$DEFAULT_RPM_DIR"
