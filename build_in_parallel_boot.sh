@@ -107,23 +107,26 @@ function adjust_bios_if_needed() {
   log "Check default SRIOV settings."
   local bios_values
   local bios_keys
-  bios_values=$(cat "$DEFAULT_BIOS_CONFIG" | jq --raw-output '.Attributes'[])
-  bios_keys=$(cat "$DEFAULT_BIOS_CONFIG" | jq --raw-output '.Attributes | keys'[])
+  bios_values=$(jq --raw-output '.Attributes'[] "$DEFAULT_BIOS_CONFIG")
+  bios_keys=$(jq --raw-output '.Attributes | keys'[] $DEFAULT_BIOS_CONFIG)
 
   local bios_keys_array
   local bios_values_array
-  readarray -t $bios_values_array < "$bios_values"
-  readarray -t $bios_keys_array < "$bios_keys"
-
-  for bios_idx in "${!bios_keys_array[@]}"; do
-      local bios_key
-      local expected_bios_value
-      local curren_bios_value
-      bios_key="${bios_keys_array[$bios_idx]}"
-      expected_bios_value="${bios_values_array[$bios_idx]}"
-      curren_bios_value="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter "$bios_key" | jq --raw-output '.data[]')"
-      log "Bios value $bios_key $expected_bios_value current value $curren_bios_value"
+  readarray -t "$bios_values_array" < "$bios_values"
+  readarray -t "$bios_keys_array" < "$bios_keys"
+  while read -r bios_keys; do
+    log "Bios value $bios_keys"
   done
+
+#  for bios_idx in "${!bios_keys_array[@]}"; do
+#      local bios_key
+#      local expected_bios_value
+#      local curren_bios_value
+#      bios_key="${bios_keys_array[$bios_idx]}"
+#      expected_bios_value="${bios_values_array[$bios_idx]}"
+#      curren_bios_value="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter "$bios_key" | jq --raw-output '.data[]')"
+#      log "Bios value $bios_key $expected_bios_value current value $curren_bios_value"
+#  done
 #
 #  sriov_enabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter SriovGlobalEnable | jq --raw-output '.data[]')"
 #  if is_enabled "$sriov_enabled"; then
