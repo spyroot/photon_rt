@@ -17,6 +17,8 @@ DEFAULT_GIT_DIR="git_images"
 DEFAULT_ARC_DIR="direct"
 # DEFAULT WEB DIR
 DEFAULT_WEB_DIR="/var/www/html/"
+# default file from where we read all cluster spec.
+DEFAULT_CLUSTER_ENV_FILENAME="cluster.env"
 
 # default location for spec folder
 DEFAULT_SPEC_FOLDER="specs"
