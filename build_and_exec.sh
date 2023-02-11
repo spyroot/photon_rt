@@ -460,13 +460,15 @@ function print_and_validate_specs() {
   print_value_green "  -All archive downloaded spec read from" "$DEFAULT_ARC_DIR"
   print_value_green "  -All git clone will be downloaded:" "$DEFAULT_GIT_DIR"
 
+  printf "\n# git repos:\n"
   local repo
   jq -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r repo; do
     mkdir -p direct
-    print_value_green "Will git clone" "$repo"
+    print_value_green "  -Builder will git clone" "$repo"
   done
 
-  log "Builder will copy to IOS files:"
+  printf "\n# other files:\n"
+  log "  -Builder will copy to IOS files:"
   local additional_files
   additional_files=$(cat "$ADDITIONAL_FILES" | jq '.additional_files')
   echo "$additional_files"
