@@ -99,26 +99,17 @@ function compare_sha() {
 
 function adjust_bios_if_needed() {
   local addr=$1
-  local sriov_enabled=""
-  local cstate_disabled=""
 
   local default_bios_config="bios/bios.json"
-  # first we check if SRIOV enabled or not, ( Default disabled)
-  log "Check default SRIOV settings."
-  local bios_values
-  local bios_keys
-#  bios_values=$(jq --raw-output '.Attributes'[] "$DEFAULT_BIOS_CONFIG")
 
-  local bios_keys_array
-  local bios_values_array
-#  readarray -t "$bios_values_array" < "$bios_values"
-#  readarray -t "$bios_keys_array" < "$bios_keys"
   # we save entire bios so we use can check each value
   if [ -z "$DEFAULT_BIOS_CONFIG" ]; then
     log "Skipping bios configuration"
   else
-    IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > /tmp/"$addr".bios.json
-    if file_exists $/tmp/"$addr".bios.json; then
+    local bios_tmp_file
+    bios_tmp_file=/tmp/"$addr".bios.json
+    IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > "$bios_tmp_file"
+    if file_exists "$bios_tmp_file"; then
       local bios_value
       local curren_bios_value
       # read current bios for a host and check for any mismatch if we find at least one
@@ -131,6 +122,8 @@ function adjust_bios_if_needed() {
           log "BIOS configuration must be applied, expected $bios_value current value $curren_bios_value"
         fi
       done
+    else
+      log_error "Failed to save bios configuration $bios_tmp_file"
     fi
   fi
 

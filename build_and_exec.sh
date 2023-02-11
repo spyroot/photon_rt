@@ -28,25 +28,20 @@ fi
 
 source shared.bash
 
-function print_error_red() {
-  shift 1
-  printf "%b %s %b\n" "${RED}" "$@" "${NC}"
-}
-
 if [[ -z "$DEFAULT_DST_IMAGE_NAME" ]]; then
-  print_value_red "Please make sure you have in shared\.bash
+  log_error "Please make sure you have in shared\.bash
   DEFAULT_DST_IMAGE_NAME variable defined"
   exit 99
 fi
 
 if [[ -z "$DEFAULT_DST_IMAGE_NAME" ]]; then
-    print_value_red "Please make sure you have in shared\.bash
+    log_error "Please make sure you have in shared\.bash
     DEFAULT_DST_IMAGE_NAME variable defined"
     exit 99
 fi
 
 if [[ -z "$BUILD_TYPE" ]]; then
-  print_value_red "Please make sure you have in shared\.bash
+  log_error "Please make sure you have in shared\.bash
   BUILD_TYPE variable defined"
   exit 99
 fi
@@ -102,12 +97,6 @@ DEFAULT_FLAVOR="linux-rt"
 # usage log "msg"
 log() {
   printf "%b %s %b\n" "${GREEN}" "$@" "${NC}"
-}
-
-function print_value_green() {
-  local prefix_text=$1
-  shift 1
-  printf "%-5s %b %s %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
 }
 
 function is_not_empty() {

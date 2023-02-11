@@ -55,6 +55,16 @@ fi
 
 DO_CLEAN_UP_ONLY="no"
 
+function log_error() {
+  printf "%b %s %b\n" "${RED}" "$@" "${NC}"
+}
+
+function print_value_green() {
+  local prefix_text=$1
+  shift 1
+  printf "%-5s %b %s %b\n" "$prefix_text" "${GREEN}" "$@" "${NC}"
+}
+
 # Function check if string empty or not
 function is_not_empty() {
   local var=$1
