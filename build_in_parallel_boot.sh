@@ -25,6 +25,7 @@
 #export IDRAC_REMOTE_HTTP
 
 source shared.bash
+source "$DEFAULT_OVERWRITE_FILE"
 
 if [[ -z "$DEFAULT_DST_IMAGE_NAME" ]]; then
   echo "Please make sure you have in shared\.bash DEFAULT_DST_IMAGE_NAME var"
@@ -104,22 +105,41 @@ function adjust_bios_if_needed() {
   local default_bios_config="bios/bios.json"
   # first we check if SRIOV enabled or not, ( Default disabled)
   log "Check default SRIOV settings."
-  sriov_enabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter SriovGlobalEnable | jq --raw-output '.data[]')"
-  if is_enabled "$sriov_enabled"; then
-    log "Skipping bios reconfiguration sriov already enabled."
-  else
-    IDRAC_IP="$addr" idrac_ctl job-apply bios
-    IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
-  fi
-  # cstate must disabled
-  cstate_disabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter ProcCStates | jq --raw-output '.data[]')"
-  if is_disabled "$cstate_disabled"; then
-    log "Skipping c state it already disabled.."
-  else
-    # reset all bios pending.
-    IDRAC_IP="$addr" idrac_ctl job-apply bios
-    IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
-  fi
+  local bios_values
+  local bios_keys
+  bios_values=$(cat "$DEFAULT_BIOS_CONFIG" | jq [.Attributes][][])
+  bios_keys=$(cat "$DEFAULT_BIOS_CONFIG" | jq --raw-output '.Attributes | keys'[])
+
+  readarray bios_values < bios_keys
+
+  local bios_keys_array
+  readarray bios_keys_array < bios_keys
+  for bios_idx in "${!bios_keys_array[@]}"; do
+      local bios_key
+      local expected_bios_value
+      local curren_bios_value
+      bios_key="${bios_keys_array[$bios_idx]}"
+      expected_bios_value="${bios_values[$bios_idx]}"
+      curren_bios_value="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter "$bios_key" | jq --raw-output '.data[]')"
+      log "Bios value $bios_key $expected_bios_value current value $curren_bios_value"
+  done
+#
+#  sriov_enabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter SriovGlobalEnable | jq --raw-output '.data[]')"
+#  if is_enabled "$sriov_enabled"; then
+#    log "Skipping bios reconfiguration sriov already enabled."
+#  else
+#    IDRAC_IP="$addr" idrac_ctl job-apply bios
+#    IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
+#  fi
+#  # cstate must disabled
+#  cstate_disabled="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter ProcCStates | jq --raw-output '.data[]')"
+#  if is_disabled "$cstate_disabled"; then
+#    log "Skipping c state it already disabled.."
+#  else
+#    # reset all bios pending.
+#    IDRAC_IP="$addr" idrac_ctl job-apply bios
+#    IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec $default_bios_config --commit --reboot
+#  fi
 }
 
 function boot_host() {
