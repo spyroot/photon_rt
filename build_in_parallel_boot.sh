@@ -161,7 +161,7 @@ function adjust_bios_if_needed() {
           print_expected_red "BIOS configuration must be applied for:$bios_keys" "$bios_value" "$curren_bios_value"
           IDRAC_IP="$addr" idrac_ctl job-apply bios
           log "Applying configuration from file $bios_config and rebooting host"
-          IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change --from_spec "$bios_config" on-reset --commit --reboot
+          IDRAC_IP="$addr" idrac_ctl idrac_ctl bios-change on-reset --from_spec "$bios_config" --commit --reboot
         fi
       done
     else
