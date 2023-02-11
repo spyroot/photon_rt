@@ -475,7 +475,7 @@ function print_and_validate_specs() {
 
   local docker_files
   docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
-  printf "\n# Additional files :\n"
+  printf "\n# Additional files:\n"
   log "$docker_files"
 
   printf "\n# target iso :\n"
@@ -485,6 +485,19 @@ function print_and_validate_specs() {
   print_value_green " -Builder will create directory for all rpms in final iso:" "$DEFAULT_RPM_DST_DIR"
   print_value_green " -Builder will create directory for all git repos in final iso:" "$DEFAULT_GIT_DST_DIR"
   print_value_green " -Builder will create directory for all compressed files in final iso:" "$DEFAULT_ARC_DST_DIR"
+
+  printf "\n# Current configuration spec for post :\n"
+  if is_yes "$OVERWRITE_DPDK_BUILD"; then
+    print_value_green " -Builder will build DPDK:" "yes"
+  else
+    print_value_green " -Builder will build DPDK:" "no"
+  fi
+
+  if is_yes "$OVERWRITE_BUILD_SRIOV"; then
+    print_value_green " -Builder will enable sriov:" "yes"
+  else
+    print_value_green " -Builder will enable sriov:" "no"
+  fi
 
   printf "\n# Reading and verifying JSON specs:\n"
   jsonlint ks.ref.cfg
