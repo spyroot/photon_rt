@@ -114,13 +114,25 @@ function adjust_bios_if_needed() {
 #  readarray -t "$bios_values_array" < "$bios_values"
 #  readarray -t "$bios_keys_array" < "$bios_keys"
   # we save entire bios so we use can check each value
-  IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > /tmp/"$addr".bios.json
-  jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
-    bios_value=$(jq --raw-output ".Attributes.$bios_keys" "$DEFAULT_BIOS_CONFIG")
-    curren_bios_value=$( jq --raw-output ".$bios_keys" /tmp/"$addr".bios.json)
-
-    log "Bios value to check $bios_keys expected bios value $bios_value $curren_bios_value"
-  done
+  if [ -z "$DEFAULT_BIOS_CONFIG" ]; then
+    log "Skipping bios configuration"
+  else
+    IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > /tmp/"$addr".bios.json
+    if file_exists $/tmp/"$addr".bios.json; then
+      local bios_value
+      local curren_bios_value
+      # read current bios for a host and check for any mismatch if we find at least one
+      # we apply bios config
+      jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
+        bios_value=$(jq --raw-output ".Attributes.$bios_keys" "$DEFAULT_BIOS_CONFIG")
+        curren_bios_value=$( jq --raw-output ".$bios_keys" /tmp/"$addr".bios.json)
+        log "Bios check $bios_keys expected bios value $bios_value $curren_bios_value"
+        if $bios_value != "$curren_bios_value"; then
+          log "BIOS configuration must be applied, expected $bios_value current value $curren_bios_value"
+        fi
+      done
+    fi
+  fi
 
 #  for bios_idx in "${!bios_keys_array[@]}"; do
 #      local bios_key
