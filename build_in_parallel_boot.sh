@@ -112,8 +112,8 @@ function adjust_bios_if_needed() {
 
   local bios_keys_array
   local bios_values_array
-  readarray $bios_values_array < "$bios_values"
-  readarray $bios_keys_array < "$bios_keys"
+  readarray -t $bios_values_array < "$bios_values"
+  readarray -t $bios_keys_array < "$bios_keys"
 
   for bios_idx in "${!bios_keys_array[@]}"; do
       local bios_key
