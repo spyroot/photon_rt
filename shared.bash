@@ -79,6 +79,20 @@ function is_yes() {
   fi
 }
 
+# Function checks if string contains yes or not
+function is_no() {
+  local var=$1
+  if [[ -z "$var" ]]; then
+    return 1
+  else
+    if [ "$var" == "no" ]; then
+      return 0
+    else
+      return 1
+    fi
+  fi
+}
+
 function is_cdrom_connected() {
   local var=$1
   if [[ -z "$var" ]]; then

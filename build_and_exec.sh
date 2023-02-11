@@ -430,6 +430,20 @@ function download_direct() {
   wget -q -nc $DPDK_DOWNLOAD --directory-prefix=direct -o "logs/intel.donwload.log"
 }
 
+function print_yes_no_default() {
+  local name_of_variable = $1
+  local global_var = $2
+  if [[ -z "$global_var" ]]; then
+    print_value_green " -Builder will build $name_of_variable (default):" "yes"
+  else
+    if is_yes "$global_var"; then
+      print_value_green " -Builder will build DPDK:" "yes"
+    else
+      print_value_green " -Builder will build DPDK:" "no"
+    fi
+  fi
+}
+
 # Function print to stdout all settings
 function print_and_validate_specs() {
   printf "\n"
@@ -487,17 +501,7 @@ function print_and_validate_specs() {
   print_value_green " -Builder will create directory for all compressed files in final iso:" "$DEFAULT_ARC_DST_DIR"
 
   printf "\n# Current configuration spec for post :\n"
-  if is_yes "$OVERWRITE_DPDK_BUILD"; then
-    print_value_green " -Builder will build DPDK:" "yes"
-  else
-    print_value_green " -Builder will build DPDK:" "no"
-  fi
-
-  if is_yes "$OVERWRITE_BUILD_SRIOV"; then
-    print_value_green " -Builder will enable sriov:" "yes"
-  else
-    print_value_green " -Builder will enable sriov:" "no"
-  fi
+  print_yes_no_default "DPDK", DEFAULT_DST_IMAGE_NAME
 
   printf "\n# Reading and verifying JSON specs:\n"
   jsonlint ks.ref.cfg
