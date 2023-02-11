@@ -430,6 +430,7 @@ function download_direct() {
   wget -q -nc $DPDK_DOWNLOAD --directory-prefix=direct -o "logs/intel.donwload.log"
 }
 
+# function print current configuration for overwrites
 function print_yes_no_default() {
   local name_of_variable=$1
   local global_var=$2
@@ -502,7 +503,17 @@ function print_and_validate_specs() {
 
   printf "\n# Current configuration spec for post :\n"
   source "$DEFAULT_OVERWRITE_FILE"
+  print_yes_no_default " install packages", "$OVERWRITE_BUILD_INSTALL_PACKAGES"
   print_yes_no_default "DPDK", "$OVERWRITE_DPDK_BUILD"
+  print_yes_no_default "enable SRIOV", "$OVERWRITE_BUILD_SRIOV"
+  print_yes_no_default "max vfs", "$OVERWRITE_MAX_VFS_PER_PCI"
+  print_yes_no_default "Intel ipsec lib", "$OVERWRITE_IPSEC_BUILD"
+  print_yes_no_default "Intel driver", "$OVERWRITE_INTEL_BUILD"
+  print_yes_no_default "enable huge pages", "$OVERWRITE_BUILD_HUGEPAGES"
+  print_yes_no_default "enable tuned", "$OVERWRITE_BUILD_TUNED"
+  print_yes_no_default "enable ptp", "$OVERWRITE_BUILD_PTP"
+  print_yes_no_default "enable dot1q trunk", "$OVERWRITE_BUILD_TRUNK"
+  print_yes_no_default "enable static IP address", "$OVERWRITE_STATIC_ETHn_NAME"
 
   printf "\n# Reading and verifying JSON specs:\n"
   jsonlint ks.ref.cfg
