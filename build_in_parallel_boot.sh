@@ -122,7 +122,7 @@ function compare_sha() {
 # Function adjust bios configuration on each server
 # if bios confing expected on each server.
 function adjust_bios_if_needed() {
-  declare addr=$1
+  declare -r addr=$1
   declare bios_config
 
   if is_not_empty "$addr"; then
@@ -223,6 +223,7 @@ function main() {
   for idrac_server in "${idrac_ipaddr_array[@]}"; do
     local addr
     addr=$(trim "$idrac_server")
+    printf "Processing server %s", "$addr"
     adjust_bios_if_needed "$addr"
     boot_host "$addr"
   done
