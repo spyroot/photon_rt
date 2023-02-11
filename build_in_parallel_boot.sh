@@ -109,7 +109,7 @@ function adjust_bios_if_needed() {
     local bios_tmp_file
     bios_tmp_file="/tmp/$addr.bios.json"
     IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > "$bios_tmp_file"
-    if file_exists "$bios_tmp_file"; then
+    if file_exists bios_tmp_file; then
       local bios_keys
       # read current bios for a host and check for any mismatch if we find at least one
       # we apply bios config
