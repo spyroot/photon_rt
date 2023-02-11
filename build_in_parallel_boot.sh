@@ -107,14 +107,13 @@ function adjust_bios_if_needed() {
   log "Check default SRIOV settings."
   local bios_values
   local bios_keys
-  bios_values=$(jq --raw-output '.Attributes'[] "$DEFAULT_BIOS_CONFIG")
-  bios_keys=$(jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG")
+#  bios_values=$(jq --raw-output '.Attributes'[] "$DEFAULT_BIOS_CONFIG")
 
   local bios_keys_array
   local bios_values_array
 #  readarray -t "$bios_values_array" < "$bios_values"
 #  readarray -t "$bios_keys_array" < "$bios_keys"
-  while read -r bios_keys; do
+  jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
     log "Bios value to check $bios_keys"
   done
 
