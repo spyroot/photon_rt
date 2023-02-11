@@ -113,9 +113,11 @@ function adjust_bios_if_needed() {
   local bios_values_array
 #  readarray -t "$bios_values_array" < "$bios_values"
 #  readarray -t "$bios_keys_array" < "$bios_keys"
+  # we save entire bios so we use can check each value
+  IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > /tmp/"$addr".bios.json
   jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
     bios_value=$(jq --raw-output ".Attributes.$bios_keys" "$DEFAULT_BIOS_CONFIG")
-    curren_bios_value="$(IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only --filter "$bios_keys" | jq --raw-output '.data[]')"
+    curren_bios_value=$( jq --raw-output ".$bios_keys[]" /tmp/"$addr".bios.json)
 
     log "Bios value to check $bios_keys expected bios value $bios_value $curren_bios_value"
   done
