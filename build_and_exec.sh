@@ -475,6 +475,7 @@ function print_and_validate_specs() {
 
   local docker_files
   docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
+  printf "\n# Additional files :\n"
   log "$docker_files"
 
   printf "\n# target iso :\n"
