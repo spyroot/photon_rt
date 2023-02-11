@@ -450,15 +450,15 @@ function print_and_validate_specs() {
   print_value_green "  -Builder will download RPMS, read spec from" "$DEFAULT_RPM_DIR"
   printf "\n # RPMS:\n"
   total_rpms=$(cat "$ADDITIONAL_DIRECT_RPMS" | jq '. | length')
-  print_value_green "Number of direct rpms in rpms spec" "$total_rpms"
+  print_value_green "  -Number of direct rpms in rpms spec" "$total_rpms"
   total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
-  print_value_green "Number of additional rpms in additional spec" "$total_rpms"
+  print_value_green "  -Number of additional rpms in additional spec" "$total_rpms"
   total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
-  print_value_green "Number of additional rpms in additional spec" "$total_rpms"
-
-  print_value_green "All archive read from spec " "$ADDITIONAL_GIT_REPOS"
-  print_value_green "All archive downloaded spec read from" "$DEFAULT_ARC_DIR"
-  print_value_green "All git clone will be downloaded:" "$DEFAULT_GIT_DIR"
+  print_value_green "  -Number of additional rpms in additional spec" "$total_rpms"
+  printf "\n# Specs:\n"
+  print_value_green "  -All archive read from spec " "$ADDITIONAL_GIT_REPOS"
+  print_value_green "  -All archive downloaded spec read from" "$DEFAULT_ARC_DIR"
+  print_value_green "  -All git clone will be downloaded:" "$DEFAULT_GIT_DIR"
 
   local repo
   jq -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r repo; do
