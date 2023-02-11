@@ -86,7 +86,7 @@ function print_expected_green() {
   local msg=$1
   local value_a=$2
   local value_b=$3
-  printf "%-5s %b %s %b expected %b %s %b\n" "$msg" "${GREEN}" "$value_a" "${NC}" "${GREEN}" "$value_b" "${NC}"
+  printf "%-5s %b %-5s %b expected %b %s %b\n" "$msg" "${GREEN}" "$value_a" "${NC}" "${GREEN}" "$value_b" "${NC}"
 }
 
 function print_expected_red() {
