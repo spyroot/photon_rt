@@ -501,6 +501,7 @@ function print_and_validate_specs() {
   print_value_green " -Builder will create directory for all compressed files in final iso:" "$DEFAULT_ARC_DST_DIR"
 
   printf "\n# Current configuration spec for post :\n"
+  source "$DEFAULT_OVERWRITE_FILE"
   print_yes_no_default "DPDK", "$OVERWRITE_DPDK_BUILD"
 
   printf "\n# Reading and verifying JSON specs:\n"
