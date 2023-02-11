@@ -219,7 +219,7 @@ function main() {
 
   # first trim all whitespace and then iterate.
   idrac_ip_list=$(trim "$IDRAC_IPS")
-  IFS=',' read -ra IDRAC_IP_ADDR <<<"$idrac_ip_list"
+  IFS=',' read -ra idrac_ipaddr_array <<<"$idrac_ip_list"
   for idrac_server in "${idrac_ipaddr_array[@]}"; do
     local addr
     addr=$(trim "$idrac_server")
