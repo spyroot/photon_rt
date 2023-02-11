@@ -119,7 +119,7 @@ function adjust_bios_if_needed() {
         local curren_bios_value
         curren_bios_value=$(jq --raw-output ".$bios_keys" bios_tmp_file)
         print_expected_green "Check bios configuration for: $bios_keys" "$bios_value $curren_bios_value"
-        if "$bios_value" != "$curren_bios_value"; then
+        if [ "$bios_value" != "$curren_bios_value" ]; then
           print_expected_green "BIOS configuration must be applied for:$bios_value" "$bios_value" "$curren_bios_value"
         fi
       done
