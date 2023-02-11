@@ -188,17 +188,23 @@ function main() {
   declare idrac_ip_list
   declare target_img_location
   declare idrac_ipaddr_array=""
+  declare -r image_name
+  declare -r image_location
 
-  target_img_location="$DEFAULT_LOCATION_MOVE"/"$DEFAULT_IMAGE_NAME"
+  image_name=$DEFAULT_IMAGE_NAME
+  image_location=$DEFAULT_LOCATION_MOVE
+  target_img_location="$image_location"/"$image_name"
+
   if file_exists "$target_img_location"; then
-    echo "Removing $target_img_location"
+    log "Removing $target_img_location"
     rm -rf "$target_img_location"
   else
-    log "Failed locate $target_img_location"
+    log_error "Failed locate $target_img_location"
+    exit 99
   fi
 
-  log "Coping $DEFAULT_IMAGE_NAME to $target_img_location"
-  cp "$DEFAULT_IMAGE_NAME" "$target_img_location"
+  log "Coping.. $image_name $target_img_location"
+  cp "$image_name" "$target_img_location"
   if file_exists "$target_img_location"; then
     log "File successfully copied $target_img_location"
   fi
