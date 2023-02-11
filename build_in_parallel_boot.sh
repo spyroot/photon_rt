@@ -114,7 +114,8 @@ function adjust_bios_if_needed() {
 #  readarray -t "$bios_values_array" < "$bios_values"
 #  readarray -t "$bios_keys_array" < "$bios_keys"
   jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
-    log "Bios value to check $bios_keys"
+    bios_value=$(jq --raw-output '.Attributes.$bios_keys' "$DEFAULT_BIOS_CONFIG")
+    log "Bios value to check $bios_keys expected bios value $bios_value"
   done
 
 #  for bios_idx in "${!bios_keys_array[@]}"; do
