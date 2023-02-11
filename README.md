@@ -7,18 +7,20 @@ Note to have a consistent build. A builder build system generates ISO
 is used in both VM and Bare metal.    
 
 In the case of a VM, the ISO is used to boot the VM and install OS from kick-start. i.e., it 
-is an unattended installation.  Thus, In both cases, the automated build system, first build a reference iso file.  
+is an unattended installation.  Thus, In both cases, the automated build system, 
+first build a reference iso file.  
 
 For example local directory contains ph4-rt-refresh.iso or system fetch the reference ISO from the web. 
 
 ## What it builds  ?
 
 An automated system for VMware Real time Photon OS version 4 and 5 and 
-consists build three phases. Make sure you familiar with Photon OS itself.
+consists build multiply phases. Make sure you familiar with Photon OS itself.
 [Photon OS](https://github.com/vmware/photon)
 
 It leverages build in Photon OS capability to install OS from 
-kickstart installation.
+kickstart spec and it unattended installation. i.e. it implies you correctly 
+re-adjusted boot source in BIOS before you install OS.
 
 Phase one system generates reference kick-start ISO. During this phase
 the first step is to decide whether to build an online or offline version.
@@ -43,56 +45,53 @@ In offline directory.
 
 All specs JSON files. For example for DPDK we need meson, nasm and ninja build system
 
-'''additional_direct_rpms.json
+additional_direct_rpms.json
+```json
 [
   "ninja-build-1.10.2-2.ph4.x86_64",
   "meson-0.64.1-1.ph4.noarch",
   "nasm-2.15.05-1.ph4.x86_64"
 ]
-'''
+```
 
-'''additional_git_clone.json
+'''
+additional_git_clone.json
+
+```json
 [
   "https://github.com/intel/isa-l",
   "https://github.com/spyroot/tuned.git",
   "https://github.com/intel/intel-ipsec-mb.git"
 ]
-'''
+```
 
-'''additional_packages.json
+```json
 [
   "docker"
 ]
-'''
+```
 
-'''additional_rpms.json
-[
-  "docker"
-]
-'''
 
-Additional files pushed during install
-'''additional_files.json
+Additional files pushed during install.
+```json
 {
   "additional_files": [
     {
-      "/mnt/media/vcu1.tar.gz": "/vcu1.tar.gz"
+      "/mnt/media/my_docker.tar.gz": "/my_docker.tar.gz"
     },
     {
       "/mnt/media/post.sh": "/post.sh"
     }
   ]
 }
-'''
+```
+additional_load_docker.json
 
-'''additional_load_docker.json
-
-Additional RPMS we install in online version.
-
-'''additional_remote_rpms.json
+```json
+[
   "wget -nc http://MY_HTTP_SERVER/MY.rpm -P /tmp/  >> /etc/postinstall"
-''' 
-
+]
+```
 
 ## What customization option does it have?
 
@@ -158,12 +157,13 @@ post-installation pipelines that customize a VM.
 In both cases, customization for post-install, the first boot includes polling the 
 latest Intel drivers, fixing kernel boot parameters, and optimizing VM/Host for the real-time workload.
 
-
 ## Requirements.
 
 Requirements.
 
 - Make sure you have a network segment in VC that provide DHCP services.
+- If you are using Linux and don't want to use the docker image I provide. 
+- Make sure you run on a system with python 3.10.   idrac_ctl requires python 3.10
 - If you do bare-metal online you also need make sure post kick-start host will get IP address.
 - Make sure the same segment has an internet connection.
 - Make sure that DHCP allocates the DNS server.
@@ -172,7 +172,7 @@ Requirements.
 ## Step One: Build ISO.
 
 ```bash
-# intall vault and store credentials.
+# instal vault and store credentials.
 ./install_vault_linux.sh
 
 # builds container or pull container from dockerhub and land to bash
@@ -181,6 +181,68 @@ Requirements.
 # builds iso 
 ./build_iso.sh
 ```
+
+For example 
+
+Spec to build Photon 4 Real-Time kernel with VMware Test NF.
+
+```bash
+#!/bin/bash
+BUILD_TYPE="offline_testnf_os4_flex21" ./build_and_exec.sh
+BUILD_TYPE="offline_testnf_os4_flex21" ./build_iso.sh
+BUILD_TYPE="offline_testnf_os4_flex21" ./build_paraller_boot.sh
+```
+
+## Overwrite post boot.
+
+During first boot post.sh perform  number of optimization and customization.  **overwrite.env** 
+provides option to turn on or off specific customization.
+
+Example overwrite.env that will overwrite PCI list for SRIOV.
+If you want switch everything off please check **overwrite.example_disable_post**
+
+```bash
+#!/bin/bash
+
+# overwrite do we build build dpkd or not
+#OVERWRITE_DPDK_BUILD="yes"
+# overwrite do we build sriov or not
+#OVERWRITE_BUILD_SRIOV="yes"
+# overwrite do we build ipsec or not
+#OVERWRITE_IPSEC_BUILD="yes"
+# overwrite do we build intel driver or not
+#OVERWRITE_INTEL_BUILD="yes"
+# overwrite do we build hugepages or not
+#OVERWRITE_BUILD_HUGEPAGES="yes"
+# overwrite do we build tuned with profile or not
+#OVERWRITE_BUILD_TUNED="yes"
+# overwrite ptp do we build or not
+#OVERWRITE_BUILD_PTP="yes"
+# overwrite do we build trunk or not
+#OVERWRITE_BUILD_TRUNK="yes"
+# overwrite default pci
+#OVERWRITE_SRIOV_PCI="pci@0000:51:00.0,pci@0000:51:00.1"
+# overwrite default max vf
+#OVERWRITE_MAX_VFS_PER_PCI=16
+# overwrite default max vf
+#OVERWRITE_DOT1Q_VLAN_ID_LIST="2000,2001"
+# overwrite default max vf
+#OVERWRITE_DOT1Q_VLAN_TRUNK_PCI="pci@0000:18:00.1"
+
+# overwrites adapter allocate for static IP
+# OVERWRITE_STATIC_ETHn_NAME="eth0"
+# OVERWRITE_STATIC_ETHn_ADDRESS="192.168.1.1/24"
+# OVERWRITE_STATIC_ETHn_GATEWAY="192.168.254.254"
+# OVERWRITE_STATIC_ETHn_STATIC_DNS="8.8.8.8"
+```
+
+## Main configuration file.
+
+The main configuration file is shared.bash.  It is the only file you should edit. 
+Its main configuration indicates what we need to build. Specs folder **MUST** 
+container a structure I posted as an example.
+
+DEFAULT_BUILD_TYPE="offline_testnf_os4_flex21"
 
 ## Example
 
