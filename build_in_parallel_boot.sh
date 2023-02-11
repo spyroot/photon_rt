@@ -118,7 +118,7 @@ function adjust_bios_if_needed() {
       jq --raw-output '.Attributes | keys'[] "$DEFAULT_BIOS_CONFIG" | while read -r bios_keys; do
         bios_value=$(jq --raw-output ".Attributes.$bios_keys" "$DEFAULT_BIOS_CONFIG")
         curren_bios_value=$( jq --raw-output ".$bios_keys" /tmp/"$addr".bios.json)
-        print_expected_green "Bios check" "$bios_keys" "$bios_value $curren_bios_value"
+        print_expected_green "Bios check $bios_keys" "$bios_value $curren_bios_value"
         if $bios_value != "$curren_bios_value"; then
           print_expected_green "BIOS configuration must be applied for:$bios_value" "$bios_value" "$curren_bios_value"
         fi
