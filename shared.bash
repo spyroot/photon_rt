@@ -40,7 +40,22 @@ AVX_VERSION=4.5.3
 #
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0m;34m'
+PURPLE='\033[0m;35m'
+CYAN='\033[0m;36m'
 NC='\033[0m'
+
+# bold
+BBlack="\[\033[1;30m\]"       # Black
+BRed="\[\033[1;31m\]"         # Red
+BGreen="\[\033[1;32m\]"       # Green
+BYellow="\[\033[1;33m\]"      # Yellow
+BBlue="\[\033[1;34m\]"        # Blue
+BPurple="\[\033[1;35m\]"      # Purple
+BCyan="\[\033[1;36m\]"        # Cyan
+BWhite="\[\033[1;37m\]"       # White
+
 
 if [ -z "$PHOTON_5_X86" ]
 then
@@ -81,6 +96,10 @@ function print_expected_red() {
   printf "%-5s %b %s %b expected %b %s %b\n" "$msg" "${GREEN}" "$value_a" "${NC}" "${RED}" "$value_b" "${NC}"
 }
 
+
+function log_info() {
+  printf "%b %s. %b\n" "${BLUE}" "$@" "${NC}"
+}
 
 # Function check if string empty or not
 function is_not_empty() {

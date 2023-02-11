@@ -107,7 +107,7 @@ function adjust_bios_if_needed() {
     log "Skipping bios configuration"
   else
     local bios_tmp_file
-    log "- Checking bios configuration on a server $addr"
+    log_info "- Checking bios configuration on a server $addr"
     bios_tmp_file="/tmp/$addr.bios.json"
     IDRAC_IP="$addr" idrac_ctl --nocolor bios --attr_only | jq --raw-output '.data'[] > "$bios_tmp_file"
     if file_exists "$bios_tmp_file"; then
