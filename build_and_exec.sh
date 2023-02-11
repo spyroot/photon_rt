@@ -17,26 +17,41 @@
 # spyroot@gmail.com
 # Author Mustafa Bayramov
 
+DEFAULT_SHARED="shared.bash"
+
+if [[ -f "$DEFAULT_SHARED" ]]; then
+  echo "Reading configuration from $DEFAULT_SHARED"
+else
+  echo "Failed to read $DEFAULT_SHARED"
+  exit 99
+fi
+
 source shared.bash
 
+function print_error_red() {
+  shift 1
+  printf "%b %s %b\n" "${RED}" "$@" "${NC}"
+}
+
 if [[ -z "$DEFAULT_DST_IMAGE_NAME" ]]; then
-  echo "Please make sure you have in shared\.bash DEFAULT_DST_IMAGE_NAME var"
+  print_value_red "Please make sure you have in shared\.bash
+  DEFAULT_DST_IMAGE_NAME variable defined"
   exit 99
 fi
 
 if [[ -z "$DEFAULT_DST_IMAGE_NAME" ]]; then
-  echo "Please make sure you have in shared\.bash DEFAULT_DST_IMAGE_NAME var"
-  exit 99
+    print_value_red "Please make sure you have in shared\.bash
+    DEFAULT_DST_IMAGE_NAME variable defined"
+    exit 99
 fi
 
 if [[ -z "$BUILD_TYPE" ]]; then
-  echo "Please make sure you have in shared\.bash BUILD_TYPE var"
+  print_value_red "Please make sure you have in shared\.bash
+  BUILD_TYPE variable defined"
   exit 99
 fi
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
+
 # by default, target build RT 4.0
 DEFAULT_RELEASE="4.0"
 
@@ -418,18 +433,18 @@ function download_direct() {
 # Function print to stdout all settings
 function print_and_validate_specs() {
   print_value_green "Build type" "$BUILD_TYPE"
-  print_value_green "\t -Builder will use:" "$ADDITIONAL_FILES"
+  print_value_green "-Builder will use:" "$ADDITIONAL_FILES"
 
-  print_value_green "\t -Builder will use:" "$ADDITIONAL_PACKAGES"
-  print_value_green "\t -Builder will use:" "$ADDITIONAL_DIRECT_RPMS"
-  print_value_green "\t -Builder will use:" "$ADDITIONAL_RPMS"
-  print_value_green "\t -Builder will use:" "$ADDITIONAL_REMOTE_RPMS"
-  print_value_green "\t -Builder will use:" "$DOCKER_LOAD_POST_INSTALL"
+  print_value_green "-Builder will use:" "$ADDITIONAL_PACKAGES"
+  print_value_green "-Builder will use:" "$ADDITIONAL_DIRECT_RPMS"
+  print_value_green "-Builder will use:" "$ADDITIONAL_RPMS"
+  print_value_green "-Builder will use:" "$ADDITIONAL_REMOTE_RPMS"
+  print_value_green "-Builder will use:" "$DOCKER_LOAD_POST_INSTALL"
 
-  print_value_green "\t -Builder will download" "$DEFAULT_IMAGE_LOCATION"
-  print_value_green "\t -Builder will download" "$MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
-  print_value_green "\t -Builder will download" "$INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
-  print_value_green "\t -Builder will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
+  print_value_green "-Builder will download" "$DEFAULT_IMAGE_LOCATION"
+  print_value_green "-Builder will download" "$MELLANOX_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "-Builder will download" "$INTEL_DOWNLOAD_URL to $DEFAULT_ARC_DIR"
+  print_value_green "-Builder will download" "$LIB_NL_DOWNLOAD to $DEFAULT_ARC_DIR"
   print_value_green "Will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
 
   print_value_green "WIll download RPMS, read spec from" "$DEFAULT_RPM_DIR"
@@ -444,6 +459,7 @@ function print_and_validate_specs() {
   print_value_green "All archive downloaded spec read from" "$DEFAULT_ARC_DIR"
   print_value_green "All git clone will be downloaded:" "$DEFAULT_GIT_DIR"
 
+  local repo
   jq -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r repo; do
     mkdir -p direct
     print_value_green "Will git clone" "$repo"
