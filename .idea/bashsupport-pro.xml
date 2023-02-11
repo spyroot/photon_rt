@@ -8,6 +8,7 @@
       <var name="sriov_pci_array" />
       <var name="rand_num" />
       <var name="BUILD_TYPE_photon" />
+      <var name="OVERWRITE_STATIC_ETHn_NAME" />
     </globalVariables>
   </component>
 </project>

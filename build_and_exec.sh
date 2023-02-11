@@ -503,10 +503,10 @@ function print_and_validate_specs() {
 
   printf "\n# Current configuration spec for post :\n"
   source "$DEFAULT_OVERWRITE_FILE"
-  print_yes_no_default " install packages", "$OVERWRITE_BUILD_INSTALL_PACKAGES"
+  print_yes_no_default " with install packages", "$OVERWRITE_BUILD_INSTALL_PACKAGES"
   print_yes_no_default "DPDK", "$OVERWRITE_DPDK_BUILD"
   print_yes_no_default "enable SRIOV", "$OVERWRITE_BUILD_SRIOV"
-  print_yes_no_default "max vfs", "$OVERWRITE_MAX_VFS_PER_PCI"
+  print_yes_no_default "sriov with max vfs", "$OVERWRITE_MAX_VFS_PER_PCI"
   print_yes_no_default "Intel ipsec lib", "$OVERWRITE_IPSEC_BUILD"
   print_yes_no_default "Intel driver", "$OVERWRITE_INTEL_BUILD"
   print_yes_no_default "enable huge pages", "$OVERWRITE_BUILD_HUGEPAGES"
@@ -514,6 +514,9 @@ function print_and_validate_specs() {
   print_yes_no_default "enable ptp", "$OVERWRITE_BUILD_PTP"
   print_yes_no_default "enable dot1q trunk", "$OVERWRITE_BUILD_TRUNK"
   print_yes_no_default "enable static IP address", "$OVERWRITE_STATIC_ETHn_NAME"
+  bios_config=$(cat "$DEFAULT_BIOS_CONFIG" | jq)
+  printf "\n# IDRAC CTL will apply BIOS change  :\n"
+  print "$bios_config"
 
   printf "\n# Reading and verifying JSON specs:\n"
   jsonlint ks.ref.cfg
