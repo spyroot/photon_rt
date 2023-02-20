@@ -82,9 +82,10 @@ NL_VER="3.2.25"
 # 22.11, 22.11.1, 22.07, 22.03. 21.11, 21.11.3, 21.11.2
 DEFAULT_DPDK_VER="21.11.3"
 if [[ -z "$DPDK_VER" ]]; then
-  echo "Using default DPDK_VER"
+  echo "Using default $DEFAULT_DPDK_VER"
 else
   DEFAULT_DPDK_VER=$DPDK_VER
+  echo "Using DPDK version $DEFAULT_DPDK_VER"
 fi
 
 MELLANOX_DOWNLOAD_URL="http://www.mellanox.com/downloads/ofed/MLNX_OFED-$MLNX_VER/MLNX_OFED_SRC-debian-$MLNX_VER.tgz"
