@@ -36,8 +36,9 @@ DEFAULT_OVERWRITE_FILE="overwrite.env"
 DEFAULT_POST_SH="post.sh"
 
 #
+DEFAULT_DPDK_VER="21.11.3"
 if [[ -z "$DPDK_VER" ]]; then
-  DPDK_VER="21.11.3"
+  DPDK_VER=$DEFAULT_DPDK_VER
 fi
 
 AVX_VERSION=4.5.3
