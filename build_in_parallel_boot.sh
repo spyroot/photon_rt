@@ -89,7 +89,7 @@ if ! command -v pip &>/dev/null; then
   exit 99
 fi
 
-#Function installs idrac_ctl
+# Function installs idrac_ctl
 function install_idrac_ctl() {
   # always get the latest.
   pip --quiet install idrac_ctl -U &>/dev/null

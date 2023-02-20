@@ -54,7 +54,13 @@ DEFAULT_RELEASE="4.0"
 DEFAULT_ISO_LOCATION_4_X86="https://drive.google.com/u/0/uc?id=101hVCV14ln0hkbjXZEI38L3FbcrvwUNB&export=download&confirm=1e-b"
 DEFAULT_ISO_PHOTON_5_X86="https://packages.vmware.com/photon/5.0/Beta/iso/photon-rt-5.0-9e778f409.iso"
 DEFAULT_ISO_PHOTON_5_ARM="https://packages.vmware.com/photon/5.0/Beta/iso/photon-5.0-9e778f409-aarch64.iso"
+
+DEFAULT_PHOTON5_PKG_LOC="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
+DEFAULT_PHOTON5_PKG_LOC="https://packages.vmware.com/photon/5.0/photon_release_5.0_x86_64/"
+
+# the final location must be resolved during generation
 DEFAULT_PACAKGE_LOCATION="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
+
 DEFAULT_NOARCH_PACAKGE_LOCATION="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/noarch/"
 DEFAULT_IMAGE_LOCATION=$DEFAULT_ISO_LOCATION_4_X86
 DEFAULT_DOCKER_IMAGE="spyroot/photon_iso_builder:latest"
@@ -410,13 +416,13 @@ function download_rpms() {
 function download_direct() {
   mkdir -p logs
   echo "Downloading $MELLANOX_DOWNLOAD_URL"
-  wget -q -nc $MELLANOX_DOWNLOAD_URL --directory-prefix=direct -o "logs/melanox.donwload.log"
+  wget -q -nc $MELLANOX_DOWNLOAD_URL --directory-prefix=direct -o "logs/mellanox.download.log"
   echo "Downloading $INTEL_DOWNLOAD_URL"
-  wget -q -nc $INTEL_DOWNLOAD_URL --directory-prefix=direct -o "logs/intel.donwload.log"
+  wget -q -nc $INTEL_DOWNLOAD_URL --directory-prefix=direct -o "logs/intel.download.log"
   echo "Downloading $LIB_NL_DOWNLOAD"
-  wget -q -nc $LIB_NL_DOWNLOAD --directory-prefix=direct -o "logs/intel.donwload.log"
+  wget -q -nc $LIB_NL_DOWNLOAD --directory-prefix=direct -o "logs/intel.download.log"
   echo "Downloading $DPDK_DOWNLOAD"
-  wget -q -nc $DPDK_DOWNLOAD --directory-prefix=direct -o "logs/intel.donwload.log"
+  wget -q -nc $DPDK_DOWNLOAD --directory-prefix=direct -o "logs/intel.download.log"
 }
 
 # function print current configuration for overwrites
