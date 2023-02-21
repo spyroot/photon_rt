@@ -1136,9 +1136,11 @@ function link_kernel() {
   major=$(find /boot/*rt.cfg | cut -d  '/' -f 3 | cut -d '-' -f 2)
   local minor
   minor=$(find /boot/*rt.cfg | cut -d  '/' -f 3 | cut -d '-' -f 3)
+  echo "KERNEL $major"
+  echo "KERNEL $minor"
 
-  #target_system=$(uname -r)"-rt"
-  target_system=$major-$minor
+  target_system=$(find /boot/*rt.cfg | sed 's/^.boot\/linux-//' | sed 's/^//' | sed 's/.cfg$//')
+  echo "KERNEL $target_system"
   if is_not_empty "$custom_kern_prefix"; then
     log_console_and_file "Using custom provided kernel header dir $default_kernel_prefix"
     kernel_src_path=$custom_kern_prefix
@@ -1239,7 +1241,7 @@ function build_dpdk() {
       local kernel_src_path
       local target_system
       local meson_build_dir
-      target_system=$(uname -r)"-rt"
+      target_system=$(find /boot/*rt.cfg | sed 's/^.boot\/linux-//' | sed 's/^//' | sed 's/.cfg$//')
       kernel_src_path=$default_kernel_prefix$target_system
       meson_build_dir=$build_dir/"build"
 
