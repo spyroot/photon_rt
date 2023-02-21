@@ -36,7 +36,9 @@ DEFAULT_OVERWRITE_FILE="overwrite.env"
 DEFAULT_POST_SH="post.sh"
 
 # target disk
-TARGET_DISK="/dev/nvme0n1"
+if [ -z "$TARGET_DISK" ]; then
+  TARGET_DISK="/dev/nvme0n1"
+fi
 
 #
 DEFAULT_DPDK_VER="21.11.3"

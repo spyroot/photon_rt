@@ -8,3 +8,7 @@ PHOTON_5_X86=yes BUILD_TYPE="offline_testnf_os5_flex22" DPDK_VER="22.11" ./build
 PHOTON_5_X86=yes BUILD_TYPE="offline_testnf_os5_flex22" DPDK_VER="22.11" ./build_iso.sh
 PHOTON_5_X86=yes BUILD_TYPE="offline_testnf_os5_flex22" DPDK_VER="22.11" ./build_in_parallel_boot.sh
 
+PHOTON_5_X86=yes BUILD_TYPE="offline_testnf_os5_flex22" DPDK_VER="22.11" TARGET_DISK="/dev/sda" ./build_and_exec.sh
+PHOTON_5_X86=yes BUILD_TYPE="offline_testnf_os5_flex22" DPDK_VER="22.11" TARGET_DISK="/dev/sda" ./build_iso.sh
+PHOTON_5_X86=yes BUILD_TYPE="offline_testnf_os5_flex22" DPDK_VER="22.11" TARGET_DISK="/dev/sda" ./build_in_parallel_boot.sh
+
