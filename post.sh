@@ -2134,6 +2134,7 @@ function main() {
 
   check_all_vars
   mount /dev/cdrom > /mount.log
+  mkdir -p /build/ > /dev/null 2>&1
   ls -l /mnt/media > /ls_media.log
   ls -l /mnt/cdrom > /ls_cdrom_media.log
   ls -l /boot > /ls_boot.log
