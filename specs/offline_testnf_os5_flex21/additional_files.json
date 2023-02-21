@@ -1,7 +1,7 @@
 {
   "additional_files": [
     {
-      "/mnt/media/vtestnf-du-flexran-base210.tar.gz": "/testnf-du-flexran-base210.tar.gz"
+      "/mnt/media/testnf-du-flexran-base210.tar.gz": "/testnf-du-flexran-base210.tar.gz"
     },
     {
       "/mnt/media/post.sh": "/post.sh"

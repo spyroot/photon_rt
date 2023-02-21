@@ -4,6 +4,7 @@
     "MemTest": "Disabled",
     "OsWatchdogTimer": "Disabled",
     "ProcCStates": "Disabled",
-    "SriovGlobalEnable": "Enabled"
+    "SriovGlobalEnable": "Enabled",
+    "WorkloadProfile": "LowLatencyOptimizedProfile"
   }
 }
