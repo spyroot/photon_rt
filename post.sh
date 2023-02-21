@@ -902,7 +902,7 @@ function build_pyelf() {
         mkdir -p "$pyelf_lib_path"
         log_console_and_file " -Unpacking pyelf to $pyelf_lib_path from a local source copy."
         log_console_and_file " -Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls*.tar.gz --warning=no-timestamp -C "$ROOT_BUILD"
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftools*tar.gz --warning=no-timestamp -C "$ROOT_BUILD"
     else
       log_console_and_file " -Cloning pyelf lib from a git source."
       pushd $ROOT_BUILD || exit
@@ -940,7 +940,7 @@ function build_ipsec_lib() {
       *) echo "invalid" ;;
       esac
     fi
-    log_console_and_file "Building ipsec lib."
+
 
     repo_name=${IPSEC_LIB_LOCATION/%$suffix/}
     repo_name=${repo_name##*/}
@@ -1175,7 +1175,7 @@ function link_kernel() {
 
   ln -s "$kernel_src_path"/ /usr/src/linux 2>/dev/null
   if [ ! -d "/usr/src/linux" ]; then
-    echo log_console_and_file "Failed create link /usr/src/linux to a current kernel source."
+    log_green_console_and_file "Failed create link /usr/src/linux to a current kernel source."
   fi
 }
 
@@ -2146,9 +2146,8 @@ function check_all_vars() {
 function main() {
 
   check_all_vars
-  mount /dev/cdrom > /mount.log
+  mount /dev/cdrom > /mount.log > /dev/null 2>&1
   mkdir -p /build/ > /dev/null 2>&1
-  ls -l /mnt/media > /ls_media.log
   ls -l /mnt/cdrom > /ls_cdrom_media.log
   ls -l /boot > /ls_boot.log
 
