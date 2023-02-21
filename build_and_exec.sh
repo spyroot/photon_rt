@@ -373,6 +373,7 @@ function git_clone() {
     mkdir -p "$DEFAULT_GIT_DIR"
     jq --raw-output -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r git_repo; do
       local repo_name
+      cd "$DEFAULT_GIT_DIR" || exit
       repo_name=${git_repo/%$suffix/}
       repo_name=${repo_name##*/}
       git_tar_name="$DEFAULT_GIT_DIR/$repo_name"
