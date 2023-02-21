@@ -87,15 +87,15 @@ else
   echo "Skipping installing rpms"
 fi
 
-DEFAULT_DOCKER_IMAGE=""
+DEFAULT_DOCKER_IMAGE_NAME=""
 if [ -z "$DOCKER_IMAGE" ]; then
-  echo "DOCKER_IMAGE is empty using $DEFAULT_DOCKER_IMAGE."
-  DOCKER_IMAGE=$DEFAULT_DOCKER_IMAGE
+  echo "DOCKER_IMAGE is empty using $DEFAULT_DOCKER_IMAGE_NAME."
+  DOCKER_IMAGE=$DEFAULT_DOCKER_IMAGE_NAME
 fi
 
 # default image loaded.
 DEFAULT_DOKCER_IMAGE_DIR=""
-DOCKER_IMAGE_PATH=$DEFAULT_DOKCER_IMAGE_DIR/$DOCKER_IMAGE
+DOCKER_IMAGE_PATH="$DEFAULT_DOKCER_IMAGE_DIR/$DOCKER_IMAGE.tar.gz"
 DOCKER_IMAGE_NAME="vcu1"
 
 # by default all build in /root/build.
@@ -139,6 +139,13 @@ DEFAULT_IPSEC_TAR_NAME="intel-ipsec-mb.tar.gz"
 DEFAULT_ISA_TAR_NAME="isa-l.tar.gz"
 DEFAULT_PYELF_TAR_NAME="pyelftools.tar.gz"
 DEFAULT_TUNED_TAR="tuned.tar.gz"
+
+# caller can pass INTERACTIVE
+if [ -z "$INTERACTIVE" ]; then
+  IS_INTERACTIVE="no"
+else
+  IS_INTERACTIVE="yes"
+fi
 
 # overwrite default value,  /overwrite always take precedence.
 if [ -z "$OVERWRITE_BUILD_INSTALL_PACKAGES" ]; then
@@ -307,22 +314,22 @@ STATIC_ETHn_STATIC_DNS="8.8.8.8"
 
 # overwrite for eth name
 if [ -z "$OVERWRITE_STATIC_ETHn_NAME" ]; then
-  echo "Using default STATIC_ETHn_NAME."
+  echo "Using default STATIC_ETHn_NAME. $STATIC_ETHn_NAME"
 else
   STATIC_ETHn_NAME=$OVERWRITE_STATIC_ETHn_NAME
-  echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_NAME"
+  echo "Change default static ethernet name to $STATIC_ETHn_NAME"
 fi
 # overwrite for IP address
 if [ -z "$OVERWRITE_STATIC_ETHn_ADDRESS" ]; then
-  echo "Using default STATIC_ETHn_NAME."
+  echo "Using default static ethernet address. $STATIC_ETHn_ADDRESS"
 else
-  STATIC_ETHn_NAME=$OVERWRITE_STATIC_ETHn_ADDRESS
-  echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_ADDRESS"
+  STATIC_ETHn_ADDRESS=$OVERWRITE_STATIC_ETHn_ADDRESS
+  echo "Change default static address to $STATIC_ETHn_ADDRESS"
 fi
 
 # overwrite for gateway
 if [ -z "$OVERWRITE_STATIC_ETHn_GATEWAY" ]; then
-  echo "Using default STATIC_ETHn_NAME."
+  echo "Using default STATIC_ETHn_GATEWAY. $STATIC_ETHn_GATEWAY"
 else
   STATIC_ETHn_GATEWAY=$OVERWRITE_STATIC_ETHn_GATEWAY
   echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_GATEWAY"
@@ -330,11 +337,12 @@ fi
 
 # overwrite for dns
 if [ -z "$OVERWRITE_STATIC_ETHn_STATIC_DNS" ]; then
-  echo "Using default STATIC_ETHn_NAME."
+  echo "Using default STATIC_ETHn_STATIC_DNS. $STATIC_ETHn_STATIC_DNS"
 else
   STATIC_ETHn_STATIC_DNS=$OVERWRITE_STATIC_ETHn_STATIC_DNS
   echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_STATIC_DNS"
 fi
+
 # by default can generate DHCP and static.
 # DHCP enabled masked e* while static for particular adapter.
 DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX="99-static"
@@ -704,7 +712,7 @@ function enable_sriov() {
         local choice
         read -r -p "Building SRIOV resolved adapter ${eth_array[*]} (y/n)?" choice
         case "$choice" in
-        y | Y) echo "yes" ;;
+        y | Y)  ;;
         n | N) return 1 ;;
         *) echo "invalid" ;;
         esac
@@ -836,35 +844,37 @@ function build_docker_images() {
   local docker_image_name=$3
 
   if file_exists "$docker_image_path"; then
-    log_console_and_file "Loading docker image $docker_image_path"
+    log_console_and_file "  Docker image $docker_image_path exists."
   else
     echo "File $docker_image_path not found."
   fi
 
   if [ -z "$BUILD_LOAD_DOCKER_IMAGE" ]; then
-    log_console_and_file "Loading docker image $docker_image_path docker load phase."
+    log_console_and_file " -Attempting load a docker image $docker_image_path."
   else
 
     if is_yes "$IS_INTERACTIVE"; then
       local choice
       read -r -p "Building docker and loading $docker_image_path (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
     fi
 
     if is_not_empty "$docker_image_path"; then
-      log_console_and_file "Enabling docker services."
+      log_console_and_file " -Enabling docker services."
       systemctl enable docker
       systemctl start docker
+      systemctl daemon-reload
       if is_docker_up; then
-        log_console_and_file "Loading docker image from $docker_image_path"
-        if is_docker_image_present "$docker_image_name"; then
-          docker load <"$docker_image_path"
-          docker image ls > "$log_file" 2>&1
-        fi
+          log_console_and_file " -Docker is up"
+          if is_docker_image_present "$docker_image_name"; then
+              log_console_and_file " -Loading docker image from $docker_image_path"
+              docker load < "$docker_image_path"
+              docker image ls > "$log_file" 2>&1
+          fi
       fi
     fi
   fi
@@ -891,7 +901,7 @@ function build_pyelf() {
       local choice
       read -r -p "Building pyelf lib (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -939,7 +949,7 @@ function build_ipsec_lib() {
       local choice
       read -r -p "Building ipsec lib (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -985,7 +995,7 @@ function build_mellanox_driver() {
       local choice
       read -r -p "Building mellanox driver from $build_dir (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -1009,7 +1019,7 @@ function build_intel_iavf() {
       local choice
       read -r -p "Building intel iavf driver from $build_dir (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -1065,7 +1075,7 @@ function build_lib_nl() {
       local choice
       read -r -p "Building lib nl in $build_dir parallel build 8 (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -1103,7 +1113,7 @@ function build_lib_isa() {
         local choice
         read -r -p "Building lib isa in $LIB_ISAL_TARGET_DIR_BUILD parallel build 8 (y/n)?" choice
         case "$choice" in
-        y | Y) echo "yes" ;;
+        y | Y)  ;;
         n | N) return 1 ;;
         *) echo "invalid" ;;
         esac
@@ -1147,21 +1157,19 @@ function link_kernel() {
   major=$(find /boot/*rt.cfg | cut -d  '/' -f 3 | cut -d '-' -f 2)
   local minor
   minor=$(find /boot/*rt.cfg | cut -d  '/' -f 3 | cut -d '-' -f 3)
-  echo "KERNEL $major"
-  echo "KERNEL $minor"
 
   target_system=$(find /boot/*rt.cfg | sed 's/^.boot\/linux-//' | sed 's/^//' | sed 's/.cfg$//')
-  echo "KERNEL $target_system"
+  log_console_and_file " -discovered rt kernel $target_system"
   if is_not_empty "$custom_kern_prefix"; then
-    log_console_and_file "Using custom provided kernel header dir $default_kernel_prefix"
+    log_console_and_file " -Using custom provided kernel header dir $default_kernel_prefix"
     kernel_src_path=$custom_kern_prefix
   else
     kernel_src_path=$default_kernel_prefix$target_system
-    log_console_and_file "Using default kernel header prefix $kernel_src_path"
+    log_console_and_file " -Using kernel header src $kernel_src_path"
   fi
 
   if [ ! -d "$kernel_src_path" ]; then
-    log_console_and_file "Failed resolve a kernel src path $kernel_src_path taking current from /boot/photon.cfg"
+    log_console_and_file " -Failed resolve a kernel src path $kernel_src_path taking current from /boot/photon.cfg"
     local ver
     local min
     cp /boot/*rt.cfg /boot/photon.cfg
@@ -1169,9 +1177,9 @@ function link_kernel() {
     min=$(cat /boot/photon.cfg|grep vmlinuz|cut -d '=' -f 2|cut -d '-' -f 3)
     kernel_src_path=/usr/src/linux-headers-$ver-$min-"rt"
     if [ ! -d "$kernel_src_path" ]; then
-        log_console_and_file "Failed resole $kernel_src_path kernel src path. please stop check system."
+        log_console_and_file " -Failed resole $kernel_src_path kernel src path. please stop check system."
     else
-        log_green_console_and_file "Resolved $kernel_src_path kernel headers."
+        log_green_console_and_file " -Resolved $kernel_src_path kernel headers."
         depmod
     fi
   fi
@@ -1180,7 +1188,7 @@ function link_kernel() {
         local choice
         read -r -p "Linking /usr/src/link to $kernel_src_path (y/n)?" choice
         case "$choice" in
-        y | Y) echo "yes" ;;
+        y | Y)  ;;
         n | N) return 1 ;;
         *) echo "invalid" ;;
         esac
@@ -1264,7 +1272,7 @@ function build_dpdk() {
         local choice
         read -r -p "Building DPDK build location $meson_build_dir number of concurrent make: 8 (y/n)?" choice
         case "$choice" in
-        y | Y) echo "yes" ;;
+        y | Y)  ;;
         n | N) return 1 ;;
         *) echo "invalid" ;;
         esac
@@ -1289,7 +1297,7 @@ function build_dpdk() {
         local choice
         read -r -p "Building DPDK build location $meson_build_dir number of concurrent make: 8 (y/n)?" choice
         case "$choice" in
-        y | Y) echo "yes" ;;
+        y | Y)  ;;
         n | N) return 1 ;;
         *) echo "invalid" ;;
         esac
@@ -1317,7 +1325,7 @@ function load_vfio_pci() {
       local choice
       read -r -p "Load vfio and adjusting /etc/modules-load.d (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -1379,7 +1387,7 @@ function build_tuned() {
       local choice
       read -r -p "Build tuned profile (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y) ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -1486,7 +1494,7 @@ function build_qat() {
       local choice
       read -r -p "Loading QAT (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -1525,7 +1533,7 @@ function build_hugepages() {
         local choice
         read -r -p "Building huge 2048 $pages 1GB $page_1gb, pages detected $IS_SINGLE_NUMA (y/n)?" choice
         case "$choice" in
-        y | Y) echo "yes" ;;
+        y | Y)  ;;
         n | N) return 1 ;;
         *) echo "invalid" ;;
         esac
@@ -1578,7 +1586,7 @@ function build_ptp() {
         local choice
         read -r -p "Building ptp configuration (y/n)?" choice
         case "$choice" in
-        y | Y) echo "yes" ;;
+        y | Y)  ;;
         n | N) return 1 ;;
         *) echo "invalid" ;;
         esac
@@ -1913,7 +1921,7 @@ function generate_default_network() {
     local choice
     read -r -p "Building default DHCP and static network (y/n)?" choice
     case "$choice" in
-    y | Y) echo "yes" ;;
+    y | Y)  ;;
     n | N) return 1 ;;
     *) echo "invalid" ;;
     esac
@@ -2006,7 +2014,7 @@ function build_vlans_ifs() {
       local choice
       read -r -p "Building trunk profile VLAN range $vlan_id_list adapter $trunk_eth_name (y/n)?" choice
       case "$choice" in
-      y | Y) echo "yes" ;;
+      y | Y)  ;;
       n | N) return 1 ;;
       *) echo "invalid" ;;
       esac
@@ -2037,7 +2045,7 @@ function build_vlans_ifs() {
     local choice
     read -r -p "Restarting networkd (y/n)?" choice
     case "$choice" in
-    y | Y) echo "yes" ;;
+    y | Y)  ;;
     n | N) return 1 ;;
     *) echo "invalid" ;;
     esac
@@ -2108,9 +2116,9 @@ function print_build_spec() {
   echo "----------------------* build spec  *----------------------------"
   echo "AVX_VERSION $AVX_VERSION"
   echo "AVX_VERSION $MLNX_VER"
-  echo "DOCKER_IMAGE_PATH $DOCKER_IMAGE_PATH"
+  echo "DOCKER_IMAGE $DOCKER_IMAGE_PATH"
   echo "DOCKER_IMAGE_PATH $DOCKER_IMAGE_NAME"
-  echo "DOCKER_IMAGE_PATH $ROOT_BUILD"
+  echo "ROOT BUILD DIR $ROOT_BUILD"
   echo "build mellanox $MLX_BUILD"
   echo "build intel $INTEL_BUILD"
   echo "build ipsec $IPSEC_BUILD"
@@ -2216,15 +2224,14 @@ function main() {
   unpack_all_files "libnl-3.2.25" "libnl-3.2.25" "tar.gz" libnl_build_location "${LIB_NL_LOCATION[@]}"
   unpack_all_files "MLNX_OFED_SRC" "MLNX_OFED_SRC-debian-$MLNX_VER" "tgz" mellanox_build_location "${MELLANOX_LOCATION[@]}"
 
-  echo "-DPDK Build location $dpdk_build_location"
-  echo "-IAVF Build location $iavf_build_location"
-  echo "-LIBNL Build location $libnl_build_location"
-  echo "-Mellanox Build location $mellanox_build_location"
-
   log_console_and_file "-DPDK Build location $dpdk_build_location"
   log_console_and_file "-IAVF Build location $iavf_build_location"
   log_console_and_file "-LIBNL Build location $libnl_build_location"
   log_console_and_file "-Mellanox Build location $mellanox_build_location"
+
+  if file_exists "$DOCKER_IMAGE_PATH"; then
+      log_console_and_file "-Resolved docker image at location $DOCKER_IMAGE_PATH"
+  fi
 
   # if we do interactive.
   #  for example, we want run manually by hand post install.
@@ -2234,7 +2241,7 @@ function main() {
     local choice
     read -r -p "Please check and confirm (y/n)?" choice
     case "$choice" in
-    y | Y) echo "yes" ;;
+    y | Y)  ;;
     n | N) return 1 ;;
     *) echo "invalid" ;;
     esac
@@ -2253,7 +2260,7 @@ function main() {
     build_docker_images $BUILD_DOCKER_LOG "$DOCKER_IMAGE_PATH" "$DOCKER_IMAGE_NAME"
   fi
   if is_yes "$IPSEC_BUILD"; then
-    log_console_and_file "Building ipsec lib."
+    log_console_and_file "Starting building ipsec lib."
     build_ipsec_lib "$BUILD_IPSEC_LOG"
   fi
   adjust_shared_libs
