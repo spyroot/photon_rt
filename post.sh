@@ -261,14 +261,14 @@ SRIOV_PCI_LIST="pci@0000:51:00.0,pci@0000:51:00.1"
 MAX_VFS_PER_PCI=8
 # overwrite default pci list
 if [ -z "$OVERWRITE_SRIOV_PCI" ]; then
-  echo "Using default SRIOV_PCI_LIST $OVERWRITE_SRIOV_PCI."
+  echo "Using default SRIOV_PCI_LIST $SRIOV_PCI_LIST."
 else
   SRIOV_PCI_LIST=$OVERWRITE_SRIOV_PCI
   echo "Change sriov vfs to $SRIOV_PCI_LIST"
 fi
 # overwrite max vs
 if [ -z "$OVERWRITE_MAX_VFS_PER_PCI" ]; then
-  echo "Using default MAX_VFS_PER_PCI value OVERWRITE_MAX_VFS_PER_PCI."
+  echo "Using default MAX_VFS_PER_PCI value $MAX_VFS_PER_PCI."
 else
   MAX_VFS_PER_PCI=$OVERWRITE_MAX_VFS_PER_PCI
   echo "Change max vfs to $MAX_VFS_PER_PCI"
@@ -279,14 +279,14 @@ fi
 DOT1Q_VLAN_ID_LIST="2000,2001"
 DOT1Q_VLAN_TRUNK_PCI="pci@0000:18:00.1"
 if [ -z "$OVERWRITE_DOT1Q_VLAN_ID_LIST" ]; then
-  echo "Using default DOT1Q_VLAN_ID_LIST value $OVERWRITE_DOT1Q_VLAN_ID_LIST."
+  echo "Using default DOT1Q_VLAN_ID_LIST value $DOT1Q_VLAN_ID_LIST."
 else
   DOT1Q_VLAN_ID_LIST=$OVERWRITE_DOT1Q_VLAN_ID_LIST
   echo "Change default VLAN ID LIST to $DOT1Q_VLAN_ID_LIST"
 fi
 
 if [ -z "$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI" ]; then
-  echo "Using default DOT1Q_VLAN_TRUNK_PCI value $OVERWRITE_DOT1Q_VLAN_TRUNK_PCI."
+  echo "Using default DOT1Q_VLAN_TRUNK_PCI value $DOT1Q_VLAN_TRUNK_PCI."
 else
   DOT1Q_VLAN_TRUNK_PCI=$OVERWRITE_DOT1Q_VLAN_TRUNK_PCI
   echo "Change default PCI address for dot1q to $DOT1Q_VLAN_TRUNK_PCI"
