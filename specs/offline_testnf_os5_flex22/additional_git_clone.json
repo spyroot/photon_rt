@@ -1,5 +1,6 @@
 [
   "https://github.com/intel/isa-l",
   "https://github.com/spyroot/tuned.git",
-  "https://github.com/intel/intel-ipsec-mb.git"
+  "https://github.com/intel/intel-ipsec-mb.git",
+  "https://github.com/eliben/pyelftools.git"
 ]
