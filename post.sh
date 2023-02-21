@@ -398,10 +398,10 @@ BUILD_PIP_LOG="$BUILD_LOG_LOG/build_pip_deps.log"
 BUILD_NL_LOG="$BUILD_LOG_LOG/build_nl.log"
 BUILD_ISA_LOG="$BUILD_LOG_LOG/build_isa.log"
 BUILD_DPDK_LOG="$BUILD_LOG_LOG/build_dpdk.log"
-BUILD_PYELF_LOG="$BUILD_LOG_LOG/build_PYEFL.log"
+BUILD_PYELF_LOG="$BUILD_LOG_LOG/build_pyelf.log"
 BUILD_TUNED_LOG="$BUILD_LOG_LOG/build_tuned.log"
 BUILD_HUGEPAGES_LOG="$BUILD_LOG_LOG/build_hugepages.log"
-BUILD_PTP_IPSEC_BUILD_LOG="$BUILD_LOG_LOG/build_ipsec.log"
+BUILD_PTP_BUILD_LOG="$BUILD_LOG_LOG/build_ptp.log"
 DEFAULT_BUILDER_LOG="$BUILD_LOG_LOG/build_main.log"
 
 # Variable for static network
@@ -904,16 +904,20 @@ function build_pyelf() {
         log_console_and_file " -Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
         tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftools*tar.gz --warning=no-timestamp -C "$ROOT_BUILD"
     else
-      log_console_and_file " -Cloning pyelf lib from a git source."
-      pushd $ROOT_BUILD || exit
-      git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
-      popd || exit
+        log_console_and_file " -Cloning pyelf lib from a git source."
+        pushd $ROOT_BUILD || exit
+        git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
+        popd || exit
     fi
 
-    log_console_and_file " -Building $pyelf_lib_path"
-    pushd "$pyelf_lib_path" || exit
-    /bin/python setup.py install > "$log_file" 2>&1
-    popd || exit
+    if [ -d "$pyelf_lib_path" ]; then
+      log_console_and_file " -Building $pyelf_lib_path"
+      pushd "$pyelf_lib_path" || exit
+      /bin/python setup.py install > "$log_file" 2>&1
+      popd || exit
+    else
+      log_console_and_file "Failed create $pyelf_lib_path"
+    fi
   fi
 }
 
@@ -2274,7 +2278,7 @@ function main() {
   fi
   if is_yes "$BUILD_PTP"; then
       log_console_and_file "Building ptp configuration."
-      build_ptp "$BUILD_PTP_IPSEC_BUILD_LOG"
+      build_ptp "$BUILD_PTP_BUILD_LOG"
   fi
   # generate default dhcp and if needed adapter with static
   # ip address
