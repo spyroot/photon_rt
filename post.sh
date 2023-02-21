@@ -885,10 +885,10 @@ function build_pyelf() {
     log_console_and_file "Building pyelf lib."
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
-        log_console_and_file "Building pyelf lib from a local copy."
+        log_console_and_file "Building pyelf lib from a local source copy."
         tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls --warning=no-timestamp -C $ROOT_BUILD
     else
-      log_console_and_file "Building ipsec lib from a git copy."
+      log_console_and_file "Building pyelf lib from a git source."
       cd $ROOT_BUILD || exit; git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
     fi
 
@@ -1067,7 +1067,7 @@ function build_lib_isa() {
     fi
      if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building isa-l from local from $DEFAULT_GIT_IMAGE_DIR copy."
-        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* -C $ROOT_BUILD
+        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* --warning=no-timestamp -C $ROOT_BUILD
     else
       log_console_and_file "Building isa-l lib from a git."
       cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
