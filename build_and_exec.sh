@@ -472,11 +472,11 @@ function print_and_validate_specs() {
   print_value_green "  -Builder will download" "$DPDK_DOWNLOAD to $DEFAULT_ARC_DIR"
   print_value_green "  -Builder will download RPMS, read spec from" "$DEFAULT_RPM_DIR"
   printf "\n # RPMS:\n"
-  total_rpms=$(cat "$ADDITIONAL_DIRECT_RPMS" | jq '. | length')
+  total_rpms=$(jq '. | length' "$ADDITIONAL_DIRECT_RPMS")
   print_value_green "  -Number of direct rpms in rpms spec" "$total_rpms"
-  total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
+  total_rpms=$(jq '. | length' "$ADDITIONAL_RPMS")
   print_value_green "  -Number of additional rpms in additional spec" "$total_rpms"
-  total_rpms=$(cat "$ADDITIONAL_RPMS" | jq '. | length')
+  total_rpms=$(jq '. | length' "$ADDITIONAL_RPMS")
   print_value_green "  -Number of additional rpms in additional spec" "$total_rpms"
   printf "\n# Specs:\n"
   print_value_green "  -All archive read from spec " "$ADDITIONAL_GIT_REPOS"
@@ -497,7 +497,7 @@ function print_and_validate_specs() {
   echo "$additional_files"
 
   local docker_files
-  docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]' $ADDITIONAL_FILES |xargs -I {} echo "docker_images{}")
+  docker_files=$(jq -r '.additional_files[][]' "$ADDITIONAL_FILES" |xargs -I {} echo "docker_images{}")
   printf "\n# Additional files:\n"
   log "$docker_files"
 
