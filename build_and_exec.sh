@@ -56,7 +56,7 @@ DEFAULT_ISO_PHOTON_5_ARM="https://packages.vmware.com/photon/5.0/Beta/iso/photon
 
 DEFAULT_PHOTON4_PKG_LOC="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
 DEFAULT_PHOTON4_NOARCH_PKG_LOC="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/noarch/"
-DEFAULT_PHOTON5_PKG_LOC="https://packages.vmware.com/photon/5.0/photon_release_5.0_x86_64/"
+DEFAULT_PHOTON5_PKG_LOC="https://packages.vmware.com/photon/5.0/photon_release_5.0_x86_64/x86_64/"
 DEFAULT_PHOTON5_NOARCH_PKG_LOC="https://packages.vmware.com/photon/5.0/photon_release_5.0_x86_64/noarch/"
 
 # the final location must be resolved during generation
