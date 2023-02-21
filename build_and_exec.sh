@@ -364,7 +364,7 @@ function git_clone() {
   local git_tar_name=""
 
   suffix=".git"
-  git_repos_dir="$DEFAULT_GIT_DIR"
+  declare -r git_repos_dir="$DEFAULT_GIT_DIR"
   if [ -z "$SKIP_GIT" ]; then
     log "Skipping git cloning."
   else
@@ -389,7 +389,7 @@ function git_clone() {
           git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
           repo_tmp_dir="$git_repos_dir/$repo_name"
           echo "Compressing $repo_tmp_dir"
-          cd "$DEFAULT_GIT_DIR" || exit; tar -zcvf "$repo_name".tar.gz "$repo_name"
+          cd "$git_repos_dir" || exit; tar -zcvf "$repo_name".tar.gz "$repo_name"
       fi
     done
     #rm -rf "$git_repos_dir"
