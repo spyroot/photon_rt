@@ -911,7 +911,7 @@ function build_pyelf() {
     fi
 
     log_console_and_file " -Building $pyelf_lib_path"
-    pushd cd "$pyelf_lib_path" || exit
+    pushd "$pyelf_lib_path" || exit
     /bin/python setup.py install > "$log_file" 2>&1
     popd || exit
   fi
