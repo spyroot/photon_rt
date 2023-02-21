@@ -2102,15 +2102,15 @@ function check_all_vars() {
 function main() {
 
   check_all_vars
+  mount /dev/cdrom > /mount.log
   ls -l /mnt/media > /ls_media.log
-  ls -l /mnt/cdrom > /ls_media.log
-
-  mkdir -p /direct_rpms; cp /mnt/media/direct_rpms/*.rpm /direct_rpms
-  mkdir -p /direct_rpms; cp /mnt/cdrom/direct_rpms/*.rpm /direct_rpms
-  mkdir -p /direct; cp /mnt/media/direct/* /direct
-  mkdir -p direct; cp /mnt/cdrom/direct/* /direct
-  mkdir -p /git_images; cp /mnt/media/git_images/* /git_images
-  mkdir -p /git_images; cp /mnt/cdrom/git_images/* /git_images
+  ls -l /mnt/cdrom > /ls_cdrom_media.log
+  mkdir -p /direct_rpms; cp /mnt/media/direct_rpms/*.rpm /direct_rpms > /copy_media_direct_rpm.log
+  mkdir -p /direct_rpms; cp /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
+  mkdir -p /direct; cp /mnt/media/direct/* /direct > /copy_media_direct.log
+  mkdir -p /direct; cp /mnt/cdrom/direct/* /direct > /copy_cdrom_direct.log
+  mkdir -p /git_images; cp /mnt/media/git_images/* /git_images > /copy_media_git_images.log
+  mkdir -p /git_images; cp /mnt/cdrom/git_images/* /git_images > /copy_cdrom_git_images.log
 
   local log_main_dir
   log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
