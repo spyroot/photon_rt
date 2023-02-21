@@ -80,9 +80,9 @@ else
   DPDK_VERSION=$OVERWRITE_BUILD_INSTALL_PACKAGES
 fi
 
-# if defined we won't install.
+# if defined we will not install.
 if [ -z "$OVERWRITE_INSTALL_RPMS" ]; then
-  rpm -i /mnt/media/direct_rpms/*
+  rpm -i /mnt/cdrom/direct_rpms/*
 else
   echo "Skipping installing rpms"
 fi
