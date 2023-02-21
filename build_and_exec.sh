@@ -389,7 +389,7 @@ function git_clone() {
           git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
           repo_tmp_dir="$git_repos_dir/$repo_name"
           echo "Compressing $repo_tmp_dir"
-          tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
+          cd "$DEFAULT_GIT_DIR" || exit; tar -zcvf "$repo_name".tar.gz "$repo_name"
           mkdir -p git_images
           mv "$repo_name".tar.gz "$DEFAULT_GIT_DIR"
       fi
