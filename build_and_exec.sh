@@ -387,7 +387,7 @@ function git_clone() {
           mkdir -p "$repo_path"
           echo "Git cloning git clone $git_repo $repo_name"
           git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
-          pushd "$repo_path"/ || exit > /dev/null
+          pushd "$git_repos_dir"/ || exit > /dev/null
           echo "Compressing $repo_path"
           tar -zcvf "$repo_name".tar.gz "$repo_name"
           popd || exit > /dev/null
