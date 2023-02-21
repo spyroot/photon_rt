@@ -99,6 +99,7 @@ SKIP_BUILD_CONTAINER="no"
 
 # comma seperated
 DEFAULT_DOCKER_ARC="linux/amd64"
+# default flavor
 DEFAULT_FLAVOR="linux-rt"
 
 # usage log "msg"
@@ -240,6 +241,11 @@ function generate_kick_start() {
   current_ks_phase="ks.phase6.cfg"
   jsonlint $current_ks_phase
 
+  # adjust disk
+  jq --arg p "$TARGET_DISK" '.disk=$p' $current_ks_phase >ks.phase7.cfg
+  current_ks_phase="ks.phase7.cfg"
+  jsonlint $current_ks_phase
+
   # adjust installation and adds additional rpms located on remote location.
   [ ! -f "$ADDITIONAL_REMOTE_RPMS" ] && {
     echo "$ADDITIONAL_REMOTE_RPMS file not found"
@@ -247,8 +253,8 @@ function generate_kick_start() {
   }
   local rpms
   rpms=$(cat "$ADDITIONAL_REMOTE_RPMS")
-  jq --argjson p "$rpms" '.postinstall += $p' $current_ks_phase >ks.phase7.cfg
-  current_ks_phase="ks.phase7.cfg"
+  jq --argjson p "$rpms" '.postinstall += $p' $current_ks_phase >ks.phase8.cfg
+  current_ks_phase="ks.phase8.cfg"
   jsonlint $current_ks_phase
 
 #
@@ -272,8 +278,8 @@ function generate_kick_start() {
   }
   local docker_imgs
   docker_imgs=$(cat "$DOCKER_LOAD_POST_INSTALL")
-  jq --argjson i "$docker_imgs" '.postinstall += $i' $current_ks_phase >ks.phase8.cfg
-  current_ks_phase="ks.phase8.cfg"
+  jq --argjson i "$docker_imgs" '.postinstall += $i' $current_ks_phase >ks.phase9.cfg
+  current_ks_phase="ks.phase9.cfg"
   jsonlint $current_ks_phase
 
   # additional files that we copy from a cdrom
