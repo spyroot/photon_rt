@@ -2166,6 +2166,11 @@ function main() {
   echo "-LIBNL Build location $libnl_build_location"
   echo "-Mellanox Build location $mellanox_build_location"
 
+  log_console_and_file "-DPDK Build location $dpdk_build_location"
+  log_console_and_file "-IAVF Build location $iavf_build_location"
+  log_console_and_file "-LIBNL Build location $libnl_build_location"
+  log_console_and_file "-Mellanox Build location $mellanox_build_location"
+
   # if we do interactive.
   #  for example, we want run manually by hand post install.
   if is_yes "$IS_INTERACTIVE"; then
