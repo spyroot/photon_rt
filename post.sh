@@ -886,7 +886,7 @@ function build_ipsec_lib() {
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building ipsec lib from a local copy."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/intel-ipsec-mb.tar.gz -C $ROOT_BUILD
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/intel-ipsec-mb.tar.gz --warning=no-timestamp -C $ROOT_BUILD
     else
       log_console_and_file "Building ipsec lib from a git copy."
       cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
