@@ -2153,7 +2153,7 @@ function main() {
 
   mkdir -p $DEFAULT_DIRECT_RPMS; cp -uv /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
   mkdir -p $DEFAULT_DIRECT; cp -uv /mnt/cdrom/direct/* $DEFAULT_DIRECT > /copy_cdrom_direct.log
-  mkdir -p $DEFAULT_GIT_IMAGE_DIR; cp -uv /mnt/cdrom/git_images/* $$DEFAULT_GIT_IMAGE_DIR > /copy_cdrom_git_images.log
+  mkdir -p $DEFAULT_GIT_IMAGE_DIR; cp -uv /mnt/cdrom/git_images/* $DEFAULT_GIT_IMAGE_DIR > /copy_cdrom_git_images.log
 
   local log_main_dir
   log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
