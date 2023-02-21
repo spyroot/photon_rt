@@ -89,7 +89,7 @@ fi
 
 DEFAULT_DOCKER_IMAGE=""
 if [ -z "$DOCKER_IMAGE" ]; then
-  echo "DOCKER_IMAGE empty using default."
+  echo "DOCKER_IMAGE is empty using $DEFAULT_DOCKER_IMAGE."
   DOCKER_IMAGE=$DEFAULT_DOCKER_IMAGE
 fi
 
@@ -855,7 +855,7 @@ function build_docker_images() {
       esac
     fi
 
-    if is_not_empty; then
+    if is_not_empty "$docker_image_path"; then
       log_console_and_file "Enabling docker services."
       systemctl enable docker
       systemctl start docker
@@ -964,7 +964,7 @@ function build_ipsec_lib() {
       cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
     fi
 
-    log_console_and_file "Building ipsec lib in $ipsec_lib_path"
+    log_console_and_file " -Building ipsec lib in build dir $ipsec_lib_path"
     cd "$ipsec_lib_path" || exit; make -j 8 > "$log_file" 2>&1
     make install &> "$log_file"; ldconfig; ldconfig /usr/lib
   fi
@@ -1060,6 +1060,7 @@ function build_lib_nl() {
   if [ -z "$LIBNL_BUILD" ]; then
     log_console_and_file "Skipping libnl driver build"
   else
+
     if is_yes "$IS_INTERACTIVE"; then
       local choice
       read -r -p "Building lib nl in $build_dir parallel build 8 (y/n)?" choice
@@ -1069,10 +1070,11 @@ function build_lib_nl() {
       *) echo "invalid" ;;
       esac
     fi
-    log_console_and_file "Extracting libnl to $build_dir"
+
+    log_console_and_file " -Extracting libnl to $build_dir"
     cd "$build_dir" || exit; tar -zxvf libnl-*.tar.gz -C libnl --strip-components=1 > "$log_file" 2>&1
     cd "$build_dir" || exit
-    ./configure --prefix=/usr &>/build/configure_nl.log
+    ./configure --prefix=/usr &>/build/build_configure_nl.log
     make -j 8 > "$log_file" 2>&1; make install > "$log_file" 2>&1
     ldconfig; ldconfig /usr/local/lib
   fi
@@ -1106,13 +1108,22 @@ function build_lib_isa() {
         *) echo "invalid" ;;
         esac
     fi
-     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
-        mkdir -p "$isa_lib_path"
-        log_console_and_file " -Unpacking  isa-l from local to $isa_lib_path."
-        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* --warning=no-timestamp -C "$ROOT_BUILD"
-    else
+
+    # if git dir exist first we check for tar
+    local lib_file=""
+    if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
+        lib_file=$(file /$DEFAULT_GIT_IMAGE_DIR/*isa* | grep gzip)
+        if is_not_empty "$lib_file"; then
+          mkdir -p "$isa_lib_path"
+          log_console_and_file " -Unpacking isa-l from local to $isa_lib_path."
+          tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* --warning=no-timestamp -C "$ROOT_BUILD"
+        fi
+    fi
+
+    # fall back to git
+    if is_null_or_empty "$lib_file"; then
       log_console_and_file "Building isa-l lib from a git."
-      cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
+       cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
     fi
 
     mkdir -p $LIB_ISAL_TARGET_DIR_BUILD
@@ -1158,9 +1169,9 @@ function link_kernel() {
     min=$(cat /boot/photon.cfg|grep vmlinuz|cut -d '=' -f 2|cut -d '-' -f 3)
     kernel_src_path=/usr/src/linux-headers-$ver-$min-"rt"
     if [ ! -d "$kernel_src_path" ]; then
-        log_console_and_file "Failed resole kernel src path. please stop check system."
+        log_console_and_file "Failed resole $kernel_src_path kernel src path. please stop check system."
     else
-        log_green_console_and_file "Resolved kernel headers."
+        log_green_console_and_file "Resolved $kernel_src_path kernel headers."
         depmod
     fi
   fi
