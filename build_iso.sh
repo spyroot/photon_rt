@@ -252,13 +252,13 @@ function main() {
   done
 
   log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
-  cp "$DEFAULT_RPM_DIR"/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
+  cp "$DEFAULT_RPM_DIR"/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR" > /dev/null
 
   log "Copy git tar.gz from $DEFAULT_GIT_DIR to $dst_iso_dir / $DEFAULT_GIT_DST_DIR"
-  cp "$DEFAULT_GIT_DIR"/* "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
+  cp "$DEFAULT_GIT_DIR"/* "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR" > /dev/null
 
   log "Copy arcs from $DEFAULT_ARC_DIR to $dst_iso_dir / $DEFAULT_ARC_DST_DIR"
-  cp "$DEFAULT_ARC_DIR"/* "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
+  cp "$DEFAULT_ARC_DIR"/* "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR" > /dev/null
 
   log "Changing director to $dst_iso_dir"
   pushd "$dst_iso_dir"/ || exit > /dev/null
