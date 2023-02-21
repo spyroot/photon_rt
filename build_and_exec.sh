@@ -55,11 +55,11 @@ DEFAULT_ISO_LOCATION_4_X86="https://drive.google.com/u/0/uc?id=101hVCV14ln0hkbjX
 DEFAULT_ISO_PHOTON_5_X86="https://packages.vmware.com/photon/5.0/Beta/iso/photon-rt-5.0-9e778f409.iso"
 DEFAULT_ISO_PHOTON_5_ARM="https://packages.vmware.com/photon/5.0/Beta/iso/photon-5.0-9e778f409-aarch64.iso"
 
-DEFAULT_PHOTON5_PKG_LOC="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
+DEFAULT_PHOTON4_PKG_LOC="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
 DEFAULT_PHOTON5_PKG_LOC="https://packages.vmware.com/photon/5.0/photon_release_5.0_x86_64/"
 
 # the final location must be resolved during generation
-DEFAULT_PACAKGE_LOCATION="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
+DEFAULT_PACAKGE_LOCATION=$DEFAULT_PHOTON4_PKG_LOC
 
 DEFAULT_NOARCH_PACAKGE_LOCATION="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/noarch/"
 DEFAULT_IMAGE_LOCATION=$DEFAULT_ISO_LOCATION_4_X86
@@ -125,6 +125,7 @@ fi
 if [[ -n "$PHOTON_5_X86" ]]; then
   log "Building photon 5 x86 RT iso."
   DEFAULT_IMAGE_LOCATION=$DEFAULT_ISO_PHOTON_5_X86
+  DEFAULT_PACAKGE_LOCATION=$DEFAULT_PHOTON5_PKG_LOC
   DEFAULT_RELEASE="5.0"
 fi
 
