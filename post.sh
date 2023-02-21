@@ -870,15 +870,17 @@ function build_docker_images() {
   fi
 }
 
+# Function build pyelf lib
 function build_pyelf() {
   local log_file=$1
   local suffix
   local repo_name
   touch "$log_file" 2>/dev/null
   suffix=".git"
+
   if [ -z "$DPDK_BUILD" ]
   then
-      log_console_and_file "Skipping pyelf lib build."
+      log_console_and_file "Skipping pyelf since DPDK build is disabled."
   else
       if is_yes "$IS_INTERACTIVE"; then
       local choice
@@ -894,19 +896,21 @@ function build_pyelf() {
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "-Building pyelf lib from a local source copy."
         log_console_and_file "-Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls --warning=no-timestamp -C $ROOT_BUILD
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls*.tar.gz --warning=no-timestamp -C $ROOT_BUILD
     else
 
       log_console_and_file "-Cloning pyelf lib from a git source."
-      cd $ROOT_BUILD || exit; git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
+      pushd $ROOT_BUILD || exit
+      git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
+      popd || exit
     fi
 
     repo_name=${PYELF_LIB_LOCATION/%$suffix/}
     repo_name=${repo_name##*/}
     local pyelf_path
     pyelf_path=$ROOT_BUILD/"$repo_name"
-    log_console_and_file " -Building $pyelf_path."
-    pushd cd "$pyelf_path" || exit;
+    log_console_and_file " -Building $pyelf_path"
+    pushd cd "$pyelf_path" || exit
     /bin/python setup.py install > "$log_file" 2>&1
     popd || exit
   fi
