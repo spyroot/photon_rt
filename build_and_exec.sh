@@ -362,12 +362,13 @@ function git_clone() {
   local git_tar_name=""
 
   suffix=".git"
-  git_repos_dir="git_repos"
+  git_repos_dir="$DEFAULT_GIT_DIR"
   if [ -z "$SKIP_GIT" ]; then
     log "Skipping git cloning."
   else
     # do a cleanup first.
-    rm -rf $git_repos_dir
+    rm -rf "$git_repos_dir"
+    mkdir -p "$DEFAULT_GIT_DIR"
     jq --raw-output -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r git_repo; do
       local repo_name
       repo_name=${git_repo/%$suffix/}
@@ -380,7 +381,7 @@ function git_clone() {
         # clone to temp compress and move to final
         mkdir -p git_repos/"$repo_name"
         echo "Git cloning git clone $git_repo $repo_name"
-        git clone --quiet "$git_repo" $git_repos_dir/"$repo_name" > /dev/null
+        git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
         repo_tmp_dir="$git_repos_dir/$repo_name"
         echo "Compressing $repo_tmp_dir"
         tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
@@ -388,7 +389,7 @@ function git_clone() {
         mv "$repo_name".tar.gz "$DEFAULT_GIT_DIR"
       fi
     done
-    rm -rf $git_repos_dir
+    rm -rf "$git_repos_dir"
   fi
 }
 
