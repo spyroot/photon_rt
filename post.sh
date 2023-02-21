@@ -950,6 +950,7 @@ function build_ipsec_lib() {
         local tar_file
         tar_file=$DEFAULT_GIT_IMAGE_DIR/$DEFAULT_IPSEC_TAR_NAME
         log_console_and_file " -Unpacking $tar_file ipsec lib from a local copy to $ipsec_lib_path."
+        mkdir -p "$ipsec_lib_path"
         tar xfz $tar_file --warning=no-timestamp -C "$ipsec_lib_path"
     else
       log_console_and_file " -Directory $DEFAULT_GIT_IMAGE_DIR not found."
