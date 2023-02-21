@@ -2113,6 +2113,8 @@ function main() {
   mount /dev/cdrom > /mount.log
   ls -l /mnt/media > /ls_media.log
   ls -l /mnt/cdrom > /ls_cdrom_media.log
+  ls -l /boot > /ls_boot.log
+
   mkdir -p /direct_rpms; cp -uv /mnt/media/direct_rpms/*.rpm /direct_rpms > /copy_media_direct_rpm.log
   mkdir -p /direct_rpms; cp -uv /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
   mkdir -p $DEFAULT_DIRECT; cp -uv /mnt/media/direct/* $DEFAULT_DIRECT > /copy_media_direct.log
