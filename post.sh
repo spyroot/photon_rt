@@ -326,7 +326,7 @@ if [ -z "$OVERWRITE_STATIC_ETHn_STATIC_DNS" ]; then
   echo "Using default STATIC_ETHn_NAME."
 else
   STATIC_ETHn_STATIC_DNS=$OVERWRITE_STATIC_ETHn_STATIC_DNS
-  echo "Change default STATIC_ETHn_NAME address for dot1q to $STATIC_ETHn_STATIC_DNS"
+  echo "Change default STATIC_ETHn_NAME address for static to $STATIC_ETHn_STATIC_DNS"
 fi
 # by default can generate DHCP and static.
 # DHCP enabled masked e* while static for particular adapter.
@@ -350,6 +350,8 @@ PTP_ADAPTER="pci@0000:8a:00.1"
 IPSEC_LIB_LOCATION="https://github.com/intel/intel-ipsec-mb.git"
 ISA_L_LOCATION="https://github.com/intel/isa-l"
 TUNED_LOCATION="https://github.com/spyroot/tuned.git"
+PYELF_LIB_LOCATION="https://github.com/eliben/pyelftools.git"
+
 
 
 # mirror for all online files.
@@ -389,6 +391,7 @@ BUILD_PIP_LOG="$BUILD_LOG_LOG/build_pip_deps.log"
 BUILD_NL_LOG="$BUILD_LOG_LOG/build_nl.log"
 BUILD_ISA_LOG="$BUILD_LOG_LOG/build_isa.log"
 BUILD_DPDK_LOG="$BUILD_LOG_LOG/build_dpdk.log"
+BUILD_PYELF_LOG="$BUILD_LOG_LOG/build_PYEFL.log"
 BUILD_TUNED_LOG="$BUILD_LOG_LOG/build_tuned.log"
 BUILD_HUGEPAGES_LOG="$BUILD_LOG_LOG/build_hugepages.log"
 BUILD_PTP_IPSEC_BUILD_LOG="$BUILD_LOG_LOG/build_ipsec.log"
@@ -857,6 +860,41 @@ function build_docker_images() {
         fi
       fi
     fi
+  fi
+}
+
+function build_pyelf() {
+  local log_file=$1
+  local suffix
+  local repo_name
+  touch "$log_file" 2>/dev/null
+  suffix=".git"
+  if [ -z "$DPDK_BUILD" ]
+  then
+      log_console_and_file "Skipping pyelf lib build."
+  else
+      if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building ipsec lib (y/n)?" choice
+      case "$choice" in
+      y | Y) echo "yes" ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+    fi
+    log_console_and_file "Building pyelf lib."
+    # we load image from DEFAULT_GIT_IMAGE_DIR
+    if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
+        log_console_and_file "Building pyelf lib from a local copy."
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls --warning=no-timestamp -C $ROOT_BUILD
+    else
+      log_console_and_file "Building ipsec lib from a git copy."
+      cd $ROOT_BUILD || exit; git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
+    fi
+
+    repo_name=${PYELF_LIB_LOCATION/%$suffix/}
+    repo_name=${repo_name##*/}
+    cd $ROOT_BUILD/"$repo_name" || exit; python setup.py install > "$log_file" 2>&1
   fi
 }
 
@@ -2076,7 +2114,7 @@ function main() {
   if is_yes "$BUILD_INSTALL_PACKAGES"; then
     yum --quiet -y install python3-libcap-ng python3-devel \
     rdma-core-devel util-linux-devel \
-    zip zlib zlib-devel libxml2-devel \
+      zip zlib zlib-devel libxml2-devel \
     libudev-devel &> /build/build_rpms_pull.log
     # installed.before and after our diff
     yum list installed > /installed.after.log
@@ -2144,6 +2182,7 @@ function main() {
     build_lib_isa "$BUILD_ISA_LOG"
   fi
   if is_yes "$DPDK_BUILD"; then
+    build_pyelf "$BUILD_PYELF_LOG"
     build_dpdk "$BUILD_DPDK_LOG" "$dpdk_build_location"
   fi
   if is_yes "$LOAD_VFIO"; then
