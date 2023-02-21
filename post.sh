@@ -1106,13 +1106,21 @@ function build_lib_isa() {
   fi
 }
 
+# Function link a new kernel header src
+# to /usr/src
 function link_kernel() {
   local custom_kern_prefix=$1
   local target_system
   local kernel_src_path
   local default_kernel_prefix="/usr/src/linux-headers-"
 
-  target_system=$(uname -r)"-rt"
+  local major
+  major=$(find /boot/*rt.cfg | cut -d  '/' -f 3 | cut -d '-' -f 2)
+  local minor
+  minor=$(find /boot/*rt.cfg | cut -d  '/' -f 3 | cut -d '-' -f 3)
+
+  #target_system=$(uname -r)"-rt"
+  target_system=$major-$minor
   if is_not_empty "$custom_kern_prefix"; then
     log_console_and_file "Using custom provided kernel header dir $default_kernel_prefix"
     kernel_src_path=$custom_kern_prefix
@@ -1130,10 +1138,10 @@ function link_kernel() {
     min=$(cat /boot/photon.cfg|grep vmlinuz|cut -d '=' -f 2|cut -d '-' -f 3)
     kernel_src_path=/usr/src/linux-headers-$ver-$min-"rt"
     if [ ! -d "$kernel_src_path" ]; then
-      log_console_and_file "Failed resole kernel again. please stop check system."
+        log_console_and_file "Failed resole kernel src path. please stop check system."
     else
-      log_green_console_and_file "Resolved kernel headers."
-      depmod
+        log_green_console_and_file "Resolved kernel headers."
+        depmod
     fi
   fi
 
@@ -1146,7 +1154,11 @@ function link_kernel() {
         *) echo "invalid" ;;
         esac
   fi
-  rm -rf /usr/src/linux
+
+  if [ -d "/usr/src/linux" ]; then
+    rm -rf /usr/src/linux
+  fi
+
   ln -s "$kernel_src_path"/ /usr/src/linux 2>/dev/null
   if [ ! -d "/usr/src/linux" ]; then
     echo log_console_and_file "Failed create link /usr/src/linux to a current kernel source."
@@ -2125,7 +2137,7 @@ function main() {
   ls -l /mnt/cdrom > /ls_cdrom_media.log
   ls -l /boot > /ls_boot.log
 
-  mkdir -p /direct_rpms; cp -uv /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
+  mkdir -p $DEFAULT_DIRECT_RPMS; cp -uv /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
   mkdir -p $DEFAULT_DIRECT; cp -uv /mnt/cdrom/direct/* $DEFAULT_DIRECT > /copy_cdrom_direct.log
   mkdir -p $DEFAULT_GIT_IMAGE_DIR; cp -uv /mnt/cdrom/git_images/* $$DEFAULT_GIT_IMAGE_DIR > /copy_cdrom_git_images.log
 
@@ -2139,10 +2151,12 @@ function main() {
   if [[ $errs -gt 0 ]]; then
     echo "Please check required commands."
   fi
+
   # re-link kernel to current
   if is_yes "$BUILD_RE_LINK_KERNEL"; then
     link_kernel ""
   fi
+
   # install required packages
   if is_yes "$BUILD_INSTALL_PACKAGES"; then
     yum --quiet -y install python3-libcap-ng python3-devel \
