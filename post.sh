@@ -2248,11 +2248,11 @@ function main() {
   fi
 
   if is_yes "$MLX_BUILD"; then
-    log_console_and_file "Building mellanox driver."
+    log_console_and_file "Starting Building mellanox driver."
     build_mellanox_driver "$BUILD_MELLANOX_LOG" "$mellanox_build_location"
   fi
   if is_yes "$INTEL_BUILD"; then
-    log_console_and_file "Building intel driver."
+    log_console_and_file "Stating building intel driver."
     build_intel_iavf "$BUILD_INTEL_LOG" "$iavf_build_location"
   fi
   if is_yes "$BUILD_LOAD_DOCKER_IMAGE"; then
