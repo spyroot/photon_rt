@@ -942,8 +942,10 @@ function build_ipsec_lib() {
 
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
-        log_console_and_file "Building ipsec lib from a local copy."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/$DEFAULT_IPSEC_TAR_NAME --warning=no-timestamp -C $ROOT_BUILD
+        local tar_file
+        tar_file=$DEFAULT_GIT_IMAGE_DIR/$DEFAULT_IPSEC_TAR_NAME
+        log_console_and_file "Unpacking $tar_file ipsec lib from a local copy."
+        tar xfz $tar_file --warning=no-timestamp -C $ROOT_BUILD
     else
       log_console_and_file "Building ipsec lib from a git copy."
       cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
@@ -951,7 +953,10 @@ function build_ipsec_lib() {
 
     repo_name=${IPSEC_LIB_LOCATION/%$suffix/}
     repo_name=${repo_name##*/}
-    cd $ROOT_BUILD/"$repo_name" || exit; make -j 8 > "$log_file" 2>&1
+    local ipsec_lib_path
+    ipsec_lib_path=$ROOT_BUILD/"$repo_name"
+    log_console_and_file "Building ipsec lib in $ipsec_lib_path"
+    cd "$ipsec_lib_path" || exit; make -j 8 > "$log_file" 2>&1
     make install &> "$log_file"; ldconfig; ldconfig /usr/lib
   fi
 }
