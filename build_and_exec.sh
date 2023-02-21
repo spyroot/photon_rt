@@ -517,7 +517,7 @@ function print_and_validate_specs() {
   print_yes_no_default "enable ptp", "$OVERWRITE_BUILD_PTP"
   print_yes_no_default "enable dot1q trunk", "$OVERWRITE_BUILD_TRUNK"
   print_yes_no_default "enable static IP address", "$OVERWRITE_STATIC_ETHn_NAME"
-  bios_config=$(cat "$DEFAULT_BIOS_CONFIG" | jq)
+  bios_config=$(jq "$DEFAULT_BIOS_CONFIG")
   printf "\n# IDRAC CTL will apply BIOS change  :\n"
   echo "$bios_config"
 
