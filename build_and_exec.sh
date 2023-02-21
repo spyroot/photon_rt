@@ -385,7 +385,7 @@ function git_clone() {
         echo "Compressing $repo_tmp_dir"
         tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
         mkdir -p git_images
-        mv "$repo_name".tar.gz $DEFAULT_GIT_DIR
+        mv "$repo_name".tar.gz "$DEFAULT_GIT_DIR"
       fi
     done
     rm -rf $git_repos_dir
@@ -404,10 +404,10 @@ function download_rpms() {
   if [ -z "$SKIP_RPMS_DOWNLOAD" ] || [ $SKIP_RPMS_DOWNLOAD == "yes" ]; then
     log "Skipping rpm downloading."
   else
-    mkdir -p $DEFAULT_RPM_DIR
+    mkdir -p "$DEFAULT_RPM_DIR"
     log "Downloading rpms."
     jq --raw-output -c '.[]' "$ADDITIONAL_DIRECT_RPMS" | while read -r rpm_pkg; do
-      mkdir -p $DEFAULT_RPM_DIR
+      mkdir -p "$DEFAULT_RPM_DIR"
       local url_target
       if  [[ "$rpm_pkg" == *"noarch"* ]]; then
             url_target="$DEFAULT_NOARCH_PACAKGE_LOCATION${rpm_pkg}.rpm"
@@ -415,7 +415,7 @@ function download_rpms() {
             url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
       fi
       log "Downloading $url_target to $DEFAULT_RPM_DIR"
-      wget -q -nc "$url_target" -O $DEFAULT_RPM_DIR/"${rpm_pkg}".rpm
+      wget -q -nc "$url_target" -O "$DEFAULT_RPM_DIR"/"${rpm_pkg}".rpm
     done
   fi
 }
@@ -430,7 +430,7 @@ function download_direct() {
   echo "Downloading $LIB_NL_DOWNLOAD"
   wget -q -nc $LIB_NL_DOWNLOAD --directory-prefix=direct -o "logs/intel.download.log"
   echo "Downloading $DPDK_DOWNLOAD"
-  wget -q -nc $DPDK_DOWNLOAD --directory-prefix=direct -o "logs/intel.download.log"
+  wget -q -nc "$DPDK_DOWNLOAD" --directory-prefix=direct -o "logs/intel.download.log"
 }
 
 # function print current configuration for overwrites
