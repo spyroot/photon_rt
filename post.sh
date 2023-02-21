@@ -2115,11 +2115,8 @@ function main() {
   ls -l /mnt/cdrom > /ls_cdrom_media.log
   ls -l /boot > /ls_boot.log
 
-  mkdir -p /direct_rpms; cp -uv /mnt/media/direct_rpms/*.rpm /direct_rpms > /copy_media_direct_rpm.log
   mkdir -p /direct_rpms; cp -uv /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
-  mkdir -p $DEFAULT_DIRECT; cp -uv /mnt/media/direct/* $DEFAULT_DIRECT > /copy_media_direct.log
   mkdir -p $DEFAULT_DIRECT; cp -uv /mnt/cdrom/direct/* $DEFAULT_DIRECT > /copy_cdrom_direct.log
-  mkdir -p $DEFAULT_GIT_IMAGE_DIR; cp -uv /mnt/media/git_images/* $DEFAULT_GIT_IMAGE_DIR > /copy_media_git_images.log
   mkdir -p $DEFAULT_GIT_IMAGE_DIR; cp -uv /mnt/cdrom/git_images/* $$DEFAULT_GIT_IMAGE_DIR > /copy_cdrom_git_images.log
 
   local log_main_dir
