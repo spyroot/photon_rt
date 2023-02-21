@@ -1049,7 +1049,7 @@ function link_kernel() {
   local kernel_src_path
   local default_kernel_prefix="/usr/src/linux-headers-"
 
-  target_system=$(uname -r)
+  target_system=$(uname -r)"-rt"
   if is_not_empty "$custom_kern_prefix"; then
     log_console_and_file "Using custom provided kernel header dir $default_kernel_prefix"
     kernel_src_path=$custom_kern_prefix
@@ -1145,7 +1145,7 @@ function build_dpdk() {
       local kernel_src_path
       local target_system
       local meson_build_dir
-      target_system=$(uname -r)
+      target_system=$(uname -r)"-rt"
       kernel_src_path=$default_kernel_prefix$target_system
       meson_build_dir=$build_dir/"build"
 
