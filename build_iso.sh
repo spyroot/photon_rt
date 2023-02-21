@@ -220,6 +220,7 @@ function main() {
   mkdir -p "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
   mkdir -p "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
+  local rpm_dir
   rpm_dir="$dst_iso_dir"/RPMS/x86_64
   local additional_rpms
   log "Copy additional to $rpm_dir"
@@ -233,7 +234,7 @@ function main() {
     fi
   done
 
-  # narch we copy to noarch
+  # noarch we copy to noarch
   local noarch
   noarch="$dst_iso_dir"/RPMS/noarch
   local additional_noarch_rpms
@@ -245,17 +246,19 @@ function main() {
     if file_exists "$r"; then
       log "copy $r to $noarch"
       cp "$r" "$noarch"
+      # this temp fix
+      cp "$r" "$rpm_dir"
     fi
   done
 
   log "Copy rpms from $DEFAULT_RPM_DIR to $dst_iso_dir / $DEFAULT_RPM_DST_DIR"
-  cp $DEFAULT_RPM_DIR/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
+  cp "$DEFAULT_RPM_DIR"/* "$dst_iso_dir"/"$DEFAULT_RPM_DST_DIR"
 
   log "Copy git tar.gz from $DEFAULT_GIT_DIR to $dst_iso_dir / $DEFAULT_GIT_DST_DIR"
-  cp $DEFAULT_GIT_DIR/* "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
+  cp "$DEFAULT_GIT_DIR"/* "$dst_iso_dir"/"$DEFAULT_GIT_DST_DIR"
 
   log "Copy arcs from $DEFAULT_ARC_DIR to $dst_iso_dir / $DEFAULT_ARC_DST_DIR"
-  cp $DEFAULT_ARC_DIR/* "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
+  cp "$DEFAULT_ARC_DIR"/* "$dst_iso_dir"/"$DEFAULT_ARC_DST_DIR"
 
   log "Changing director to $dst_iso_dir"
   pushd "$dst_iso_dir"/ || exit > /dev/null
