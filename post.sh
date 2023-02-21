@@ -875,7 +875,7 @@ function build_pyelf() {
   else
       if is_yes "$IS_INTERACTIVE"; then
       local choice
-      read -r -p "Building ipsec lib (y/n)?" choice
+      read -r -p "Building pyelf lib (y/n)?" choice
       case "$choice" in
       y | Y) echo "yes" ;;
       n | N) return 1 ;;
