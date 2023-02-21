@@ -252,6 +252,8 @@ else
 fi
 # location where we get all tar.gz from cloned repos.
 DEFAULT_GIT_IMAGE_DIR="/git_images"
+DEFAULT_DIRECT="/direct"
+DEFAULT_DIRECT_RPMS="/direct_rpms"
 
 # SRIOV NIC make sure it up.
 # each PCI resolved to respected ethX adapter
@@ -2105,12 +2107,12 @@ function main() {
   mount /dev/cdrom > /mount.log
   ls -l /mnt/media > /ls_media.log
   ls -l /mnt/cdrom > /ls_cdrom_media.log
-  mkdir -p /direct_rpms; cp /mnt/media/direct_rpms/*.rpm /direct_rpms > /copy_media_direct_rpm.log
-  mkdir -p /direct_rpms; cp /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
-  mkdir -p /direct; cp /mnt/media/direct/* /direct > /copy_media_direct.log
-  mkdir -p /direct; cp /mnt/cdrom/direct/* /direct > /copy_cdrom_direct.log
-  mkdir -p /git_images; cp /mnt/media/git_images/* /git_images > /copy_media_git_images.log
-  mkdir -p /git_images; cp /mnt/cdrom/git_images/* /git_images > /copy_cdrom_git_images.log
+  mkdir -p /direct_rpms; cp -uv /mnt/media/direct_rpms/*.rpm /direct_rpms > /copy_media_direct_rpm.log
+  mkdir -p /direct_rpms; cp -uv /mnt/cdrom/direct_rpms/*.rpm /direct_rpms > /copy_cdrom_direct_rpm.log
+  mkdir -p $DEFAULT_DIRECT; cp -uv /mnt/media/direct/* $DEFAULT_DIRECT > /copy_media_direct.log
+  mkdir -p $DEFAULT_DIRECT; cp -uv /mnt/cdrom/direct/* $DEFAULT_DIRECT > /copy_cdrom_direct.log
+  mkdir -p $DEFAULT_GIT_IMAGE_DIR; cp -uv /mnt/media/git_images/* $DEFAULT_GIT_IMAGE_DIR > /copy_media_git_images.log
+  mkdir -p $DEFAULT_GIT_IMAGE_DIR; cp -uv /mnt/cdrom/git_images/* $$DEFAULT_GIT_IMAGE_DIR > /copy_cdrom_git_images.log
 
   local log_main_dir
   log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
