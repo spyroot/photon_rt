@@ -1062,9 +1062,10 @@ function link_kernel() {
     log_console_and_file "Failed resole kernel $kernel_src_path taking current from /boot/photon.cfg"
     local ver
     local min
+    cp /boot/*.rt.cfg /boot/photon.cfg
     ver=$(cat /boot/photon.cfg|grep vmlinuz|cut -d '=' -f 2|cut -d '-' -f 2)
     min=$(cat /boot/photon.cfg|grep vmlinuz|cut -d '=' -f 2|cut -d '-' -f 3)
-    kernel_src_path=/usr/src/linux-headers-$ver-$min
+    kernel_src_path=/usr/src/linux-headers-$ver-$min-"rt"
     if [ ! -d "$kernel_src_path" ]; then
       log_console_and_file "Failed resole kernel again. please stop check system."
     else
