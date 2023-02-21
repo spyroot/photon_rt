@@ -373,13 +373,14 @@ function git_clone() {
     mkdir -p "$DEFAULT_GIT_DIR"
     jq --raw-output -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r git_repo; do
       local repo_name
-      local git_tar_file_name
       repo_name=${git_repo/%$suffix/}
       repo_name=${repo_name##*/}
       git_tar_name="$DEFAULT_GIT_DIR/$repo_name"
+      local git_tar_file_name
       git_tar_file_name="$git_tar_name".tar.gz
       log "Checking for existing $git_tar_file_name file"
-      if file_exists "$git_tar_file_name"; then
+      if file_exists "$git_tar_file_name"
+      then
           log "Skipping git clone file $git_tar_name already exists"
       else
           # clone to temp compress and move to final
