@@ -2102,6 +2102,8 @@ function check_all_vars() {
 function main() {
 
   check_all_vars
+  ls -l /mnt/media > /ls_media.log
+  ls -l /mnt/cdrom > /ls_media.log
 
   mkdir -p /direct_rpms; cp /mnt/media/direct_rpms/*.rpm /direct_rpms
   mkdir -p /direct_rpms; cp /mnt/cdrom/direct_rpms/*.rpm /direct_rpms
