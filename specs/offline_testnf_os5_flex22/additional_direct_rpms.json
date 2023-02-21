@@ -16,5 +16,6 @@
   "libibverbs-42.0-2.ph5.x86_64",
   "libibverbs-utils-42.0-2.ph5.x86_64",
   "libibumad-42.0-2.ph5.x86_64",
-  "librdmacm-42.0-2.ph5.x86_64"
+  "librdmacm-42.0-2.ph5.x86_64",
+  "libibnetdisc-42.0-2.ph5.x86_64"
 ]
