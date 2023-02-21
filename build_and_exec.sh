@@ -55,12 +55,13 @@ DEFAULT_ISO_PHOTON_5_X86="https://packages.vmware.com/photon/5.0/Beta/iso/photon
 DEFAULT_ISO_PHOTON_5_ARM="https://packages.vmware.com/photon/5.0/Beta/iso/photon-5.0-9e778f409-aarch64.iso"
 
 DEFAULT_PHOTON4_PKG_LOC="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/x86_64/"
+DEFAULT_PHOTON4_NOARCH_PKG_LOC="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/noarch/"
 DEFAULT_PHOTON5_PKG_LOC="https://packages.vmware.com/photon/5.0/photon_release_5.0_x86_64/"
+DEFAULT_PHOTON5_NOARCH_PKG_LOC="https://packages.vmware.com/photon/5.0/photon_release_5.0_x86_64/noarch/"
 
 # the final location must be resolved during generation
 DEFAULT_PACAKGE_LOCATION=$DEFAULT_PHOTON4_PKG_LOC
-
-DEFAULT_NOARCH_PACAKGE_LOCATION="https://packages.vmware.com/photon/4.0/photon_updates_4.0_x86_64/noarch/"
+DEFAULT_NOARCH_PACAKGE_LOCATION=$DEFAULT_PHOTON4_NOARCH_PKG_LOC
 DEFAULT_IMAGE_LOCATION=$DEFAULT_ISO_LOCATION_4_X86
 DEFAULT_DOCKER_IMAGE="spyroot/photon_iso_builder:latest"
 #
@@ -125,6 +126,7 @@ if [[ -n "$PHOTON_5_X86" ]]; then
   log "Building photon 5 x86 RT iso."
   DEFAULT_IMAGE_LOCATION=$DEFAULT_ISO_PHOTON_5_X86
   DEFAULT_PACAKGE_LOCATION=$DEFAULT_PHOTON5_PKG_LOC
+  DEFAULT_NOARCH_PACAKGE_LOCATION=$DEFAULT_PHOTON5_NOARCH_PKG_LOC
   DEFAULT_RELEASE="5.0"
 fi
 
@@ -406,7 +408,7 @@ function download_rpms() {
     log "Skipping rpm downloading."
   else
     mkdir -p "$DEFAULT_RPM_DIR"
-    log "Downloading rpms."
+    log "Downloading rpms to $DEFAULT_RPM_DIR."
     jq --raw-output -c '.[]' "$ADDITIONAL_DIRECT_RPMS" | while read -r rpm_pkg; do
       mkdir -p "$DEFAULT_RPM_DIR"
       local url_target
