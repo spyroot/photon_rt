@@ -77,7 +77,7 @@ DPDK_VERSION="dpdk-21.11"
 if [ -z "$OVERWRITE_DPDK_VERSION" ]; then
   echo "Using default DPDK_VERSION value:$DPDK_VERSION."
 else
-  DPDK_VERSION=$OVERWRITE_BUILD_INSTALL_PACKAGES
+  DPDK_VERSION=$OVERWRITE_DPDK_VERSION
 fi
 
 # if defined we will not install.
@@ -878,6 +878,11 @@ function build_pyelf() {
   touch "$log_file" 2>/dev/null
   suffix=".git"
 
+  repo_name=${PYELF_LIB_LOCATION/%$suffix/}
+  repo_name=${repo_name##*/}
+  local pyelf_lib_path
+  pyelf_lib_path=$ROOT_BUILD/"$repo_name"
+
   if [ -z "$DPDK_BUILD" ]
   then
       log_console_and_file "Skipping pyelf since DPDK build is disabled."
@@ -894,9 +899,10 @@ function build_pyelf() {
     log_console_and_file "Building pyelf lib."
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
-        log_console_and_file "-Building pyelf lib from a local source copy."
+        mkdir -p "$pyelf_lib_path"
+        log_console_and_file "-Unpacking pyelf to $pyelf_lib_path from a local source copy."
         log_console_and_file "-Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls*.tar.gz --warning=no-timestamp -C $ROOT_BUILD
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls*.tar.gz --warning=no-timestamp -C "$pyelf_lib_path"
     else
 
       log_console_and_file "-Cloning pyelf lib from a git source."
@@ -905,12 +911,8 @@ function build_pyelf() {
       popd || exit
     fi
 
-    repo_name=${PYELF_LIB_LOCATION/%$suffix/}
-    repo_name=${repo_name##*/}
-    local pyelf_path
-    pyelf_path=$ROOT_BUILD/"$repo_name"
-    log_console_and_file " -Building $pyelf_path"
-    pushd cd "$pyelf_path" || exit
+    log_console_and_file " -Building $pyelf_lib_path"
+    pushd cd "$pyelf_lib_path" || exit
     /bin/python setup.py install > "$log_file" 2>&1
     popd || exit
   fi
