@@ -375,21 +375,20 @@ function git_clone() {
       local repo_name
       repo_name=${git_repo/%$suffix/}
       repo_name=${repo_name##*/}
-      git_tar_name="$DEFAULT_GIT_DIR/$repo_name"
+      local repo_path="$DEFAULT_GIT_DIR/$repo_name"
       local git_tar_file_name
-      git_tar_file_name=$git_tar_name".tar.gz"
+      git_tar_file_name=$repo_path".tar.gz"
       log "Checking for existing $git_tar_file_name file"
       if file_exists "$git_tar_file_name"
       then
-          log "Skipping git clone file $git_tar_name already exists"
+          log "Skipping git clone file $git_tar_file_name already exists"
       else
           # clone to temp compress and move to final
-          mkdir -p "$DEFAULT_GIT_DIR"/"$repo_name"
+          mkdir -p "$repo_path"
           echo "Git cloning git clone $git_repo $repo_name"
           git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
-          local repo_tmp_dir="$git_repos_dir/$repo_name"
-          pushd "$repo_tmp_dir"/ || exit > /dev/null
-          echo "Compressing $repo_tmp_dir"
+          pushd "$repo_path"/ || exit > /dev/null
+          echo "Compressing $repo_path"
           tar -zcvf "$repo_name".tar.gz "$repo_name"
           popd || exit > /dev/null
       fi
