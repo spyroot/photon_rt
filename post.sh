@@ -886,7 +886,7 @@ function build_ipsec_lib() {
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building ipsec lib from a local copy."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/intel-ipsec-mb.tar.gz -C $ROOT_BUILD --strip-components=1
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/intel-ipsec-mb.tar.gz -C $ROOT_BUILD
     else
       log_console_and_file "Building ipsec lib from a git copy."
       cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
@@ -1029,7 +1029,7 @@ function build_lib_isa() {
     fi
      if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building isa-l from local from $DEFAULT_GIT_IMAGE_DIR copy."
-        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* -C $ROOT_BUILD --strip-components=1
+        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* -C $ROOT_BUILD
     else
       log_console_and_file "Building isa-l lib from a git."
       cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
@@ -1289,7 +1289,7 @@ function build_tuned() {
     mkdir -p $ROOT_BUILD/tuned 2>/dev/null
     if [ -d "/git_images" ]; then
         log_console_and_file "Unpacking tuned lib from a local copy."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/tuned.tar.gz -C $ROOT_BUILD --strip-components=1
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/tuned.tar.gz -C $ROOT_BUILD
     else
       log_console_and_file "Cloning tuned form remote repo."
       cd $ROOT_BUILD || exit; git clone "$TUNED_LOCATION" > "$log_file" 2>&1; cd tuned || exit;
