@@ -488,11 +488,11 @@ function print_and_validate_specs() {
   printf "\n# other files:\n"
   log "  -Builder will copy to IOS files:"
   local additional_files
-  additional_files=$(cat "$ADDITIONAL_FILES" | jq '.additional_files')
+  additional_files=$(jq '.additional_files' "$ADDITIONAL_FILES")
   echo "$additional_files"
 
   local docker_files
-  docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]'|xargs -I {} echo "docker_images{}")
+  docker_files=$(cat "$ADDITIONAL_FILES" | jq -r '.additional_files[][]' $ADDITIONAL_FILES |xargs -I {} echo "docker_images{}")
   printf "\n# Additional files:\n"
   log "$docker_files"
 
