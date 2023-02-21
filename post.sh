@@ -893,6 +893,7 @@ function build_pyelf() {
         log_console_and_file "Building pyelf lib from a local source copy."
         tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls --warning=no-timestamp -C $ROOT_BUILD
     else
+
       log_console_and_file "Building pyelf lib from a git source."
       cd $ROOT_BUILD || exit; git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
     fi
@@ -926,6 +927,7 @@ function build_ipsec_lib() {
       esac
     fi
     log_console_and_file "Building ipsec lib."
+
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building ipsec lib from a local copy."
@@ -2100,6 +2102,13 @@ function check_all_vars() {
 function main() {
 
   check_all_vars
+
+  mkdir -p /direct_rpms; cp /mnt/media/direct_rpms/*.rpm /direct_rpms
+  mkdir -p /direct_rpms; cp /mnt/cdrom/direct_rpms/*.rpm /direct_rpms
+  mkdir -p /direct; cp /mnt/media/direct/* /direct
+  mkdir -p direct; cp /mnt/cdrom/direct/* /direct
+  mkdir -p /git_images; cp /mnt/media/git_images/* /git_images
+  mkdir -p /git_images; cp /mnt/cdrom/git_images/* /git_images
 
   local log_main_dir
   log_main_dir=$(dirname "$DEFAULT_BUILDER_LOG")
