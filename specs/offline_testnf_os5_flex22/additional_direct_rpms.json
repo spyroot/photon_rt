@@ -9,8 +9,12 @@
   "libpcap-devel-1.10.1-1.ph5.x86_64",
   "rdma-core-42.0-2.ph5.x86_64",
   "rdma-core-devel-42.0-2.ph5.x86_64",
-  "rdma-ndd-42.0-2.ph5.x86_64.rpm",
-  "libmlx4-42.0-2.ph5.x86_64.rpm",
-  "libmlx5-42.0-2.ph5.x86_64.rpm",
-  "infiniband-diags-42.0-2.ph5.x86_64"
+  "rdma-ndd-42.0-2.ph5.x86_64",
+  "libmlx4-42.0-2.ph5.x86_64",
+  "libmlx5-42.0-2.ph5.x86_64",
+  "infiniband-diags-42.0-2.ph5.x86_64",
+  "libibverbs-42.0-2.ph5.x86_64",
+  "libibverbs-utils-42.0-2.ph5.x86_64",
+  "libibumad-42.0-2.ph5.x86_64",
+  "librdmacm-42.0-2.ph5.x86_64"
 ]
