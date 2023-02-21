@@ -373,22 +373,24 @@ function git_clone() {
     mkdir -p "$DEFAULT_GIT_DIR"
     jq --raw-output -c '.[]' "$ADDITIONAL_GIT_REPOS" | while read -r git_repo; do
       local repo_name
+      local git_tar_file_name
       repo_name=${git_repo/%$suffix/}
       repo_name=${repo_name##*/}
       git_tar_name="$DEFAULT_GIT_DIR/$repo_name"
-      log "Checking for existing $git_tar_name.tar.gz file"
-      if file_exists "$git_tar_name.tar.gz"; then
-        log "Skipping git clone file $git_tar_name already exists"
+      git_tar_file_name="$git_tar_name".tar.gz
+      log "Checking for existing $git_tar_file_name file"
+      if file_exists "$git_tar_file_name"; then
+          log "Skipping git clone file $git_tar_name already exists"
       else
-        # clone to temp compress and move to final
-        mkdir -p git_repos/"$repo_name"
-        echo "Git cloning git clone $git_repo $repo_name"
-        git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
-        repo_tmp_dir="$git_repos_dir/$repo_name"
-        echo "Compressing $repo_tmp_dir"
-        tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
-        mkdir -p git_images
-        mv "$repo_name".tar.gz "$DEFAULT_GIT_DIR"
+          # clone to temp compress and move to final
+          mkdir -p git_repos/"$repo_name"
+          echo "Git cloning git clone $git_repo $repo_name"
+          git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
+          repo_tmp_dir="$git_repos_dir/$repo_name"
+          echo "Compressing $repo_tmp_dir"
+          tar -zcvf "$repo_name".tar.gz "$repo_tmp_dir"
+          mkdir -p git_images
+          mv "$repo_name".tar.gz "$DEFAULT_GIT_DIR"
       fi
     done
     #rm -rf "$git_repos_dir"
