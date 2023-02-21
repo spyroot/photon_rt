@@ -1739,7 +1739,7 @@ function search_file() {
     if [ -n "$found_file" ]; then
       log_console_and_file "File found in local cdrom $found_file"
       found_in="/mnt/cdrom/direct"/$found_file
-      __resul_search_var="'$found_in'"
+      eval "$__resul_search_var"="$found_in"
       found=true
       return 0
     fi
