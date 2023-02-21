@@ -2,6 +2,5 @@
   "ninja-build-1.11.1-1.ph5.x86_64",
   "lshw-B.02.19-1.ph5.x86_64",
   "nasm-2.15.05-1.ph5.x86_64",
-  "meson-1.0.0-1.ph5.noarch",
-  "photon-release-5.0-2.ph5.noarch"
+  "meson-1.0.0-1.ph5.noarch"
 ]
