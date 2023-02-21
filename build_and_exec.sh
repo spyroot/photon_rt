@@ -379,7 +379,7 @@ function git_clone() {
       local git_tar_file_name
       git_tar_file_name="$git_tar_name".tar.gz
       log "Checking for existing $git_tar_file_name file"
-      if file_exists "$git_tar_file_name"
+      if file_exists git_tar_file_name
       then
           log "Skipping git clone file $git_tar_name already exists"
       else
