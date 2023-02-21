@@ -902,7 +902,7 @@ function build_pyelf() {
         mkdir -p "$pyelf_lib_path"
         log_console_and_file " -Unpacking pyelf to $pyelf_lib_path from a local source copy."
         log_console_and_file " -Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls*.tar.gz --warning=no-timestamp -C "$pyelf_lib_path"
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls*.tar.gz --warning=no-timestamp -C "$ROOT_BUILD"
     else
       log_console_and_file " -Cloning pyelf lib from a git source."
       pushd $ROOT_BUILD || exit
@@ -953,7 +953,7 @@ function build_ipsec_lib() {
         tar_file=$DEFAULT_GIT_IMAGE_DIR/$DEFAULT_IPSEC_TAR_NAME
         log_console_and_file " -Unpacking $tar_file ipsec lib from a local copy to $ipsec_lib_path."
         mkdir -p "$ipsec_lib_path"
-        tar xfz $tar_file --warning=no-timestamp -C "$ipsec_lib_path"
+        tar xfz $tar_file --warning=no-timestamp -C "$ROOT_BUILD"
     else
       log_console_and_file " -Directory $DEFAULT_GIT_IMAGE_DIR not found."
       log_console_and_file " -Building ipsec lib from a git copy."
@@ -1105,7 +1105,7 @@ function build_lib_isa() {
      if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         mkdir -p "$isa_lib_path"
         log_console_and_file " -Unpacking  isa-l from local to $isa_lib_path."
-        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* --warning=no-timestamp -C "$isa_lib_path"
+        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* --warning=no-timestamp -C "$ROOT_BUILD"
     else
       log_console_and_file "Building isa-l lib from a git."
       cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
