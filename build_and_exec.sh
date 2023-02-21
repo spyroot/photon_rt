@@ -384,7 +384,7 @@ function git_clone() {
           log "Skipping git clone file $git_tar_name already exists"
       else
           # clone to temp compress and move to final
-          mkdir -p git_repos/"$repo_name"
+          mkdir -p "$DEFAULT_GIT_DIR"/"$repo_name"
           echo "Git cloning git clone $git_repo $repo_name"
           git clone --quiet "$git_repo" "$git_repos_dir"/"$repo_name" > /dev/null
           repo_tmp_dir="$git_repos_dir/$repo_name"
