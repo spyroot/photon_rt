@@ -1812,7 +1812,7 @@ function generate_default_network() {
     esac
   fi
 
-  if is_yes $BUILD_DEFAULT_NETWORK; then
+  if is_yes "$BUILD_DEFAULT_NETWORK"; then
     log_console_and_file "Generating default dhcp network"
     generate_dhcp_network "e*"
   fi
