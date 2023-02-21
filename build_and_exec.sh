@@ -395,9 +395,10 @@ function git_clone() {
   fi
 }
 
-# Downloads all rpms to DEFAULT_PACAKGE_LOCATION
+# Downloads all rpms to DEFAULT_RPM_DIR
 function download_rpms() {
   local rpm_pkg
+  local rpm_path
 
   if [ -z "$DEFAULT_PACAKGE_LOCATION" ]; then
     log "DEFAULT_PACAKGE_LOCATION empty."
@@ -417,8 +418,9 @@ function download_rpms() {
       else
             url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
       fi
-      log "Downloading $url_target to $DEFAULT_RPM_DIR"
-      wget -q -nc "$url_target" -O "$DEFAULT_RPM_DIR"/"${rpm_pkg}".rpm
+      rpm_path="$DEFAULT_RPM_DIR"/"${rpm_pkg}".rpm
+      log "Downloading $url_target to $rpm_path"
+      wget -q -nc "$url_target" -O "$rpm_path"
     done
   fi
 }
@@ -427,13 +429,13 @@ function download_rpms() {
 function download_direct() {
   mkdir -p logs
   echo "Downloading $MELLANOX_DOWNLOAD_URL"
-  wget -q -nc $MELLANOX_DOWNLOAD_URL --directory-prefix=direct -o "logs/mellanox.download.log"
+  wget -q -nc $MELLANOX_DOWNLOAD_URL --directory-prefix="$DEFAULT_ARC_DIR" -o "logs/mellanox.download.log"
   echo "Downloading $INTEL_DOWNLOAD_URL"
-  wget -q -nc $INTEL_DOWNLOAD_URL --directory-prefix=direct -o "logs/intel.download.log"
+  wget -q -nc $INTEL_DOWNLOAD_URL --directory-prefix="$DEFAULT_ARC_DIR" -o "logs/intel.download.log"
   echo "Downloading $LIB_NL_DOWNLOAD"
-  wget -q -nc $LIB_NL_DOWNLOAD --directory-prefix=direct -o "logs/intel.download.log"
+  wget -q -nc $LIB_NL_DOWNLOAD --directory-prefix="$DEFAULT_ARC_DIR" -o "logs/intel.download.log"
   echo "Downloading $DPDK_DOWNLOAD"
-  wget -q -nc "$DPDK_DOWNLOAD" --directory-prefix=direct -o "logs/intel.download.log"
+  wget -q -nc "$DPDK_DOWNLOAD" --directory-prefix="$DEFAULT_ARC_DIR" -o "logs/intel.download.log"
 }
 
 # function print current configuration for overwrites
@@ -546,9 +548,8 @@ function delete_zero_byte_files() {
 
 function main() {
 
-
   # all direct rpms will download and stored in direct_rpms
-  DEFAULT_RPM_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE"
+  DEFAULT_RPM_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE/"
   # all cloned and tar.gzed repos in git_repos
   DEFAULT_GIT_DIR="$DEFAULT_GIT_DIR/$BUILD_TYPE/"
   # all downloaded tar.gz ( drivers and other arc) will be in direct.
