@@ -900,12 +900,11 @@ function build_pyelf() {
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         mkdir -p "$pyelf_lib_path"
-        log_console_and_file "-Unpacking pyelf to $pyelf_lib_path from a local source copy."
-        log_console_and_file "-Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
+        log_console_and_file " -Unpacking pyelf to $pyelf_lib_path from a local source copy."
+        log_console_and_file " -Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
         tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls*.tar.gz --warning=no-timestamp -C "$pyelf_lib_path"
     else
-
-      log_console_and_file "-Cloning pyelf lib from a git source."
+      log_console_and_file " -Cloning pyelf lib from a git source."
       pushd $ROOT_BUILD || exit
       git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
       popd || exit
@@ -927,6 +926,7 @@ function build_ipsec_lib() {
   local repo_name
   touch "$log_file" 2>/dev/null
   suffix=".git"
+
   if [ -z "$IPSEC_BUILD" ]
   then
       log_console_and_file "Skipping ipsec lib build."
@@ -1080,6 +1080,14 @@ function build_lib_nl() {
 function build_lib_isa() {
   local log_file=$1
   touch "$log_file" 2>/dev/null
+  local suffix
+  suffix=".git"
+
+  local repo_name
+  repo_name=${ISA_L_LOCATION/%$suffix/}
+  repo_name=${repo_name##*/}
+  local isa_lib_path
+  isa_lib_path=$ROOT_BUILD/"$repo_name"
 
   # build and install isa
   if [ -z "$LIBNL_ISA" ]; then
@@ -1095,12 +1103,14 @@ function build_lib_isa() {
         esac
     fi
      if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
-        log_console_and_file "Building isa-l from local from $DEFAULT_GIT_IMAGE_DIR copy."
-        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* --warning=no-timestamp -C $ROOT_BUILD
+        mkdir -p "$isa_lib_path"
+        log_console_and_file " -Unpacking  isa-l from local to $isa_lib_path."
+        tar xfz tar xfz $DEFAULT_GIT_IMAGE_DIR/*isa-l* --warning=no-timestamp -C "$isa_lib_path"
     else
       log_console_and_file "Building isa-l lib from a git."
       cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
     fi
+
     mkdir -p $LIB_ISAL_TARGET_DIR_BUILD
     cd $LIB_ISAL_TARGET_DIR_BUILD || exit
     chmod 700 autogen.sh && ./autogen.sh > "$log_file" 2>&1
