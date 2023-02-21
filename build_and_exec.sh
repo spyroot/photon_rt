@@ -46,6 +46,12 @@ if [[ -z "$BUILD_TYPE" ]]; then
   exit 99
 fi
 
+# all direct rpms will download and stored in direct_rpms
+DEFAULT_RPM_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE"
+# all cloned and tar.gzed repos in git_repos
+DEFAULT_GIT_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE"
+# all downloaded tar.gz ( drivers and other arc) will be in direct.
+DEFAULT_ARC_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE"
 
 # by default, target build RT 4.0
 DEFAULT_RELEASE="4.0"
