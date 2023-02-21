@@ -135,6 +135,11 @@ BUILD_LOAD_DOCKER_IMAGE="yes"
 BUILD_RE_LINK_KERNEL="yes"
 BUILD_INSTALL_PACKAGES="yes"
 
+DEFAULT_IPSEC_TAR_NAME="intel-ipsec-mb.tar.gz"
+DEFAULT_ISA_TAR_NAME="isa-l.tar.gz"
+DEFAULT_PYELF_TAR_NAME="pyelftools.tar.gz"
+DEFAULT_TUNED_TAR="tuned.tar.gz"
+
 # overwrite default value,  /overwrite always take precedence.
 if [ -z "$OVERWRITE_BUILD_INSTALL_PACKAGES" ]; then
   echo "Using default BUILD_INSTALL_PACKAGES value:$BUILD_INSTALL_PACKAGES."
@@ -924,7 +929,7 @@ function build_ipsec_lib() {
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building ipsec lib from a local copy."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/intel-ipsec-mb.tar.gz --warning=no-timestamp -C $ROOT_BUILD
+        tar xfz $DEFAULT_GIT_IMAGE_DIR/$DEFAULT_IPSEC_TAR_NAME --warning=no-timestamp -C $ROOT_BUILD
     else
       log_console_and_file "Building ipsec lib from a git copy."
       cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
