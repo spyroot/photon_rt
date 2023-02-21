@@ -893,16 +893,20 @@ function build_pyelf() {
     # we load image from DEFAULT_GIT_IMAGE_DIR
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         log_console_and_file "Building pyelf lib from a local source copy."
+        log_console_and_file "Pyelf location $DEFAULT_GIT_IMAGE_DIR/pyelftolls."
         tar xfz $DEFAULT_GIT_IMAGE_DIR/pyelftolls --warning=no-timestamp -C $ROOT_BUILD
     else
 
-      log_console_and_file "Building pyelf lib from a git source."
+      log_console_and_file " -Cloning pyelf lib from a git source."
       cd $ROOT_BUILD || exit; git clone "$PYELF_LIB_LOCATION" > "$log_file" 2>&1
     fi
 
     repo_name=${PYELF_LIB_LOCATION/%$suffix/}
     repo_name=${repo_name##*/}
-    cd $ROOT_BUILD/"$repo_name" || exit; python setup.py install > "$log_file" 2>&1
+    local pyelf_path
+    pyelf_path=$ROOT_BUILD/"$repo_name"
+    log_console_and_file " -Building $pyelf_path."
+    cd "$pyelf_path" || exit; python setup.py install > "$log_file" 2>&1
   fi
 }
 
