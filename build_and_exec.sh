@@ -547,9 +547,9 @@ function main() {
   # all direct rpms will download and stored in direct_rpms
   DEFAULT_RPM_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE"
   # all cloned and tar.gzed repos in git_repos
-  DEFAULT_GIT_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE"
+  DEFAULT_GIT_DIR="$DEFAULT_GIT_DIR/$BUILD_TYPE"
   # all downloaded tar.gz ( drivers and other arc) will be in direct.
-  DEFAULT_ARC_DIR="$DEFAULT_RPM_DIR/$BUILD_TYPE"
+  DEFAULT_ARC_DIR="$DEFAULT_ARC_DIR/$BUILD_TYPE"
 
   delete_zero_byte_files
   print_and_validate_specs
