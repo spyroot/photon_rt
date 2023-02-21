@@ -10,11 +10,11 @@ if [ -z "$BUILD_TYPE" ]; then
 fi
 
 # all direct rpms will download and stored in direct_rpms
-DEFAULT_RPM_DIR="direct_rpms"
+DEFAULT_RPM_DIR="direct_rpms/$DEFAULT_BUILD_TYPE"
 # all cloned and tar.gzed repos in git_repos
-DEFAULT_GIT_DIR="git_images"
+DEFAULT_GIT_DIR="git_images/$DEFAULT_BUILD_TYPE"
 # all downloaded tar.gz ( drivers and other arc) will be in direct.
-DEFAULT_ARC_DIR="direct"
+DEFAULT_ARC_DIR="direct/$DEFAULT_BUILD_TYPE"
 # DEFAULT WEB DIR
 DEFAULT_WEB_DIR="/var/www/html/"
 # default file from where we read all cluster spec.
