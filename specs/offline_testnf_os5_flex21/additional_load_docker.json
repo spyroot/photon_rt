@@ -1,5 +1,4 @@
 [
     "systemctl enable docker >> /etc/postinstall",
-    "systemctl start docker  >> /etc/postinstall",
-    "docker load < /vcu1.tar.gz >> /etc/postinstall"
+    "systemctl start docker  >> /etc/postinstall"
 ]

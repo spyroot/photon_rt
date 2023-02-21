@@ -258,25 +258,26 @@ function generate_kick_start() {
   current_ks_phase="ks.phase8.cfg"
   jsonlint $current_ks_phase
 
-#
-#  local rpms
-#  rpms=$(cat $ADDITIONAL_REMOTE_RPMS)
-#  jq --argjson p "$rpms" '.postinstall += $p' $current_ks_phase >ks.phase7.cfg
-#  current_ks_phase="ks.phase7.cfg"
-#  jsonlint $current_ks_phase
-#  jq --raw-output -c '.[]' $ADDITIONAL_DIRECT_RPMS | while read -r rpm_pkg; do
-#    mkdir -p direct_rpms
-#    local url_target
-#    url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
-#    log "Downloading $url_target to $DEFAULT_RPM_DIR$"
-#    wget -q -nc "$url_target" -O $DEFAULT_RPM_DIR/"${rpm_pkg}".rpm
-#  done
+  #
+  #  local rpms
+  #  rpms=$(cat $ADDITIONAL_REMOTE_RPMS)
+  #  jq --argjson p "$rpms" '.postinstall += $p' $current_ks_phase >ks.phase7.cfg
+  #  current_ks_phase="ks.phase7.cfg"
+  #  jsonlint $current_ks_phase
+  #  jq --raw-output -c '.[]' $ADDITIONAL_DIRECT_RPMS | while read -r rpm_pkg; do
+  #    mkdir -p direct_rpms
+  #    local url_target
+  #    url_target="$DEFAULT_PACAKGE_LOCATION${rpm_pkg}.rpm"
+  #    log "Downloading $url_target to $DEFAULT_RPM_DIR$"
+  #    wget -q -nc "$url_target" -O $DEFAULT_RPM_DIR/"${rpm_pkg}".rpm
+  #  done
 
   # additional docker load.
   [ ! -f "$DOCKER_LOAD_POST_INSTALL" ] && {
     echo "$DOCKER_LOAD_POST_INSTALL file not found"
     exit 99
   }
+
   local docker_imgs
   docker_imgs=$(cat "$DOCKER_LOAD_POST_INSTALL")
   jq --argjson i "$docker_imgs" '.postinstall += $i' $current_ks_phase >ks.phase9.cfg
