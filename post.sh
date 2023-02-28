@@ -975,7 +975,8 @@ function build_ipsec_lib() {
     fi
 
     log_console_and_file " -Building ipsec lib in build dir $ipsec_lib_path"
-    cd "$ipsec_lib_path" || exit; make -j 8 > "$log_file" 2>&1
+    cd "$ipsec_lib_path" || exit; make clean SHARED=n
+    cd "$ipsec_lib_path" || exit; make -j 16 AESNI_EMU=y > "$log_file" 2>&1
     make install &> "$log_file"; ldconfig; ldconfig /usr/lib
   fi
 }

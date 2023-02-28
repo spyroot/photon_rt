@@ -69,7 +69,7 @@ DEFAULT_RPM_DIR="direct_rpms"
 DEFAULT_GIT_DIR="git_images"
 DEFAULT_ARC_DIR="direct"
 
-DEFAULT_AVX_VERSION=4.5.3
+DEFAULT_AVX_VERSION=4.7.0
 if [[ -z "$AVX_VERSION" ]]; then
   echo "Using default DEFAULT_AVX_VERSION"
 else
@@ -89,6 +89,7 @@ else
 fi
 
 MELLANOX_DOWNLOAD_URL="http://www.mellanox.com/downloads/ofed/MLNX_OFED-$MLNX_VER/MLNX_OFED_SRC-debian-$MLNX_VER.tgz"
+#https://downloadmirror.intel.com/762473/iavf-4.7.0.tar.gz
 INTEL_DOWNLOAD_URL="https://downloadmirror.intel.com/738727/iavf-$DEFAULT_AVX_VERSION.tar.gz"
 LIB_NL_DOWNLOAD="https://www.infradead.org/~tgr/libnl/files/libnl-$NL_VER.tar.gz"
 DPDK_DOWNLOAD="http://fast.dpdk.org/rel/dpdk-$DEFAULT_DPDK_VER.tar.xz"

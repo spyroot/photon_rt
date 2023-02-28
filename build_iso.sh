@@ -72,8 +72,6 @@ menuentry "Install" {
 EOF
 }
 
-#    linux /isolinux/vmlinuz root=/dev/ram0 ks=cdrom:/isolinux/ks.cfg loglevel=3 photon.media=UUID=\$photondisk photon.media.mount_retry=20
-
 function generate_iso() {
   local dst_iso_dir=$1
   sed -i 's/default install/default my_unattended/g' "$dst_iso_dir"/isolinux/menu.cfg
