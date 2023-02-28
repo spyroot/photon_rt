@@ -1,0 +1,23 @@
+tca:
+  tca_ip: "tca.ztp.vmw.run"
+  tca_username: "administrator@vsphere.local"
+  tca_password: "VMware1!"
+
+ampq: # here we defined detail about RabbitMQ
+  hostname: "localhost"
+  username: "vmware"
+  password: "VMware1!"
+  queue_name: "vnfonboarding"
+
+vcenter:
+  ip: "172.16.254.203"
+  user: "Administrator@vmwarelab.local"
+  password: "VMware1!"
+  default_esxi_username: "root"
+  default_esxi_password: "VMware1!"
+  default_ip: "10.10.10.2"
+  topology:
+    - dc: one
+      name: Datacenter
+      clusters:
+        - name: uCPE
