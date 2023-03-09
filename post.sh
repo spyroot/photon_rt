@@ -1546,6 +1546,7 @@ EOF
     log_console_and_file "Generating tuned script.sh."
     generate_tuned_script
     chmod 755 /usr/lib/tuned/mus_rt/script.sh
+    cd $ROOT_BUILD/tuned || exit; make PYTHON=/usr/bin/python3 install
     log_console_and_file "Enabling and restarting tuned."
     # enabled tuned and load profile we created.
     systemctl enable tuned
