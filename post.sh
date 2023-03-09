@@ -1483,6 +1483,10 @@ function build_tuned() {
       cd $ROOT_BUILD || exit; git clone "$TUNED_LOCATION" > "$log_file" 2>&1; cd tuned || exit;
     fi
 
+    yum install grub2
+    cp $ROOT_BUILD/tuned/92-tuned.install /usr/lib/kernel/install.d/92-tuned.install
+    cp $ROOT_BUILD/tuned/00_tuned /etc/grub.d/00_tuned
+    chmod 755 /etc/grub.d/00_tuned
     cp -Rf tuned /usr/lib/python3.10/site-packages
     # profile
     mkdir -p /usr/lib/tuned/mus_rt 2>/dev/null
