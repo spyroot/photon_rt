@@ -1541,7 +1541,7 @@ EOF
     touch /usr/lib/tuned/mus_rt/script.sh 2>/dev/null
     log_console_and_file "Generating tuned script.sh."
     generate_tuned_script
-
+    chmod 755 /usr/lib/tuned/mus_rt/script.sh
     log_console_and_file "Enabling and restarting tuned."
     # enabled tuned and load profile we created.
     systemctl enable tuned
