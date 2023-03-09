@@ -1259,10 +1259,7 @@ function link_kernel() {
         esac
   fi
 
-  if [ -d "/usr/src/linux" ]; then
-    rm -rf /usr/src/linux
-  fi
-
+  rm -rf /usr/src/linux
   ln -s "$kernel_src_path"/ /usr/src/linux 2>/dev/null
   if [ ! -d "/usr/src/linux" ]; then
     log_green_console_and_file "Failed create link /usr/src/linux to a current kernel source."
@@ -1429,10 +1426,14 @@ function load_vfio_pci() {
 # Generate tuned bash script
 function generate_tuned_script() {
   cat >/usr/lib/tuned/mus_rt/script.sh <<'EOF'
-#!/usr/bin/sh
+#!/bin/sh
 . /usr/lib/tuned/functions
-start() { return 0 }
-stop() { return 0 }
+start() {
+return 0
+}
+stop() {
+return 0
+}
 verify() {
     retval=0
     if [ "$TUNED_isolated_cores" ]; then
