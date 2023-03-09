@@ -118,6 +118,7 @@ MLX_BUILD="yes"
 INTEL_BUILD="yes"
 DPDK_BUILD="yes"
 IPSEC_BUILD="yes"
+BUILD_YASM="yes"
 LIBNL_BUILD="yes"
 LIBNL_ISA="yes"
 BUILD_TUNED="yes"
@@ -366,6 +367,7 @@ IPSEC_LIB_LOCATION="https://github.com/intel/intel-ipsec-mb.git"
 ISA_L_LOCATION="https://github.com/intel/isa-l"
 TUNED_LOCATION="https://github.com/spyroot/tuned.git"
 PYELF_LIB_LOCATION="https://github.com/eliben/pyelftools.git"
+YASM_LOCATION="https://github.com/yasm/yasm.git"
 
 
 
@@ -392,6 +394,7 @@ MELLANOX_LOCATION=(
 
 DPDK_TARGET_DIR_BUILD="$ROOT_BUILD/dpdk-21.11"
 LIB_ISAL_TARGET_DIR_BUILD="$ROOT_BUILD/isa-l"
+YASM_TARGET_DIR_BUILD="$ROOT_BUILD/yasm"
 
 # DRIVER TMP DIR where we are building.
 MLX_DIR=/tmp/mlnx_ofed_src
@@ -845,38 +848,36 @@ function build_docker_images() {
 
   if file_exists "$docker_image_path"; then
     log_console_and_file "  Docker image $docker_image_path exists."
-  else
-    echo "File $docker_image_path not found."
-  fi
+    if [ -z "$BUILD_LOAD_DOCKER_IMAGE" ]; then
+      log_console_and_file " -Attempting load a docker image $docker_image_path."
+    else
+      if is_yes "$IS_INTERACTIVE"; then
+        local choice
+        read -r -p "Building docker and loading $docker_image_path (y/n)?" choice
+        case "$choice" in
+        y | Y)  ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+      fi
 
-  if [ -z "$BUILD_LOAD_DOCKER_IMAGE" ]; then
-    log_console_and_file " -Attempting load a docker image $docker_image_path."
-  else
-
-    if is_yes "$IS_INTERACTIVE"; then
-      local choice
-      read -r -p "Building docker and loading $docker_image_path (y/n)?" choice
-      case "$choice" in
-      y | Y)  ;;
-      n | N) return 1 ;;
-      *) echo "invalid" ;;
-      esac
-    fi
-
-    if is_not_empty "$docker_image_path"; then
-      log_console_and_file " -Enabling docker services."
-      systemctl enable docker
-      systemctl start docker
-      systemctl daemon-reload
-      if is_docker_up; then
-          log_console_and_file " -Docker is up"
-          if is_docker_image_present "$docker_image_name"; then
-              log_console_and_file " -Loading docker image from $docker_image_path"
-              docker load < "$docker_image_path"
-              docker image ls > "$log_file" 2>&1
-          fi
+      if is_not_empty "$docker_image_path"; then
+        log_console_and_file " -Enabling docker services."
+        systemctl enable docker
+        systemctl start docker
+        systemctl daemon-reload
+        if is_docker_up; then
+            log_console_and_file " -Docker is up"
+            if is_docker_image_present "$docker_image_name"; then
+                log_console_and_file " -Loading docker image from $docker_image_path"
+                docker load < "$docker_image_path"
+                docker image ls > "$log_file" 2>&1
+            fi
+        fi
       fi
     fi
+    else
+      echo "Docker file $docker_image_path not found."
   fi
 }
 
@@ -955,7 +956,6 @@ function build_ipsec_lib() {
       esac
     fi
 
-
     repo_name=${IPSEC_LIB_LOCATION/%$suffix/}
     repo_name=${repo_name##*/}
     local ipsec_lib_path
@@ -965,9 +965,15 @@ function build_ipsec_lib() {
     if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
         local tar_file
         tar_file=$DEFAULT_GIT_IMAGE_DIR/$DEFAULT_IPSEC_TAR_NAME
-        log_console_and_file " -Unpacking $tar_file ipsec lib from a local copy to $ipsec_lib_path."
-        mkdir -p "$ipsec_lib_path"
-        tar xfz $tar_file --warning=no-timestamp -C "$ROOT_BUILD"
+        if file_exists tar_file; then
+          log_console_and_file " -Unpacking $tar_file ipsec lib from a local copy to $ipsec_lib_path."
+          mkdir -p "$ipsec_lib_path"
+          tar xfz $tar_file --warning=no-timestamp -C "$ROOT_BUILD"
+        else
+          log_console_and_file " -File $tar_file not found."
+          log_console_and_file " -Cloning ipsec lib from a git copy."
+          cd $ROOT_BUILD || exit; git clone "$IPSEC_LIB_LOCATION" > "$log_file" 2>&1
+        fi
     else
       log_console_and_file " -Directory $DEFAULT_GIT_IMAGE_DIR not found."
       log_console_and_file " -Building ipsec lib from a git copy."
@@ -1091,6 +1097,60 @@ function build_lib_nl() {
   fi
 }
 
+# Function builds yasm.
+#  First argument a path to log file.
+#  it downloads only.
+function build_yasm() {
+  local log_file=$1
+  touch "$log_file" 2>/dev/null
+  local suffix
+  suffix=".git"
+
+  local repo_name
+  repo_name=${YASM_LOCATION/%$suffix/}
+  repo_name=${repo_name##*/}
+  local yasm_lib_path=$ROOT_BUILD/"$repo_name"
+
+  # build and install isa
+  if [ -z "$YASM_LOCATION" ]; then
+    log_console_and_file "Skipping yasm build"
+  else
+     if is_yes "$IS_INTERACTIVE"; then
+        local choice
+        read -r -p "Building yasm in $YASM_TARGET_DIR_BUILD parallel build 8 (y/n)?" choice
+        case "$choice" in
+        y | Y)  ;;
+        n | N) return 1 ;;
+        *) echo "invalid" ;;
+        esac
+    fi
+
+    # if git dir exist first we check for tar
+    local lib_file=""
+    if [ -d $DEFAULT_GIT_IMAGE_DIR ]; then
+        lib_file=$(file /$DEFAULT_GIT_IMAGE_DIR/*yasm* | grep gzip)
+        if is_not_empty "$lib_file"; then
+          mkdir -p "$yasm_lib_path"
+          log_console_and_file " -Unpacking yasm from local to $yasm_lib_path."
+          tar xfz $DEFAULT_GIT_IMAGE_DIR/*yasm* --warning=no-timestamp -C "$ROOT_BUILD"
+        fi
+    fi
+
+    # fall back to git
+    if is_null_or_empty "$lib_file"; then
+      log_console_and_file "Building yasm lib from a git."
+      cd $ROOT_BUILD || exit; git clone "$YASM_LOCATION" > "$log_file" 2>&1
+    fi
+
+    mkdir -p $YASM_TARGET_DIR_BUILD
+    cd $YASM_TARGET_DIR_BUILD || exit
+    chmod 700 autogen.sh && ./autogen.sh > "$log_file" 2>&1
+    ./configure > "$log_file" 2>&1
+    make -j 8 > "$log_file.yasm.build.log" 2>&1; make install > "$log_file.yasm.install.log" 2>&1
+    ldconfig; ldconfig /usr/local/lib; ldconfig /usr/lib
+  fi
+}
+
 # Function builds lib isa
 #  First argument a path to log file.
 #  it downloads only.
@@ -1134,7 +1194,7 @@ function build_lib_isa() {
     # fall back to git
     if is_null_or_empty "$lib_file"; then
       log_console_and_file "Building isa-l lib from a git."
-       cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
+      cd $ROOT_BUILD || exit; git clone "$ISA_L_LOCATION" > "$log_file" 2>&1
     fi
 
     mkdir -p $LIB_ISAL_TARGET_DIR_BUILD
@@ -1213,7 +1273,7 @@ function build_dpdk() {
     local log_file=$1
     local build_dir=$2
     local custom_kern_prefix=$3
-    local build_flags="-Dplatform=native -Dexamples=all -Denable_kmods=true -Dibverbs_link=shared -Dwerror=true"
+    local build_flags="-Dplatform=native -Dexamples=all -Denable_kmods=true -Dibverbs_link=shared -Dwerror=true -Dprefix=/usr"
 
     touch "$log_file" 2>/dev/null
     local default_kernel_prefix="/usr/src/linux-headers-"
@@ -1225,9 +1285,8 @@ function build_dpdk() {
       default_kernel_prefix=$custom_kern_prefix
     fi
 
-    log_console_and_file "linux-rt-devel $"
     # kernel source and DPDK, we're building with Intel and Mellanox driver.
-    local yum_tools=("linux-rt-devel" "linux-devel" "dkms" "stalld" "openssl-devel" "libmlx5" "dtc" "dtc-devel" "meson")
+    local yum_tools=("linux-rt-devel" "linux-devel" "dkms" "stalld" "openssl-devel" "libmlx5" "dtc" "dtc-devel" "meson" "doxygen" "python3-sphinx" "libpcap" "libpcap-devel" "libbpf" "libbpf-devel" "lshw")
     for yum_tool in "${yum_tools[@]}"
     do
       local is_installed
@@ -1236,12 +1295,14 @@ function build_dpdk() {
       if is_not_empty is_installed; then
         log_console_and_file " tools $yum_tool installed."
       else
-        log_console_and_file " tool $tool not installed."
+        log_console_and_file " tool $tool not installed, installing via yum"
+        yum install "$tool"
       fi
     done
 
-    yum --quiet -y install stalld dkms linux-devel linux-rt-devel dtc dtc-devel meson \
-    openssl-devel libmlx5 > "$log_file" 2>&1
+    # this will move out
+    yum --quiet -y install stalld dkms linux-devel linux-rt-devel dtc dtc-devel meson
+    doxygen libpcap libpcap-devel libbpf libbpf-developenssl-devel libmlx5 lshw > "$log_file" 2>&1
     # first we check all tools in place.
     local dpdk_tools=("meson" "python3" "ninja")
     log_console_and_file " Checking required pip packages"
@@ -1279,10 +1340,11 @@ function build_dpdk() {
         esac
       fi
       log_console_and_file "Building DPDK."
-      log_console_and_file "Using kernel source tree $kernel_src_path"
+      log_console_and_file " -Using kernel source tree $kernel_src_path"
       if [ ! -d "$kernel_src_path" ]; then
-        echo log_console_and_file "Failed locate kernel source."
+        log_console_and_file "Failed locate kernel source."
       fi
+
       # in case pip wasn't called , we need install pyelftools
       pip3 install pyelftools sphinx > "$log_file" > "$log_file" 2>&1
       /usr/bin/python3 -c "import importlib.util; import sys; from elftools.elf.elffile import ELFFile" > "$log_file" 2>&1
@@ -1294,7 +1356,7 @@ function build_dpdk() {
       log_console_and_file "DPDK meson dir $meson_build_dir as build staging. target /lib/modules/$target_system"
       cd "$build_dir" || exit
       if is_yes "$IS_INTERACTIVE"; then
-        meson setup "$build_flags" build
+        meson setup $build_flags -Dkernel_dir=$kernel_src_path build
         local choice
         read -r -p "Building DPDK build location $meson_build_dir number of concurrent make: 8 (y/n)?" choice
         case "$choice" in
@@ -1303,7 +1365,7 @@ function build_dpdk() {
         *) echo "invalid" ;;
         esac
       else
-        meson setup "$build_flags" build > "$log_file.meson.log" 2>&1
+        meson setup $build_flags -Dkernel_dir=$kernel_src_path build > "$log_file.meson.log" 2>&1
       fi
 
       # meson -Dplatform=native -Dexamples=all -Denable_kmods=true -Dkernel_dir=/lib/modules/"$target_system" -Dibverbs_link=shared -Dwerror=true build > "$log_file.meson.log" 2>&1
@@ -1403,8 +1465,14 @@ function build_tuned() {
     rm -rf $ROOT_BUILD/tuned 2>/dev/null
     mkdir -p $ROOT_BUILD/tuned 2>/dev/null
     if [ -d "/git_images" ]; then
-        log_console_and_file "Unpacking tuned lib from a local copy."
-        tar xfz $DEFAULT_GIT_IMAGE_DIR/tuned.tar.gz --warning=no-timestamp -C $ROOT_BUILD
+        local tuned_tar_file=$DEFAULT_GIT_IMAGE_DIR/tuned.tar.gz
+        if file_exists $tuned_tar_file; then
+          log_console_and_file "Unpacking tuned lib from a local copy."
+          tar xfz $DEFAULT_GIT_IMAGE_DIR/tuned.tar.gz --warning=no-timestamp -C $ROOT_BUILD
+        else
+          log_console_and_file "Cloning tuned form remote repo."
+          cd $ROOT_BUILD || exit; git clone "$TUNED_LOCATION" > "$log_file" 2>&1; cd tuned || exit;
+        fi
     else
       log_console_and_file "Cloning tuned form remote repo."
       cd $ROOT_BUILD || exit; git clone "$TUNED_LOCATION" > "$log_file" 2>&1; cd tuned || exit;
@@ -1477,6 +1545,7 @@ EOF
     log_console_and_file "Activating mus_rt profile."
     tuned-adm profile mus_rt
     systemctl status tuned
+    systemctl restart tuned
   fi
 }
 
@@ -2260,6 +2329,10 @@ function main() {
     log_console_and_file "Loading docker images."
     build_docker_images $BUILD_DOCKER_LOG "$DOCKER_IMAGE_PATH" "$DOCKER_IMAGE_NAME"
   fi
+  if is_yes "$BUILD_YASM"; then
+      log_console_and_file "Building yasm."
+      build_yasm "$BUILD_YASM_LOG"
+  fi
   if is_yes "$IPSEC_BUILD"; then
     log_console_and_file "Starting building ipsec lib."
     build_ipsec_lib "$BUILD_IPSEC_LOG"
@@ -2301,6 +2374,8 @@ function main() {
       log_console_and_file "Building ptp configuration."
       build_ptp "$BUILD_PTP_BUILD_LOG"
   fi
+
+
   # generate default dhcp and if needed adapter with static
   # ip address
   generate_default_network
