@@ -101,7 +101,7 @@ DOCKER_IMAGE_NAME="vcu1"
 # by default all build in /root/build.
 ROOT_BUILD="/root/build"
 # logs are in /build
-BUILD_LOG_LOG="/build"
+BUILD_LOG="/build"
 
 # all require tools
 REQUIRED_TOOLS=("wget" "tar" "lshw" "awk")
@@ -136,10 +136,12 @@ BUILD_LOAD_DOCKER_IMAGE="yes"
 BUILD_RE_LINK_KERNEL="yes"
 BUILD_INSTALL_PACKAGES="yes"
 
+# this file script expect in offline mode
 DEFAULT_IPSEC_TAR_NAME="intel-ipsec-mb.tar.gz"
-DEFAULT_ISA_TAR_NAME="isa-l.tar.gz"
 DEFAULT_PYELF_TAR_NAME="pyelftools.tar.gz"
+DEFAULT_ISA_TAR_NAME="isa-l.tar.gz"
 DEFAULT_TUNED_TAR="tuned.tar.gz"
+DEFAULT_YASM_TAR="yasm.tar.gz"
 
 # caller can pass INTERACTIVE
 if [ -z "$INTERACTIVE" ]; then
@@ -370,7 +372,6 @@ PYELF_LIB_LOCATION="https://github.com/eliben/pyelftools.git"
 YASM_LOCATION="https://github.com/yasm/yasm.git"
 
 
-
 # mirror for all online files.
 # drivers etc.
 DPDK_URL_LOCATIONS=(
@@ -401,19 +402,22 @@ MLX_DIR=/tmp/mlnx_ofed_src
 INTEL_DIR=/tmp/iavf
 
 # all logs
-BUILD_MELLANOX_LOG="$BUILD_LOG_LOG/build_mellanox_driver.log"
-BUILD_INTEL_LOG="$BUILD_LOG_LOG/build_intel_driver.log"
-BUILD_DOCKER_LOG="$BUILD_LOG_LOG/build_docker_images.log"
-BUILD_IPSEC_LOG="$BUILD_LOG_LOG/build_ipsec_lib.log"
-BUILD_PIP_LOG="$BUILD_LOG_LOG/build_pip_deps.log"
-BUILD_NL_LOG="$BUILD_LOG_LOG/build_nl.log"
-BUILD_ISA_LOG="$BUILD_LOG_LOG/build_isa.log"
-BUILD_DPDK_LOG="$BUILD_LOG_LOG/build_dpdk.log"
-BUILD_PYELF_LOG="$BUILD_LOG_LOG/build_pyelf.log"
-BUILD_TUNED_LOG="$BUILD_LOG_LOG/build_tuned.log"
-BUILD_HUGEPAGES_LOG="$BUILD_LOG_LOG/build_hugepages.log"
-BUILD_PTP_BUILD_LOG="$BUILD_LOG_LOG/build_ptp.log"
-DEFAULT_BUILDER_LOG="$BUILD_LOG_LOG/build_main.log"
+BUILD_MELLANOX_LOG="$BUILD_LOG/build_mellanox_driver.log"
+BUILD_INTEL_LOG="$BUILD_LOG/build_intel_driver.log"
+BUILD_DOCKER_LOG="$BUILD_LOG/build_docker_images.log"
+BUILD_IPSEC_LOG="$BUILD_LOG/build_ipsec_lib.log"
+BUILD_PIP_LOG="$BUILD_LOG/build_pip_deps.log"
+BUILD_NL_LOG="$BUILD_LOG/build_nl.log"
+BUILD_ISA_LOG="$BUILD_LOG/build_isa.log"
+BUILD_DPDK_LOG="$BUILD_LOG/build_dpdk.log"
+BUILD_PYELF_LOG="$BUILD_LOG/build_pyelf.log"
+BUILD_TUNED_LOG="$BUILD_LOG/build_tuned.log"
+BUILD_HUGEPAGES_LOG="$BUILD_LOG/build_hugepages.log"
+BUILD_PTP_BUILD_LOG="$BUILD_LOG/build_ptp.log"
+BUILD_YASM_LOG="$BUILD_LOG/build_yasm.log"
+DEFAULT_BUILDER_LOG="$BUILD_LOG/build_main.log"
+
+
 
 # Variable for static network
 # mainly if we want set static IP for adapter
@@ -2177,7 +2181,7 @@ function clean_up() {
   if is_yes $DO_FULL_CLEANUP; then
     log_console_and_file "Performing full clean"
     rm -rf "${ROOT_BUILD:?}/"*
-    rm -rf "${BUILD_LOG_LOG:?}/"*
+    rm -rf "${BUILD_LOG:?}/"*
   fi
 }
 
@@ -2224,7 +2228,7 @@ function print_build_spec() {
 # Function clean only logs and build dir.
 function clean_build_only() {
   rm -rf "${ROOT_BUILD:?}/"*
-  rm -rf "${BUILD_LOG_LOG:?}/"*
+  rm -rf "${BUILD_LOG:?}/"*
 }
 
 function check_all_vars() {
@@ -2374,7 +2378,6 @@ function main() {
       log_console_and_file "Building ptp configuration."
       build_ptp "$BUILD_PTP_BUILD_LOG"
   fi
-
 
   # generate default dhcp and if needed adapter with static
   # ip address
