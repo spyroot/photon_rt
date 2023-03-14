@@ -108,7 +108,7 @@ REQUIRED_TOOLS=("wget" "tar" "lshw" "awk")
 # dirs that we expect to hold tar.gz
 EXPECTED_DIRS=("/direct" "/mnt/cdrom/direct" "/")
 # list of required pip packages.
-PIP_PKG_REQUIRED=("pyelftools" "sphinx")
+PIP_PKG_REQUIRED=("pyelftools" "sphinx" "procfs")
 
 # What we are building, all flags on by default.
 # i.e. by default we build all.
@@ -1357,7 +1357,7 @@ function build_dpdk() {
       log_console_and_file "DPDK meson dir $meson_build_dir as build staging. target /lib/modules/$target_system"
       cd "$build_dir" || exit
       if is_yes "$IS_INTERACTIVE"; then
-        meson setup $build_flags -Dkernel_dir=$kernel_src_path build
+        meson setup "$build_flags" -Dkernel_dir="$kernel_src_path" build
         local choice
         read -r -p "Building DPDK build location $meson_build_dir number of concurrent make: 8 (y/n)?" choice
         case "$choice" in
@@ -1366,7 +1366,7 @@ function build_dpdk() {
         *) echo "invalid" ;;
         esac
       else
-        meson setup $build_flags -Dkernel_dir=$kernel_src_path build > "$log_file.meson.log" 2>&1
+        meson setup "$build_flags" -Dkernel_dir="$kernel_src_path" build > "$log_file.meson.log" 2>&1
       fi
 
       # meson -Dplatform=native -Dexamples=all -Denable_kmods=true -Dkernel_dir=/lib/modules/"$target_system" -Dibverbs_link=shared -Dwerror=true build > "$log_file.meson.log" 2>&1
@@ -1593,55 +1593,63 @@ function build_qat() {
 # third 1GB pages
 function build_hugepages() {
   local log_file=$1
-  local pages=$2
-  local page_1gb=$3
+  local pages=${2:-0}
+  local page_1gb=${3:-0}
 
   touch "$log_file" > /dev/null 2>&1
-
-  yum install libhugetlbfs libhugetlbfs-devel > /dev/null 2>&1
   if [ -z "$BUILD_HUGEPAGES" ] && [ "$BUILD_HUGEPAGES" == "yes" ]
   then
       log_console_and_file "Skipping hugepages allocation."
-  else
-
-    # Huge pages for each NUMA NODE
-    log_console_and_file "Adjusting numa pages."
-    local IS_SINGLE_NUMA
-    IS_SINGLE_NUMA=$(numactl --hardware | grep available | grep 0-1)
-
-     if is_yes "$IS_INTERACTIVE"; then
-        local choice
-        read -r -p "Building huge 2048 $pages 1GB $page_1gb, pages detected $IS_SINGLE_NUMA (y/n)?" choice
-        case "$choice" in
-        y | Y)  ;;
-        n | N) return 1 ;;
-        *) echo "invalid" ;;
-        esac
-    fi
-
-    # Huge pages for each NUMA NODE
-    log_console_and_file "Adjusting numa pages."
-    local IS_SINGLE_NUMA
-    IS_SINGLE_NUMA=$(numactl --hardware | grep available | grep 0-1)
-    if [ -z "$IS_SINGLE_NUMA" ]
-    then
-            log_console_and_file "Target system with single socket num 2k $PAGES num 1GB $PAGES_1GB."
-            echo "$pages" > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
-            echo "$page_1gb" > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages
-    else
-            log_console_and_file "Target system with dual socket num 2k $PAGES num 1GB $PAGES_1GB."
-            echo "$pages" > /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages
-            echo "$pages" > /sys/devices/system/node/node1/hugepages/hugepages-2048kB/nr_hugepages
-            echo "$page_1gb"  > /sys/devices/system/node/node0/hugepages/hugepages-1048576kB/nr_hugepages
-            echo "$page_1gb" > /sys/devices/system/node/node1/hugepages/hugepages-1048576kB/nr_hugepages
-    fi
-    log_console_and_file "Adjusting /etc/fstab mount hugetlbfs"
-    local FSTAB_FILE='/etc/fstab'
-    local HUGEPAGES_MOUNT_LINE='nodev /mnt/huge hugetlbfs pagesize=1GB 0 0'
-    mkdir /mnt/huge > /dev/null 2>&1
-    mount -t hugetlbfs nodev /mnt/huge > "$log_file" 2>&1
-    grep -qF -- "$HUGEPAGES_MOUNT_LINE" "$FSTAB_FILE" || echo "$HUGEPAGES_MOUNT_LINE" >> "$FSTAB_FILE"
+      return
   fi
+
+  log_console_and_file "Installing libhugetlbfs and libhugetlbfs-devel packages"
+  yum install libhugetlbfs libhugetlbfs-devel > /dev/null 2>&1
+
+  # Check if 1GB pages are defined
+  if [ -z "$pages_1gb" ]
+  then
+      log_console_and_file "Skipping hugepages allocation. 1GB pages not defined."
+      return
+  fi
+
+  # Huge pages for each NUMA NODE
+  log_console_and_file "Adjusting numa pages."
+  local IS_SINGLE_NUMA
+  IS_SINGLE_NUMA=$(numactl --hardware | grep available | grep 0-1)
+
+   if is_yes "$IS_INTERACTIVE"; then
+      local choice
+      read -r -p "Building huge 2048 $pages 1GB $page_1gb, pages detected $IS_SINGLE_NUMA (y/n)?" choice
+      case "$choice" in
+      y | Y)  ;;
+      n | N) return 1 ;;
+      *) echo "invalid" ;;
+      esac
+  fi
+
+  # Huge pages for each NUMA NODE
+  log_console_and_file "Adjusting numa pages."
+  local IS_SINGLE_NUMA
+  IS_SINGLE_NUMA=$(numactl --hardware | grep available | grep 0-1)
+  if [ -z "$IS_SINGLE_NUMA" ]
+  then
+          log_console_and_file "Target system with single socket num 2k $PAGES num 1GB $PAGES_1GB."
+          echo "$pages" > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+          echo "$page_1gb" > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages
+  else
+          log_console_and_file "Target system with dual socket num 2k $PAGES num 1GB $PAGES_1GB."
+          echo "$pages" > /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages
+          echo "$pages" > /sys/devices/system/node/node1/hugepages/hugepages-2048kB/nr_hugepages
+          echo "$page_1gb"  > /sys/devices/system/node/node0/hugepages/hugepages-1048576kB/nr_hugepages
+          echo "$page_1gb" > /sys/devices/system/node/node1/hugepages/hugepages-1048576kB/nr_hugepages
+  fi
+  log_console_and_file "Adjusting /etc/fstab mount hugetlbfs"
+  local FSTAB_FILE='/etc/fstab'
+  local HUGEPAGES_MOUNT_LINE='nodev /mnt/huge hugetlbfs pagesize=1GB 0 0'
+  mkdir /mnt/huge > /dev/null 2>&1
+  mount -t hugetlbfs nodev /mnt/huge > "$log_file" 2>&1
+  grep -qF -- "$HUGEPAGES_MOUNT_LINE" "$FSTAB_FILE" || echo "$HUGEPAGES_MOUNT_LINE" >> "$FSTAB_FILE"
 }
 
 # mainly for debug to re-run during dev phase
@@ -1658,34 +1666,40 @@ function build_ptp() {
   local log_file=$1
   touch "$log_file" 2>/dev/null
 
-  if [ -z "$BUILD_PTP" ] && [ "$BUILD_PTP" == "yes" ]
-  then
+  if [ "${BUILD_PTP:-no}" != "yes" ]; then
       log_console_and_file "Skipping ptp configuration."
-  else
-      if is_yes "$IS_INTERACTIVE"; then
-        local choice
-        read -r -p "Building ptp configuration (y/n)?" choice
-        case "$choice" in
-        y | Y)  ;;
-        n | N) return 1 ;;
-        *) echo "invalid" ;;
-        esac
-    fi
+      return 0
+  fi
 
-    # enable ptp4l start and create config, restart.
-    log_console_and_file "Enabling ptp4l ptp4l."
-    systemctl enable ptp4l
-    systemctl enable phc2sys
-    systemctl daemon-reload
-    systemctl start ptp4l
-    systemctl start phc2sys
-    systemctl ptp4l > "$log_file" 2>&1
-    systemctl phc2sys > "$log_file" 2>&1
+  if [ -z "$PTP_ADAPTER" ]; then
+    log_console_and_file "Error: PTP_ADAPTER is undefined. Cannot configure PTP."
+    return 1
+  fi
 
-    # generate config.
-    rm /etc/ptp4l.conf 2>/dev/null; touch /etc/ptp4l.conf 2>/dev/null
-    echo "Adjusting ptp4l config /etc/ptp4l.conf" >> /build/build_ptp.log
-    cat > /etc/ptp4l.conf  << 'EOF'
+  if is_yes "$IS_INTERACTIVE"; then
+    local choice
+    read -r -p "Building ptp configuration (y/n)?" choice
+    case "$choice" in
+    y | Y)  ;;
+    n | N) return 1 ;;
+    *) echo "invalid" ;;
+    esac
+  fi
+
+  # enable ptp4l start and create config, restart.
+  log_console_and_file "Enabling ptp4l ptp4l."
+  systemctl enable ptp4l
+  systemctl enable phc2sys
+  systemctl daemon-reload
+  systemctl start ptp4l
+  systemctl start phc2sys
+  systemctl ptp4l > "$log_file" 2>&1
+  systemctl phc2sys > "$log_file" 2>&1
+
+  # generate config.
+  rm /etc/ptp4l.conf 2>/dev/null; touch /etc/ptp4l.conf 2>/dev/null
+  echo "Adjusting ptp4l config /etc/ptp4l.conf" >> /build/build_ptp.log
+  cat > /etc/ptp4l.conf  << 'EOF'
 [global]
 twoStepFlag		1
 socket_priority		0
@@ -1780,24 +1794,30 @@ manufacturerIdentity	00:00:00
 userDescription		;
 timeSource		0xA0
 EOF
-    local ptp_adapter_name
-    ptp_adapter_name=$(pci_to_adapter "$PTP_ADAPTER")
-    # adjust /etc/sysconfig/ptp4l
-    rm /etc/sysconfig/ptp4l 2>/dev/null; touch /etc/sysconfig/ptp4l 2>/dev/null
-    log_console_and_file "Adjusting /etc/sysconfig/ptp4l and setting ptp for adapter $ptp_adapter_name"
-    cat > /etc/sysconfig/ptp4l << EOF
+  local ptp_adapter_name
+  ptp_adapter_name=$(pci_to_adapter "$PTP_ADAPTER")
+  # adjust /etc/sysconfig/ptp4l
+  rm /etc/sysconfig/ptp4l 2>/dev/null; touch /etc/sysconfig/ptp4l 2>/dev/null
+  log_console_and_file "Adjusting /etc/sysconfig/ptp4l and setting ptp for adapter $ptp_adapter_name"
+  cat > /etc/sysconfig/ptp4l << EOF
 OPTIONS="-f /etc/ptp4l.conf -i $PTP_ADAPTER"
 EOF
-    # restart everything.
-    log_console_and_file "Restarting ptp4l "
-    systemctl daemon-reload
-    systemctl restart ptp4l
-    systemctl restart phc2sys
-    systemctl status ptp4l >> $BUILD_PIP_LOG
-  fi
+  # restart everything.
+  log_console_and_file "Restarting ptp4l "
+  systemctl daemon-reload
+  systemctl restart ptp4l
+  systemctl restart phc2sys
+  systemctl status ptp4l >> $BUILD_PIP_LOG
 }
 
-# build required dirs
+# Checks if required mandatory tools are installed on local system
+#
+# Arguments:
+#   result_var_name: the name of the variable that will be set to the number of errors (e.g., "num_errors")
+#   required_tools: an array of tool names that are required
+#
+# Returns:
+#   Nothing. The function sets the value of the result_var_name variable to the number of errors.
 function build_dirs() {
   mkdir -p $MLX_DIR > /dev/null 2>&1
   mkdir -p $INTEL_DIR > /dev/null 2>&1
@@ -1811,25 +1831,36 @@ function check_installed() {
   declare -i errors=0
   shift
   local array_tools=("$@")
+
+  # the result_var_name argument must be a non-empty string,
+  # and the required_tools array must not be empty.
+  if [[ -z $result_var_name || $# -eq 0 ]]; then
+      echo "Error: missing required arguments"
+      return 1
+  fi
+
   for tool in "${array_tools[@]}"
   do
-    if is_cmd_installed "$tool"
-    then
+    if is_cmd_installed "$tool"; then
       log_green_console_and_file "tools $tool installed."
     else
       log_console_and_file "tool $tool not installed."
       errors+=1
     fi
   done
+
   eval "$result_var_name"="'$errors'"
 }
 
-# /mnt/cdrom/direct/dpdk-21.11.3.tar.xz
-# Function extract version from
-# filename, url , or full path
-# "dpdk-21.11.3.tar.xz" -> 21.11.3
-# "/mnt/cdrom/direct/dpdk-21.11.3.tar.xz" -> 21.11.3
-# http://fast.dpdk.org/rel/dpdk-21.11.tar.xz" -> 21.11
+# Extracts the version number from a filename, URL, or full path
+#
+# Arguments:
+#   file_path: the path to the file (e.g., "/mnt/cdrom/direct/dpdk-21.11.3.tar.xz")
+#   pref: the prefix of the filename (e.g., "dpdk-")
+#   suffix: the suffix of the filename (e.g., ".tar.xz")
+#
+# Returns:
+#   the version number (e.g., "21.11.3")
 function extrac_version() {
   local file_path=$1
   local pref=$2
@@ -1840,6 +1871,11 @@ function extrac_version() {
   if [ -z "$file_path" ] || [ -z "$pref" ] || [ -z "$suffix" ]; then
     version=""
   else
+
+#    # Extract the filename from the path
+#    local filename=$(basename "$file_path")
+#    local version=$(echo "$filename" | grep -oE "${prefix}[[:digit:].]+${suffix}" | grep -oE "[[:digit:].]+")
+
     file_path=$(trim "$file_path")
     local file_name
     file_name=$(basename "$file_path")
@@ -1850,14 +1886,18 @@ function extrac_version() {
   echo "$version"
 }
 
-# Function search a file in array of dirs
-# arg: first argument is prefix for a file pattern "dpdk-"
-# arg: Second argument is target. tag.gz etc.
-# arg: Third suffix argument a pattern tag.gz etc.
-#      Suffix and prefix used to extrac version.
-# arg: Last arg is name of variable that function will set
-#      if it found a file
-# last argument what we search, for logging purpose.
+# Searches for a file in an array of directories, or in the CD-ROM drive,
+# or by performing a deep search of the file system
+#
+# Arguments:
+#   search_pattern: a prefix for the file pattern (e.g., "dpdk-")
+#   target_name: the target name of the file (e.g., "tar.gz")
+#   suffix: a pattern to extract the version (e.g., ".*")
+#   __resul_search_var: the name of a variable that the function will set if it finds the file
+#   (optional) search_name: the name of the file to search for (for logging purposes)
+#
+# Returns:
+#   0 if the file is found and the variable is set, 1 otherwise
 function search_file() {
   local search_pattern=$1
   local target_name=$2
@@ -1866,6 +1906,11 @@ function search_file() {
   local found_file=""
   local found_in=""
   local found=false
+
+  if [[ -z $search_pattern || -z $target_name || -z $suffix || -z $__resul_search_var ]]; then
+      echo "Error: missing required arguments"
+      return 1
+  fi
 
   log_console_and_file "Searching search_pattern $search_pattern target_name $target_name suffix $suffix"
   # first check all expected dirs
@@ -1957,32 +2002,113 @@ function fetch_file() {
   fi
 }
 
-# Function generate dhcp, by default generate masked for e*
-# if arg: provided will use that arg as Match
+# Generates a DHCP network configuration file for Ethernet adapters that match a given mask
+#
+# Arguments:
+#   eth_mask (optional): the Ethernet adapter mask (default: "e*")
+#
+# Returns:
+#   0 if successful, 1 if an error occurred
 function generate_dhcp_network() {
   local eth_mask=$1
   local default_mask="e*"
   if [ -z "$eth_mask" ]; then
     eth_mask=$default_mask
   fi
-  cat >"$DEFAULT_SYSTEMD_PATH/$DEFAULT_DHCP_NET_NAME" <<EOF
+
+  if ! mkdir -p "$DEFAULT_SYSTEMD_PATH"; then
+      echo "Error: could not create directory $DEFAULT_SYSTEMD_PATH"
+      return 1
+  fi
+
+    # Write the network configuration file
+    if ! cat >"$DEFAULT_SYSTEMD_PATH/$DEFAULT_DHCP_NET_NAME" <<EOF
 [Match]
 Name=$eth_mask
 [Network]
 DHCP=yes
 IPv6AcceptRA=no
 EOF
+    then
+        echo "Error: could not write to $DEFAULT_SYSTEMD_PATH/$DEFAULT_DHCP_NET_NAME"
+        return 1
+    fi
+    return 0
 }
 
-# function generate static network
-# args eth name ,IP address , gateway, DNS
+# Returns 0 if the specified string is a valid IPv4 address, 1 otherwise
+function valid_ipv4_address() {
+    local address=$1
+    local octet
+
+    # Split the address into four octets
+    IFS='.' read -r -a octets <<< "$address"
+
+    # Check that the address has four octets
+    if [[ ${#octets[@]} -ne 4 ]]; then
+        return 1
+    fi
+
+    # Check that each octet is a number between 0 and 255
+    for octet in "${octets[@]}"; do
+        if ! [[ $octet =~ ^[0-9]+$ ]]; then
+            return 1
+        fi
+        if (( $octet < 0 || $octet > 255 )); then
+            return 1
+        fi
+    done
+
+    # If we made it this far, the address is valid
+    return 0
+}
+
+# Generates a static network configuration file for a specified Ethernet adapter
+#
+# Arguments:
+#   adapter_name: the name of the Ethernet adapter
+#   address: the static IP address
+#   gateway: the gateway IP address
+#   dns: the DNS server IP address
+#
+# Returns:
+#   0 if successful, 1 if an error occurred
 function generate_static_network() {
-  local adapter_name=$1
-  local address=$2
-  local gateway=$3
-  local dns=$4
-  log_console_and_file "$DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network"
-  cat >"$DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network" <<EOF
+    local adapter_name=$1
+    local address=$2
+    local gateway=$3
+    local dns=$4
+
+    # Validate input: all arguments must be provided
+    if [[ -z $adapter_name || -z $address || -z $gateway || -z $dns ]]; then
+        echo "Error: all arguments must be provided"
+        return 1
+    fi
+
+    # Validate input: IP address, gateway, and DNS server must be valid IPv4 addresses
+    if ! valid_ipv4_address "$address"; then
+        echo "Error: $address is not a valid IPv4 address"
+        return 1
+    fi
+
+    if ! valid_ipv4_address "$gateway"; then
+        echo "Error: $gateway is not a valid IPv4 address"
+        return 1
+    fi
+
+    if ! valid_ipv4_address "$dns"; then
+        echo "Error: $dns is not a valid IPv4 address"
+        return 1
+    fi
+
+    # Check if the network configuration file already exists
+    if [[ -e "$DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network" ]]; then
+        echo "Error: $DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network already exists"
+        return 1
+    fi
+
+    # Write the network configuration file
+    if ! cat >"$DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network" <<EOF
 [Match]
 Name=$adapter_name
 [Network]
@@ -1990,6 +2116,12 @@ Address=$address
 Gateway=$gateway
 DNS=$dns
 EOF
+    then
+        echo "Error: could not write to $DEFAULT_SYSTEMD_PATH/$DEFAULT_SYSTEMD_STATIC_NET_NAME_PREFIX-$adapter_name.network"
+        return 1
+    fi
+    # Return success
+    return 0
 }
 
 # Function generate default networks.
@@ -2026,20 +2158,133 @@ function generate_default_network() {
   fi
 }
 
-# Function generate netdev for vlan
-# arg vlan ID ( integer )
+# Generates a .netdev file for a VLAN with a specified ID
+#
+# Arguments:
+#   vlan_id: the VLAN ID (an integer)
+#
+# Returns:
+#   0 if successful, 1 if an error occurred
 function generate_vlan_netdev() {
   local vlan_id=$1
-  if is_not_empty vlan_id; then
-    log_console_and_file "Generating $DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev"
-    cat >"$DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev" <<EOF
+  if ! [[ $vlan_id =~ ^[0-9]+$ ]]; then
+    echo "Error: vlan_id must be a valid integer"
+    return 1
+  fi
+  # Check if the .netdev file already exists
+  if [[ -e "$DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev" ]]; then
+      echo "Error: $DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev already exists"
+      return 1
+  fi
+
+  # Write the .netdev file
+  if ! cat >"$DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev" <<EOF
 [NetDev]
 Name=VLAN$vlan_id
 Kind=vlan
 [VLAN]
 Id=$vlan_id
 EOF
-  fi
+    then
+        echo "Error: could not write to $DEFAULT_SYSTEMD_PATH/$DOT1Q_SYSTEMD_DEFAULT_PREFIX$vlan_id.netdev"
+        return 1
+    fi
+  return 0
+}
+
+# Generates a Photon OS kernel config file with custom parameters
+# The function finds the CPUs in NUMA node 0, removes a set of CPUs
+# from the list, and generates a new line with the remaining CPUs
+# and other parameters. It mainly for a case when tuned is broken
+# and we manually pass all value.
+#
+# Arguments:
+#   config_file (optional): filename of the config file to be generated (default: photon.cfg2)
+#
+# Returns:
+#   0 if successful, 1 if an error occurred
+function generate_manual_photon_config() {
+    local config_file=${1:-photon.cfg2}
+
+    # Check if numactl command is available
+    if ! command -v numactl > /dev/null 2>&1; then
+        echo "Error: numactl command not found"
+        return 1
+    fi
+
+    # Find CPUs in NUMA node 0
+    local node_numa0=$(numactl --hardware | grep "node 0" | grep cpus | cut -d ":" -f 2)
+    # Find CPUs in NUMA node 1
+    local node_numa1=$(numactl --hardware | grep "node 0" | grep cpus | cut -d ":" -f 2)
+    declare -a list=( "$node_numa0" )
+
+    # Remove specified CPUs from the list
+    declare delete=(0 1 2 3)
+    for del in "${delete[@]}"
+    do
+        list=("${list[@]/$del}")
+    done
+
+    # check if list array is not empty
+    if [ -z "${list[*]}" ]; then
+        echo "Error: list array is empty"
+        return 1
+    fi
+
+    # Replace a specific line in the config file with a new line containing the list array and other parameters
+    if ! sed -i -r \
+    "s/^tuned_params=.*/tuned_params=\
+    skew_tick=1 \
+    isolcpus=managed_irq,domain, \
+    isolcpus=managed_irq,domain,${list[*]} \
+    intel_pstate=disable \
+    intel_iommu=on \
+    iommu=pt \
+    nosoftlockup \
+    tsc=reliable \
+    transparent_hugepage=never \
+    hugepages=16 \
+    default_hugepagesz=1G \
+    hugepagesz=1G \
+    nohz_full=${list[*]} \
+    rcu_nocbs=${list[*]}/"\
+    "${config_file}"
+    then
+      echo "Error: sed command failed"
+      return 1
+    fi
+
+    # Return success
+    return 0
+}
+
+
+function generate_docker_config() {
+  cat >"/usr/lib/systemd/system/docker.service" <<EOF
+[Unit]
+Description=Docker Application Container Engine
+Documentation=https://docs.docker.com
+After=network-online.target containerd.service
+Wants=network-online.target
+Requires=docker.socket containerd.service
+[Service]
+Type=notify
+ExecStart=taskset -c 5-27 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+ExecReload=/bin/kill -s HUP $MAINPID
+TimeoutSec=0
+RestartSec=2
+Restart=always
+StartLimitBurst=3
+StartLimitInterval=60s
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+Delegate=yes
+KillMode=process
+[Install]
+WantedBy=multi-user.target
+EOF
 }
 
 function generate_vlan_network() {
@@ -2076,12 +2321,36 @@ EOF
   fi
 }
 
+# Function builds cycling test
+# First arg a path to log file.
+function build_cycling_test() {
+    local log_file=$1
+    local cycling_test_dir="$ROOT_BUILD/cycling_test"
+
+    if [ -z "$BUILD_CYCLING_TEST" ] || [ "$BUILD_CYCLING_TEST" == "no" ]; then
+        log_console_and_file "Skipping cycling test build."
+    else
+        log_console_and_file "Building cycling test."
+        # Clone and build cycling test
+        mkdir -p "$ROOT_BUILD" > /dev/null 2>&1
+        cd "$ROOT_BUILD" || exit
+        git clone git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git > "$log_file" 2>&1
+        cd rt-tests/ || exit
+        make > "$log_file" 2>&1
+        make install > "$log_file" 2>&1
+
+        mkdir -p "$cycling_test_dir" > /dev/null 2>&1
+        ln -sf "$ROOT_BUILD"/rt-tests/cyclictest/cyclictest "$cycling_test_dir/cyclictest"
+    fi
+}
+
 #
 # Function create all vlan interface
 #
 function build_vlans_ifs() {
-  local vlan_id_list=$1
-  local if_name=$2
+  local vlan_id_list="$1"
+  local if_name="$2"
+
   if is_yes "$BUILD_TRUNK" && is_not_empty "$DOT1Q_VLAN_TRUNK_PCI"; then
     local trunk_eth_name
     trunk_eth_name=$(pci_to_adapter "$DOT1Q_VLAN_TRUNK_PCI")
@@ -2276,6 +2545,7 @@ function main() {
     link_kernel ""
   fi
 
+
   # install required packages
   if is_yes "$BUILD_INSTALL_PACKAGES"; then
     yum --quiet -y install python3-libcap-ng python3-devel \
@@ -2397,10 +2667,15 @@ function main() {
     umount /dev/cdrom
   fi
 
+  if generate_manual_photon_config "/boot/photon.cfg2"; then
+    echo "Config file generated successfully"
+  else
+    echo "Error generating config file"
+  fi
+
   if is_yes "$DO_REBOOT"; then
     reboot
   fi
 }
-
 
 main
